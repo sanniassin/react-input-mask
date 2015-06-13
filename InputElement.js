@@ -1,5 +1,7 @@
 // https://github.com/sanniassin/react-input-mask
 
+var React = require("react");
+
 var InputElement = React.createClass({
     charsRules: {
         "9": "[0-9]",
@@ -429,3 +431,5 @@ var InputElement = React.createClass({
         return <input {...this.props} {...handlers} value={this.state.value}/>;
     }
 });
+
+module.exports = InputElement;
