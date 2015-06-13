@@ -1,6 +1,6 @@
 # react-input-mask
 
-Yet another React component for input maasking.
+Yet another React component for input masking.
 
 ## Properties
 ### `mask` : `string`
