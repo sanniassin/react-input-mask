@@ -1,6 +1,6 @@
 # react-input-mask
 
-Yet another React component for input masking.
+Yet another React component for input masking with little UX tweaks, like handling of unformatted phone number pasting.
 
 ## Demo
 http://codepen.io/anon/pen/LVLKPR
