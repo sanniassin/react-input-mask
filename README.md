@@ -2,6 +2,9 @@
 
 Yet another React component for input masking.
 
+## Demo
+http://codepen.io/anon/pen/LVLKPR
+
 ## Properties
 ### `mask` : `string`
 
