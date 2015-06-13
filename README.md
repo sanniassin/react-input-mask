@@ -1,6 +1,6 @@
 # react-input-mask
 
-Yet another React component for input masking with attention to small usability issues with cursor position, copy-paste, etc.
+Yet another React component for input masking with attention to small usability details with cursor position, copy-paste, etc.
 
 ## Demo
 http://codepen.io/anon/pen/LVLKPR
