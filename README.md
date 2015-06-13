@@ -20,7 +20,7 @@ Character to cover unfilled editable parts of mask. Default character is "_"
 ```js
 var PhoneInput = React.createClass({
   render: function() {
-    return <InputElement {...this.props} mask="+4\\\\9 99 999 99" maskChar=" "/>;
+    return <InputElement {...this.props} mask="+4\\9 99 999 99" maskChar=" "/>;
   }
 });
 ```
