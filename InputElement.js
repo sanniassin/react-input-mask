@@ -108,7 +108,7 @@ var InputElement = React.createClass({
         return (new RegExp(charRule)).test(char);
     },
     isPermanentChar: function(pos) {
-        return this.state.premanents.indexOf(pos) !== -1;
+        return this.state.permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function() {
         var value = this.state.value;
@@ -190,11 +190,11 @@ var InputElement = React.createClass({
         if (typeof mask !== "string") {
             return {
                 mask: null,
-                premanents: []
+                permanents: []
             };
         }
         var str = "";
-        var premanents = [];
+        var permanents = [];
         var isPermanent = false;
 
         for (var i = 0; i < mask.length; ++i) {
@@ -204,7 +204,7 @@ var InputElement = React.createClass({
             }
             else {
                 if (isPermanent || !this.charsRules[char]) {
-                    premanents.push(str.length);
+                    permanents.push(str.length);
                 }
                 str += char;
                 isPermanent = false;
@@ -213,14 +213,14 @@ var InputElement = React.createClass({
 
         return {
             mask: str,
-            premanents: premanents
+            permanents: permanents
         };
     },
     getInitialState: function() {
         var mask = this.parseMask(this.props.mask);
         return {
             mask: mask.mask,
-            premanents: mask.premanents,
+            permanents: mask.permanents,
             value: this.props.value,
             maskChar: typeof this.props.maskChar === "string" ? this.props.maskChar : this.defaultMaskChar
         };
@@ -229,7 +229,7 @@ var InputElement = React.createClass({
         var mask = this.parseMask(nextProps.mask);
         var state = {
             mask: mask.mask,
-            premanents: mask.premanents,
+            permanents: mask.permanents,
             maskChar: typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar
         };
         if (nextProps.value !== this.state.value) {
