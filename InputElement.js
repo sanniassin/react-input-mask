@@ -48,16 +48,9 @@ var InputElement = React.createClass({
         return null;
     },
     isEmpty: function(value) {
-        var isEmpty = true;
-        var maskChar = this.state.maskChar;
-        var mask = this.state.mask;
-        for (var i = 0; i < mask.length; ++i) {
-            if (value[i] !== mask[i] && value[i] !== maskChar) {
-                isEmpty = false;
-                break;
-            }
-        }
-        return isEmpty;
+        return !value.split("").some((char, i) =>
+            !this.isPermanentChar(i) && this.isAllowedChar(char, i)
+        );
     },
     formatValue: function(value) {
         var maskChar = this.state.maskChar;
