@@ -55,40 +55,34 @@ var InputElement = React.createClass({
     formatValue: function(value) {
         var maskChar = this.state.maskChar;
         var mask = this.state.mask;
-        value = value.split("").map((char, pos) => {
-            if (this.isAllowedChar(char, pos)) {
-                return char;
-            }
-            else if (this.isPermanentChar(pos)) {
-                return mask[pos];
-            }
-            return maskChar;
-        }).join("");
-
-        var len = value.length;
-        var maskLen = mask.length;
-        if (len < maskLen) {
-            for (var i = len; i < maskLen; ++i) {
-                if (this.isPermanentChar(i)) {
-                    value += mask[i];
-                }
-                else {
-                    value += maskChar;
-                }
-            }
-        }
-        return value;
+        return value.split("")
+                    .concat(new Array(mask.length - value.length))
+                    .map((char, pos) => {
+                        if (this.isAllowedChar(char, pos)) {
+                            return char;
+                        }
+                        else if (this.isPermanentChar(pos)) {
+                            return mask[pos];
+                        }
+                        return maskChar;
+                    })
+                    .join("");
     },
     clearRange: function(value, start, len) {
         var maskChar = this.state.maskChar;
         var mask = this.state.mask;
-        return value.substr(0, start) + value.substr(start, len).split("").map((char, pos) => {
-            pos += start;
-            if (this.isPermanentChar(pos)) {
-                return mask[pos];
-            }
-            return maskChar;
-        }).join("") + value.substr(start + len);
+        var end = start + len;
+        return value.split("")
+                    .map((char, i) => {
+                        if (i < start || i >= end) {
+                            return char;
+                        }
+                        if (this.isPermanentChar(i)) {
+                            return mask[i];
+                        }
+                        return maskChar;
+                    })
+                    .join("");
     },
     replaceSubstr: function(value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
@@ -192,8 +186,7 @@ var InputElement = React.createClass({
         var permanents = [];
         var isPermanent = false;
 
-        for (var i = 0; i < mask.length; ++i) {
-            var char = mask[i];
+        mask.split("").forEach((char) => {
             if (!isPermanent && char === "\\") {
                 isPermanent = true;
             }
@@ -204,7 +197,7 @@ var InputElement = React.createClass({
                 str += char;
                 isPermanent = false;
             }
-        }
+        });
 
         return {
             mask: str,
