@@ -106,8 +106,11 @@ var InputElement = React.createClass({
         for (var i = value.length - 1; i >= 0; --i) {
             if (!this.isPermanentChar(i) && value[i] !== maskChar || i < prefixLen) {
                 this.setCaretPos(i + 1);
-                break;
+                return;
             }
+        }
+        if (value.length && value[0] === maskChar) {
+            this.setCaretPos(0);
         }
     },
     getSelection: function() {
@@ -249,7 +252,7 @@ var InputElement = React.createClass({
                 }
                 else {
                     var editablePos = deleteFromRight ? this.getRightEditablePos(caretPos) : this.getLeftEditablePos(caretPos - 1);
-                    if (editablePos) {
+                    if (editablePos !== null) {
                         value = this.replaceSubstr(value, maskChar, editablePos);
                         caretPos = editablePos;
                     }
