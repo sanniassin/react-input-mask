@@ -56,7 +56,7 @@ var InputElement = React.createClass({
         var maskChar = this.state.maskChar;
         var mask = this.state.mask;
         return value.split("")
-                    .concat(new Array(mask.length - value.length))
+                    .concat(Array.apply(null, Array(mask.length - value.length)))
                     .map((char, pos) => {
                         if (this.isAllowedChar(char, pos)) {
                             return char;
