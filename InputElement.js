@@ -229,7 +229,7 @@ var InputElement = React.createClass({
         this.setState(state);
     },
     onKeyDown: function(event) {
-        var hasHandler = typeof this.props.onKeyPress === "function";
+        var hasHandler = typeof this.props.onKeyDown === "function";
         if (event.ctrlKey || event.metaKey) {
             if (hasHandler) {
                 this.props.onKeyDown(event);
