@@ -231,7 +231,9 @@ var InputElement = React.createClass({
     onKeyDown: function(event) {
         var hasHandler = typeof this.props.onKeyPress === "function";
         if (event.ctrlKey || event.metaKey) {
-            this.props.onKeyDown(event);
+            if (hasHandler) {
+                this.props.onKeyDown(event);
+            }
             return;
         }
 
