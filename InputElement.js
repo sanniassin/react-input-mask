@@ -229,7 +229,9 @@ var InputElement = React.createClass({
         this.setState(state);
     },
     onKeyDown: function(event) {
+        var hasHandler = typeof this.props.onKeyPress === "function";
         if (event.ctrlKey || event.metaKey) {
+            this.props.onKeyDown(event);
             return;
         }
 
@@ -263,7 +265,7 @@ var InputElement = React.createClass({
                 break;
         }
 
-        if (typeof this.props.onKeyDown === "function") {
+        if (hasHandler) {
             this.props.onKeyDown(event);
         }
 
@@ -284,7 +286,11 @@ var InputElement = React.createClass({
     },
     onKeyPress: function(event) {
         var key = event.key;
+        var hasHandler = typeof this.props.onKeyPress === "function";
         if (key === "Enter" || event.ctrlKey || event.metaKey) {
+            if (hasHandler) {
+                this.props.onKeyPress(event);
+            }
             return;
         }
 

@@ -1,7 +1,7 @@
 {
   "name": "react-input-mask",
   "description": "Masked input component for React",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "homepage": "https://github.com/sanniassin/react-input-mask",
   "license": "MIT",
   "author": "Nikita Lobachev <sanniassin@yandex.ru>",
@@ -18,7 +18,8 @@
   },
   "main": "build/InputElement.js",
   "scripts": {
-    "build": "babel InputElement.js -d build"
+    "build": "babel InputElement.js -d build",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",

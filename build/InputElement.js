@@ -1,8 +1,8 @@
-// https://github.com/sanniassin/react-input-mask
-
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+// https://github.com/sanniassin/react-input-mask
 
 var React = require("react");
 
@@ -11,7 +11,7 @@ var InputElement = React.createClass({
 
     charsRules: {
         "9": "[0-9]",
-        "a": "[A-Za-z]",
+        a: "[A-Za-z]",
         "*": "[A-Za-z0-9]"
     },
     defaultMaskChar: "_",
@@ -232,7 +232,9 @@ var InputElement = React.createClass({
         this.setState(state);
     },
     onKeyDown: function onKeyDown(event) {
+        var hasHandler = typeof this.props.onKeyPress === "function";
         if (event.ctrlKey || event.metaKey) {
+            this.props.onKeyDown(event);
             return;
         }
 
@@ -264,7 +266,7 @@ var InputElement = React.createClass({
                 break;
         }
 
-        if (typeof this.props.onKeyDown === "function") {
+        if (hasHandler) {
             this.props.onKeyDown(event);
         }
 
@@ -285,7 +287,11 @@ var InputElement = React.createClass({
     },
     onKeyPress: function onKeyPress(event) {
         var key = event.key;
+        var hasHandler = typeof this.props.onKeyPress === "function";
         if (key === "Enter" || event.ctrlKey || event.metaKey) {
+            if (hasHandler) {
+                this.props.onKeyPress(event);
+            }
             return;
         }
 
