@@ -178,6 +178,9 @@ var InputElement = React.createClass({
             setTimeout(setPos, 0);
         }
     },
+    isFocused: function() {
+        return document.activeElement === this.getDOMNode();
+    },
     parseMask: function(mask) {
         if (typeof mask !== "string") {
             return {
@@ -207,14 +210,24 @@ var InputElement = React.createClass({
             permanents: permanents
         };
     },
+    getStringValue: function(value) {
+        return !value && value !== 0 ? "" : value + "";
+    },
     getInitialState: function() {
         var mask = this.parseMask(this.props.mask);
         return {
             mask: mask.mask,
             permanents: mask.permanents,
-            value: this.props.value,
+            value: this.getStringValue(this.props.value),
             maskChar: typeof this.props.maskChar === "string" ? this.props.maskChar : this.defaultMaskChar
         };
+    },
+    componentWillMount: function() {
+        if (this.state.mask && this.state.value) {
+            this.setState({
+                value: this.formatValue(this.state.value)
+            });
+        }
     },
     componentWillReceiveProps: function(nextProps) {
         var mask = this.parseMask(nextProps.mask);
@@ -223,10 +236,17 @@ var InputElement = React.createClass({
             permanents: mask.permanents,
             maskChar: typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar
         };
-        if (nextProps.value !== this.state.value) {
-            state.value = nextProps.value;
-        }
-        this.setState(state);
+        this.setState(state, () => {
+            var newValue = this.getStringValue(nextProps.value);
+            if (this.state.mask && (newValue || this.isFocused())) {
+                newValue = this.formatValue(newValue);
+            }
+            if (newValue !== this.state.value) {
+                this.setState({
+                    value: newValue
+                });
+            }
+        });
     },
     onKeyDown: function(event) {
         var hasHandler = typeof this.props.onKeyDown === "function";
