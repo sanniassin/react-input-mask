@@ -52,16 +52,15 @@ var InputElement = React.createClass({
             !this.isPermanentChar(i) && this.isAllowedChar(char, i)
         );
     },
-    formatValue: function(value) {
-        var maskChar = this.state.maskChar;
-        var mask = this.state.mask;
+    formatValue: function(value, newState) {
+        var { maskChar, mask } = newState || this.state;
         return value.split("")
                     .concat(Array.apply(null, Array(mask.length - value.length)))
                     .map((char, pos) => {
-                        if (this.isAllowedChar(char, pos)) {
+                        if (this.isAllowedChar(char, pos, newState)) {
                             return char;
                         }
-                        else if (this.isPermanentChar(pos)) {
+                        else if (this.isPermanentChar(pos, newState)) {
                             return mask[pos];
                         }
                         return maskChar;
@@ -87,17 +86,18 @@ var InputElement = React.createClass({
     replaceSubstr: function(value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
-    isAllowedChar: function(char, pos) {
-        var mask = this.state.mask;
-        if (this.isPermanentChar(pos)) {
+    isAllowedChar: function(char, pos, newState) {
+        var mask = newState ? newState.mask : this.state.mask;
+        if (this.isPermanentChar(pos, newState)) {
             return mask[pos] === char;
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
         return (new RegExp(charRule)).test(char);
     },
-    isPermanentChar: function(pos) {
-        return this.state.permanents.indexOf(pos) !== -1;
+    isPermanentChar: function(pos, newState) {
+        var permanents = newState ? newState.permanents : this.state.permanents;
+        return permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function() {
         var value = this.state.value;
@@ -231,22 +231,20 @@ var InputElement = React.createClass({
     },
     componentWillReceiveProps: function(nextProps) {
         var mask = this.parseMask(nextProps.mask);
+        var maskChar = typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar;
         var state = {
             mask: mask.mask,
             permanents: mask.permanents,
-            maskChar: typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar
+            maskChar: maskChar
         };
-        this.setState(state, () => {
-            var newValue = this.getStringValue(nextProps.value);
-            if (this.state.mask && (newValue || this.isFocused())) {
-                newValue = this.formatValue(newValue);
-            }
-            if (newValue !== this.state.value) {
-                this.setState({
-                    value: newValue
-                });
-            }
-        });
+        var newValue = this.getStringValue(nextProps.value);
+        if (mask.mask && (newValue || this.isFocused())) {
+            newValue = this.formatValue(newValue, state);
+        }
+        if (this.state.value !== newValue) {
+            state.value = newValue;
+        }
+        this.setState(state);
     },
     onKeyDown: function(event) {
         var hasHandler = typeof this.props.onKeyDown === "function";
