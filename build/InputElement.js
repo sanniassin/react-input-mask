@@ -60,15 +60,18 @@ var InputElement = React.createClass({
             return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
         });
     },
-    formatValue: function formatValue(value) {
+    formatValue: function formatValue(value, newState) {
         var _this2 = this;
 
-        var maskChar = this.state.maskChar;
-        var mask = this.state.mask;
+        var _ref = newState || this.state;
+
+        var maskChar = _ref.maskChar;
+        var mask = _ref.mask;
+
         return value.split("").concat(Array.apply(null, Array(mask.length - value.length))).map(function (char, pos) {
-            if (_this2.isAllowedChar(char, pos)) {
+            if (_this2.isAllowedChar(char, pos, newState)) {
                 return char;
-            } else if (_this2.isPermanentChar(pos)) {
+            } else if (_this2.isPermanentChar(pos, newState)) {
                 return mask[pos];
             }
             return maskChar;
@@ -93,17 +96,18 @@ var InputElement = React.createClass({
     replaceSubstr: function replaceSubstr(value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
-    isAllowedChar: function isAllowedChar(char, pos) {
-        var mask = this.state.mask;
-        if (this.isPermanentChar(pos)) {
+    isAllowedChar: function isAllowedChar(char, pos, newState) {
+        var mask = newState ? newState.mask : this.state.mask;
+        if (this.isPermanentChar(pos, newState)) {
             return mask[pos] === char;
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
-        return new RegExp(charRule).test(char);
+        return new RegExp(charRule).test(char || "");
     },
-    isPermanentChar: function isPermanentChar(pos) {
-        return this.state.permanents.indexOf(pos) !== -1;
+    isPermanentChar: function isPermanentChar(pos, newState) {
+        var permanents = newState ? newState.permanents : this.state.permanents;
+        return permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function setCaretToEnd() {
         var value = this.state.value;
@@ -233,25 +237,21 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
-        var _this5 = this;
-
         var mask = this.parseMask(nextProps.mask);
+        var maskChar = typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar;
         var state = {
             mask: mask.mask,
             permanents: mask.permanents,
-            maskChar: typeof this.props.maskChar === "string" ? nextProps.maskChar : this.defaultMaskChar
+            maskChar: maskChar
         };
-        this.setState(state, function () {
-            var newValue = _this5.getStringValue(nextProps.value);
-            if (_this5.state.mask && (newValue || _this5.isFocused())) {
-                newValue = _this5.formatValue(newValue);
-            }
-            if (newValue !== _this5.state.value) {
-                _this5.setState({
-                    value: newValue
-                });
-            }
-        });
+        var newValue = this.getStringValue(nextProps.value);
+        if (mask.mask && (newValue || this.isFocused())) {
+            newValue = this.formatValue(newValue, state);
+        }
+        if (this.state.value !== newValue) {
+            state.value = newValue;
+        }
+        this.setState(state);
     },
     onKeyDown: function onKeyDown(event) {
         var hasHandler = typeof this.props.onKeyDown === "function";

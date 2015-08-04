@@ -93,7 +93,7 @@ var InputElement = React.createClass({
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
-        return (new RegExp(charRule)).test(char);
+        return (new RegExp(charRule)).test(char || "");
     },
     isPermanentChar: function(pos, newState) {
         var permanents = newState ? newState.permanents : this.state.permanents;
