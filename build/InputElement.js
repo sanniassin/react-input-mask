@@ -24,10 +24,11 @@ var InputElement = React.createClass({
         return prefix;
     },
     getFilledLength: function getFilledLength() {
+        var i;
         var value = this.state.value;
         var maskChar = this.state.maskChar;
 
-        for (var i = value.length - 1; i >= 0; --i) {
+        for (i = value.length - 1; i >= 0; --i) {
             var char = value[i];
             if (!this.isPermanentChar(i) && this.isAllowedChar(char, i)) {
                 break;
@@ -110,17 +111,10 @@ var InputElement = React.createClass({
         return permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function setCaretToEnd() {
-        var value = this.state.value;
-        var maskChar = this.state.maskChar;
-        var prefixLen = this.getPrefix().length;
-        for (var i = value.length - 1; i >= 0; --i) {
-            if (!this.isPermanentChar(i) && value[i] !== maskChar || i < prefixLen) {
-                this.setCaretPos(i + 1);
-                return;
-            }
-        }
-        if (value.length && value[0] === maskChar) {
-            this.setCaretPos(0);
+        var filledLen = this.getFilledLength();
+        var pos = this.getRightEditablePos(filledLen);
+        if (pos !== null) {
+            this.setCaretPos(pos);
         }
     },
     getSelection: function getSelection() {
@@ -439,13 +433,17 @@ var InputElement = React.createClass({
         event.preventDefault();
     },
     render: function render() {
-        var handlersContainer = this.state.mask ? this : this.props;
-        var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
-        var handlers = {};
-        handlersKeys.forEach(function (key) {
-            handlers[key] = handlersContainer[key];
-        });
-        return React.createElement("input", _extends({}, this.props, handlers, { value: this.state.value }));
+        var _this5 = this;
+
+        var ourProps = {};
+        if (this.state.mask) {
+            var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
+            handlersKeys.forEach(function (key) {
+                ourProps[key] = _this5[key];
+            });
+            ourProps.value = this.state.value;
+        }
+        return React.createElement("input", _extends({}, this.props, ourProps));
     }
 });
 
