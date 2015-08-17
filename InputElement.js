@@ -431,13 +431,15 @@ var InputElement = React.createClass({
         event.preventDefault();
     },
     render: function() {
-        var handlersContainer = this.state.mask ? this : this.props;
-        var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
-        var handlers = {};
-        handlersKeys.forEach((key) => {
-            handlers[key] = handlersContainer[key];
-        });
-        return <input {...this.props} {...handlers} value={this.state.value}/>;
+        var ourProps = {};
+        if (this.state.mask) {
+            var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
+            handlersKeys.forEach((key) => {
+                ourProps[key] = this[key];
+            });
+            ourProps.value = this.state.value;
+        }
+        return <input {...this.props} {...ourProps}/>;
     }
 });
 
