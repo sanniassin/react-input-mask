@@ -18,10 +18,11 @@ var InputElement = React.createClass({
         return prefix;
     },
     getFilledLength: function() {
+        var i;
         var value = this.state.value;
         var maskChar = this.state.maskChar;
 
-        for (var i = value.length - 1; i >= 0; --i) {
+        for (i = value.length - 1; i >= 0; --i) {
             var char = value[i];
             if (!this.isPermanentChar(i) && this.isAllowedChar(char, i)) {
                 break;
@@ -100,17 +101,10 @@ var InputElement = React.createClass({
         return permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function() {
-        var value = this.state.value;
-        var maskChar = this.state.maskChar;
-        var prefixLen = this.getPrefix().length;
-        for (var i = value.length - 1; i >= 0; --i) {
-            if (!this.isPermanentChar(i) && value[i] !== maskChar || i < prefixLen) {
-                this.setCaretPos(i + 1);
-                return;
-            }
-        }
-        if (value.length && value[0] === maskChar) {
-            this.setCaretPos(0);
+        var filledLen = this.getFilledLength();
+        var pos = this.getRightEditablePos(filledLen);
+        if (pos !== null) {
+            this.setCaretPos(pos);
         }
     },
     getSelection: function() {
