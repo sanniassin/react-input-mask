@@ -239,7 +239,7 @@ var InputElement = React.createClass({
             maskChar: maskChar
         };
 
-        var newValue = 'value' in nextProps
+        var newValue = nextProps.value !== undefined
             ? this.getStringValue(nextProps.value)
             : this.state.value;
 
