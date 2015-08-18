@@ -1,4 +1,5 @@
 @import url(https://fonts.googleapis.com/css?family=Lato:300italic,700italic,300,700);
+@import url(http://fonts.googleapis.com/css?family=Inconsolata);
 
 body {
   padding:50px;
@@ -25,7 +26,11 @@ h1 {
 }
 
 h2 {
+  margin-top: 40px;
   color:#393939;
+}
+h2:first-child {
+  margin-top: 0;
 }
 
 h3, h4, h5, h6 {
@@ -69,6 +74,11 @@ pre {
   border-radius:5px;
   border:1px solid #e5e5e5;
   overflow-x: auto;
+  margin: 30px 0 10px;
+}
+
+h2 + pre {
+  margin-top: 0px;
 }
 
 table {
@@ -181,6 +191,20 @@ footer {
   float:left;
   position:fixed;
   bottom:50px;
+}
+
+input {
+  width: 100%;
+  box-shadow: none;
+  -webkit-box-shadow: none;
+  outline: none;
+  height: 36px;
+  font-size: 16px;
+  padding: 0 10px;
+  border: 1px solid #CCCCCC;
+  box-sizing: border-box;
+  border-radius: 5px;
+  font-family: 'Inconsolata', serif;
 }
 
 @media print, screen and (max-width: 960px) {

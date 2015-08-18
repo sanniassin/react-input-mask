@@ -6,4 +6,42 @@ layout: master
 
 <h1>Demos</h1>
 
+<h2>Phones</h2>
+
+<pre><code>&lt;InputElement mask="+4\\9 99 999 99" maskChar=" "/&gt;</code></pre>
+<div id="phone1"></div>
+<script>
+    React.render(React.createElement(InputElement, {mask: "+4\\9 99 999 99", maskChar: " "}), document.getElementById("phone1"));
+</script>
+
+<pre><code>&lt;InputElement mask="+7 (999) 999-99-99"/&gt;</code></pre>
+<div id="phone2"></div>
+<script>
+    React.render(React.createElement(InputElement, {mask: "+7 (999) 999-99-99"}), document.getElementById("phone2"));
+</script>
+
+<h2>Dates</h2>
+
+<pre><code id="date1-code">&lt;InputElement mask="99-99-9999" defaultValue="01-01-2015"/&gt;</code></pre>
+<div id="date1"></div>
+<script>
+    var date = new Date();
+    var defaultValue = date.getDate() + "." + date.getMonth() + "." + date.getFullYear();
+    defaultValue = defaultValue.replace(/^(\d)\./, "0$1.").replace(/\.(\d)\./, ".0$1.");
+    var date1 = document.getElementById("date1");
+    var date1code = document.getElementById("date1-code");
+    date1code.innerHTML = date1code.innerHTML.replace("01.01.2015", defaultValue);
+    React.render(React.createElement(InputElement, {mask: "99-99-9999", defaultValue: defaultValue}), date1);
+</script>
+
+<pre><code id="date2-code">&lt;InputElement mask="99/99/9999" placeholder="Enter birthdate"/&gt;</code></pre>
+<div id="date2"></div>
+<script>
+    var date = new Date();
+    var defaultValue = date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear();
+    defaultValue = defaultValue.replace(/^(\d)\//, "0$1/").replace(/\/(\d)\//, "/0$1/");
+    var date2 = document.getElementById("date2");
+    React.render(React.createElement(InputElement, {mask: "99/99/9999", placeholder: "Enter birthdate"}), date2);
+</script>
+
 {% endraw %}
