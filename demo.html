@@ -26,11 +26,11 @@ layout: master
 <div id="date1"></div>
 <script>
     var date = new Date();
-    var defaultValue = date.getDate() + "." + date.getMonth() + "." + date.getFullYear();
-    defaultValue = defaultValue.replace(/^(\d)\./, "0$1.").replace(/\.(\d)\./, ".0$1.");
+    var defaultValue = date.getDate() + "-" + date.getMonth() + "-" + date.getFullYear();
+    defaultValue = defaultValue.replace(/^(\d)-/, "0$1-").replace(/-(\d)-/, "-0$1-");
     var date1 = document.getElementById("date1");
     var date1code = document.getElementById("date1-code");
-    date1code.innerHTML = date1code.innerHTML.replace("01.01.2015", defaultValue);
+    date1code.innerHTML = date1code.innerHTML.replace("01-01-2015", defaultValue);
     React.render(React.createElement(InputElement, {mask: "99-99-9999", defaultValue: defaultValue}), date1);
 </script>
 
