@@ -3,7 +3,7 @@
 Yet another React component for input masking with attention to small usability details with cursor position, copy-paste, etc.
 
 ## Demo
-http://codepen.io/anon/pen/zGQNEz
+http://sanniassin.github.io/react-input-mask/demo.html
 
 ## Properties
 ### `mask` : `string`
