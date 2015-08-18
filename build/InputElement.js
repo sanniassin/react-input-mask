@@ -216,8 +216,8 @@ var InputElement = React.createClass({
     },
     getInitialState: function getInitialState() {
         var mask = this.parseMask(this.props.mask);
-        var defaultValue = this.props.defaultValue !== null && this.props.defaultValue !== undefined ? this.props.defaultValue : null;
-        var value = this.props.value !== null && this.props.value !== undefined ? this.props.value : defaultValue;
+        var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
+        var value = this.props.value != null ? this.props.value : defaultValue;
 
         return {
             mask: mask.mask,
@@ -242,7 +242,7 @@ var InputElement = React.createClass({
             maskChar: maskChar
         };
 
-        var newValue = "value" in nextProps ? this.getStringValue(nextProps.value) : this.state.value;
+        var newValue = nextProps.value !== undefined ? this.getStringValue(nextProps.value) : this.state.value;
 
         if (mask.mask && (newValue || this.isFocused())) {
             newValue = this.formatValue(newValue, state);
