@@ -44,4 +44,48 @@ layout: master
     React.render(React.createElement(InputElement, {mask: "99/99/9999", placeholder: "Enter birthdate"}), date2);
 </script>
 
+<h2>Credit card <small>(autochange for Amex format if stars with 34 or 37)</small></h2>
+
+<pre><code id="card1-code">getInitialState: function() {
+    return {
+        value: "",
+        mask: "9999-9999-9999-9999"
+    };
+},
+onChange: function(event) {
+    var value = event.target.value;
+    var newState = {
+        nask: "9999-9999-9999-9999",
+        value: value
+    }
+    if (/^3[47]/.test(value)) {
+        newState.mask = "999-9999-99999-9999";
+    }
+    this.setState(newState);
+},
+render: function() {
+    return &lt;InputElement {...this.state} onChange={this.onChange}/&gt;;
+}</code></pre>
+<div id="card1"></div>
+<script>
+    var cardValue = "";
+    var cardMask = "9999-9999-9999-9999";
+    var onCardChange = function(event) {
+        var val = event.target.value;
+        if (/^3[47]/.test(val)) {
+            cardMask = "999-9999-99999-9999";
+        }
+        else {
+            cardMask = "9999-9999-9999-9999";
+        }
+        cardValue = val;
+
+        var cardElement = React.createElement(InputElement, {mask: cardMask, onChange: onCardChange, value: cardValue});
+        React.render(cardElement, card1);
+    }
+    var card1 = document.getElementById("card1");
+    var cardElement = React.createElement(InputElement, {mask: cardMask, onChange: onCardChange, value: cardValue});
+    React.render(cardElement, card1);
+</script>
+
 {% endraw %}
