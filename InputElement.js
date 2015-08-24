@@ -392,8 +392,8 @@ var InputElement = React.createClass({
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
                 if (!maskChar && value.length < mask.length) {
-                    var substr = key + value.slice(caretPos);
-                    value = this.insertRawSubstr(value, substr, caretPos);
+                    value = value.slice(0, editablePos) + key + value.slice(editablePos);
+                    value = this.insertRawSubstr("", value, 0);
                 }
                 else {
                     value = this.insertRawSubstr(value, key, caretPos);
