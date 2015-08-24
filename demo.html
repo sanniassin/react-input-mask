@@ -8,10 +8,10 @@ layout: master
 
 <h2>Phones</h2>
 
-<pre><code>&lt;InputElement mask="+4\\9 99 999 99" maskChar=" "/&gt;</code></pre>
+<pre><code>&lt;InputElement mask="+4\\9 99 999 99" maskChar={null}/&gt;</code></pre>
 <div id="phone1"></div>
 <script>
-    React.render(React.createElement(InputElement, {mask: "+4\\9 99 999 99", maskChar: " "}), document.getElementById("phone1"));
+    React.render(React.createElement(InputElement, {mask: "+4\\9 99 999 99", maskChar: null}), document.getElementById("phone1"));
 </script>
 
 <pre><code>&lt;InputElement mask="+7 (999) 999-99-99"/&gt;</code></pre>
