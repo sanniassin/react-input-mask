@@ -16,6 +16,13 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
+    // getDOMNode is deprecated but we need it to be compatible with React 0.12
+    findDOMNode: function findDOMNode() {
+        if (React.findDOMNode) {
+            return React.findDOMNode(this);
+        }
+        return this.getDOMNode();
+    },
     getPrefix: function getPrefix() {
         var prefix = "";
         var mask = this.state.mask;
@@ -165,7 +172,7 @@ var InputElement = React.createClass({
         }
     },
     getSelection: function getSelection() {
-        var input = this.getDOMNode();
+        var input = this.findDOMNode();
         var start = 0;
         var end = 0;
 
@@ -190,7 +197,7 @@ var InputElement = React.createClass({
         };
     },
     getCaretPos: function getCaretPos() {
-        var input = this.getDOMNode();
+        var input = this.findDOMNode();
         var pos = 0;
 
         if ("selectionStart" in input) {
@@ -220,7 +227,7 @@ var InputElement = React.createClass({
         };
 
         if (this.isMounted()) {
-            input = this.getDOMNode();
+            input = this.findDOMNode();
             setPos();
             setTimeout(setPos, 0);
         }
@@ -228,7 +235,7 @@ var InputElement = React.createClass({
         this.lastCaretPos = pos;
     },
     isFocused: function isFocused() {
-        return document.activeElement === this.getDOMNode();
+        return document.activeElement === this.findDOMNode();
     },
     parseMask: function parseMask(mask) {
         var _this4 = this;
