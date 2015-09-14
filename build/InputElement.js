@@ -16,12 +16,16 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
-    // getDOMNode is deprecated but we need it to be compatible with React 0.12
-    findDOMNode: function findDOMNode() {
-        if (React.findDOMNode) {
-            return React.findDOMNode(this);
+    // getDOMNode is deprecated but we need it to stay compatible with React 0.12
+    getInputDOMNode: function getInputDOMNode() {
+        var input = this.refs.input;
+
+        // React 0.14
+        if (input instanceof HTMLElement) {
+            return input;
         }
-        return this.getDOMNode();
+
+        return input.getDOMNode();
     },
     getPrefix: function getPrefix() {
         var prefix = "";
@@ -172,7 +176,7 @@ var InputElement = React.createClass({
         }
     },
     getSelection: function getSelection() {
-        var input = this.findDOMNode();
+        var input = this.getInputDOMNode();
         var start = 0;
         var end = 0;
 
@@ -197,7 +201,7 @@ var InputElement = React.createClass({
         };
     },
     getCaretPos: function getCaretPos() {
-        var input = this.findDOMNode();
+        var input = this.getInputDOMNode();
         var pos = 0;
 
         if ("selectionStart" in input) {
@@ -227,7 +231,7 @@ var InputElement = React.createClass({
         };
 
         if (this.isMounted()) {
-            input = this.findDOMNode();
+            input = this.getInputDOMNode();
             setPos();
             setTimeout(setPos, 0);
         }
@@ -235,7 +239,7 @@ var InputElement = React.createClass({
         this.lastCaretPos = pos;
     },
     isFocused: function isFocused() {
-        return document.activeElement === this.findDOMNode();
+        return document.activeElement === this.getInputDOMNode();
     },
     parseMask: function parseMask(mask) {
         var _this4 = this;
@@ -513,7 +517,7 @@ var InputElement = React.createClass({
             });
             ourProps.value = this.state.value;
         }
-        return React.createElement("input", _extends({}, this.props, ourProps));
+        return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps));
     }
 });
 
