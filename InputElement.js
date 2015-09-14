@@ -10,12 +10,17 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
+    isDOMElement: function(element) {
+        return typeof HTMLElement === "object"
+               ? element instanceof HTMLElement // DOM2
+               : element.nodeType === 1 && typeof element.nodeName === "string";
+    },
     // getDOMNode is deprecated but we need it to stay compatible with React 0.12
     getInputDOMNode: function() {
         var input = this.refs.input;
 
         // React 0.14
-        if (input instanceof HTMLElement) {
+        if (this.isDOMElement(input)) {
             return input;
         }
 
