@@ -210,8 +210,9 @@ var InputElement = React.createClass({
         }
         else {
             var range = document.selection.createRange();
+            var len = range.text.length;
             range.moveStart("character", -input.value.length);
-            pos = range.text.length;
+            pos = range.text.length - len;
         }
 
         return pos;
