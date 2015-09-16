@@ -81,6 +81,13 @@ var InputElement = React.createClass({
             return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
         });
     },
+    createFilledArray: function createFilledArray(length, val) {
+        var array = [];
+        for (var i = 0; i < length; i++) {
+            array[i] = val;
+        }
+        return array;
+    },
     formatValue: function formatValue(value, newState) {
         var _this2 = this;
 
@@ -97,7 +104,7 @@ var InputElement = React.createClass({
             }
             return value;
         }
-        return value.split("").concat(Array.apply(null, Array(mask.length - value.length))).map(function (char, pos) {
+        return value.split("").concat(this.createFilledArray(mask.length - value.length, null)).map(function (char, pos) {
             if (_this2.isAllowedChar(char, pos, newState)) {
                 return char;
             } else if (_this2.isPermanentChar(pos, newState)) {

@@ -74,6 +74,13 @@ var InputElement = React.createClass({
             !this.isPermanentChar(i) && this.isAllowedChar(char, i)
         );
     },
+    createFilledArray: function(length, val) {
+        var array = [];
+        for (var i = 0; i < length; i++) {
+            array[i] = val;
+        }
+        return array;
+    },
     formatValue: function(value, newState) {
         var { maskChar, mask } = newState || this.state;
         if (!maskChar) {
@@ -85,7 +92,7 @@ var InputElement = React.createClass({
             return value;
         }
         return value.split("")
-                    .concat(Array.apply(null, Array(mask.length - value.length)))
+                    .concat(this.createFilledArray(mask.length - value.length, null))
                     .map((char, pos) => {
                         if (this.isAllowedChar(char, pos, newState)) {
                             return char;
