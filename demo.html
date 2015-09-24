@@ -59,7 +59,7 @@ onChange: function(event) {
         value: value
     }
     if (/^3[47]/.test(value)) {
-        newState.mask = "999-9999-99999-9999";
+        newState.mask = "9999-999999-99999";
     }
     this.setState(newState);
 },
@@ -73,7 +73,7 @@ render: function() {
     var onCardChange = function(event) {
         var val = event.target.value;
         if (/^3[47]/.test(val)) {
-            cardMask = "999-9999-99999-9999";
+            cardMask = "9999-999999-99999";
         }
         else {
             cardMask = "9999-9999-9999-9999";
