@@ -31,10 +31,14 @@ var InputElement = React.createClass({
 
         return input.getDOMNode();
     },
-    getPrefix: function getPrefix() {
+    getPrefix: function getPrefix(newState) {
         var prefix = "";
-        var mask = this.state.mask;
-        for (var i = 0; i < mask.length && this.isPermanentChar(i); ++i) {
+
+        var _ref = newState || this.state;
+
+        var mask = _ref.mask;
+
+        for (var i = 0; i < mask.length && this.isPermanentChar(i, newState); ++i) {
             prefix += mask[i];
         }
         return prefix;
@@ -99,15 +103,15 @@ var InputElement = React.createClass({
     formatValue: function formatValue(value, newState) {
         var _this2 = this;
 
-        var _ref = newState || this.state;
+        var _ref2 = newState || this.state;
 
-        var maskChar = _ref.maskChar;
-        var mask = _ref.mask;
+        var maskChar = _ref2.maskChar;
+        var mask = _ref2.mask;
 
         if (!maskChar) {
-            var prefixLen = this.getPrefix().length;
-            value = this.insertRawSubstr("", value, 0);
-            while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
+            var prefixLen = this.getPrefix(newState).length;
+            value = this.insertRawSubstr("", value, 0, newState);
+            while (value.length > prefixLen && this.isPermanentChar(value.length - 1, newState)) {
                 value = value.slice(0, value.length - 1);
             }
             return value;
@@ -148,10 +152,10 @@ var InputElement = React.createClass({
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
     insertRawSubstr: function insertRawSubstr(value, substr, pos, newState) {
-        var _ref2 = newState || this.state;
+        var _ref3 = newState || this.state;
 
-        var mask = _ref2.mask;
-        var maskChar = _ref2.maskChar;
+        var mask = _ref3.mask;
+        var maskChar = _ref3.maskChar;
 
         var isFilled = this.isFilled(value);
         substr = substr.split("");
@@ -180,10 +184,10 @@ var InputElement = React.createClass({
         return value;
     },
     getRawSubstrLength: function getRawSubstrLength(value, substr, pos, newState) {
-        var _ref3 = newState || this.state;
+        var _ref4 = newState || this.state;
 
-        var mask = _ref3.mask;
-        var maskChar = _ref3.maskChar;
+        var mask = _ref4.mask;
+        var maskChar = _ref4.maskChar;
 
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length;) {
