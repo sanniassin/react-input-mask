@@ -75,12 +75,19 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    isEmpty: function isEmpty(value) {
+    isEmpty: function isEmpty() {
         var _this = this;
+
+        var value = arguments[0] === undefined ? this.state.value : arguments[0];
 
         return !value.split("").some(function (char, i) {
             return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
         });
+    },
+    isFilled: function isFilled() {
+        var value = arguments[0] === undefined ? this.state.value : arguments[0];
+
+        return this.getFilledLength(value) === this.state.mask.length;
     },
     createFilledArray: function createFilledArray(length, val) {
         var array = [];
@@ -146,13 +153,14 @@ var InputElement = React.createClass({
         var mask = _ref2.mask;
         var maskChar = _ref2.maskChar;
 
+        var isFilled = this.isFilled(value);
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i, newState) || mask[i] === substr[0]) {
                 var char = substr.shift();
                 if (this.isAllowedChar(char, i, newState)) {
                     if (i < value.length) {
-                        if (maskChar) {
+                        if (maskChar || isFilled) {
                             value = this.replaceSubstr(value, char, i);
                         } else {
                             value = this.formatValue(value.substr(0, i) + char + value.substr(i), newState);
@@ -442,12 +450,7 @@ var InputElement = React.createClass({
         } else {
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
-                if (!maskChar && value.length < mask.length) {
-                    value = value.slice(0, editablePos) + key + value.slice(editablePos);
-                    value = this.insertRawSubstr("", value, 0);
-                } else {
-                    value = this.insertRawSubstr(value, key, caretPos);
-                }
+                value = this.insertRawSubstr(value, key, caretPos);
                 caretPos = editablePos + 1;
             }
         }
