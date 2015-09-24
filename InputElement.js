@@ -68,10 +68,13 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    isEmpty: function(value) {
+    isEmpty: function(value = this.state.value) {
         return !value.split("").some((char, i) =>
             !this.isPermanentChar(i) && this.isAllowedChar(char, i)
         );
+    },
+    isFilled: function(value = this.state.value) {
+        return this.getFilledLength(value) === this.state.mask.length;
     },
     createFilledArray: function(length, val) {
         var array = [];
@@ -131,13 +134,14 @@ var InputElement = React.createClass({
     },
     insertRawSubstr: function(value, substr, pos, newState) {
         var { mask, maskChar } = newState || this.state;
+        var isFilled = this.isFilled(value);
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length; ) {
             if (!this.isPermanentChar(i, newState) || mask[i] === substr[0]) {
                 var char = substr.shift();
                 if (this.isAllowedChar(char, i, newState)) {
                     if (i < value.length) {
-                        if (maskChar) {
+                        if (maskChar || isFilled) {
                             value = this.replaceSubstr(value, char, i);
                         }
                         else {
@@ -435,13 +439,7 @@ var InputElement = React.createClass({
         else {
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
-                if (!maskChar && value.length < mask.length) {
-                    value = value.slice(0, editablePos) + key + value.slice(editablePos);
-                    value = this.insertRawSubstr("", value, 0);
-                }
-                else {
-                    value = this.insertRawSubstr(value, key, caretPos);
-                }
+                value = this.insertRawSubstr(value, key, caretPos);
                 caretPos = editablePos + 1;
             }
         }
