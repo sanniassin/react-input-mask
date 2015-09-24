@@ -38,8 +38,9 @@ var InputElement = React.createClass({
         return prefix;
     },
     getFilledLength: function getFilledLength() {
+        var value = arguments[0] === undefined ? this.state.value : arguments[0];
+
         var i;
-        var value = this.state.value;
         var maskChar = this.state.maskChar;
 
         if (!maskChar) {
@@ -72,12 +73,19 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    isEmpty: function isEmpty(value) {
+    isEmpty: function isEmpty() {
         var _this = this;
+
+        var value = arguments[0] === undefined ? this.state.value : arguments[0];
 
         return !value.split("").some(function (char, i) {
             return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
         });
+    },
+    isFilled: function isFilled() {
+        var value = arguments[0] === undefined ? this.state.value : arguments[0];
+
+        return this.getFilledLength(value) === this.state.mask.length;
     },
     createFilledArray: function createFilledArray(length, val) {
         var array = [];
@@ -143,13 +151,18 @@ var InputElement = React.createClass({
         var mask = _ref2.mask;
         var maskChar = _ref2.maskChar;
 
+        var isFilled = this.isFilled(value);
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i, newState) || mask[i] === substr[0]) {
                 var char = substr.shift();
                 if (this.isAllowedChar(char, i, newState)) {
                     if (i < value.length) {
-                        value = this.replaceSubstr(value, char, i);
+                        if (maskChar || isFilled) {
+                            value = this.replaceSubstr(value, char, i);
+                        } else {
+                            value = this.formatValue(value.substr(0, i) + char + value.substr(i), newState);
+                        }
                     } else if (!maskChar) {
                         value += char;
                     }
@@ -163,6 +176,25 @@ var InputElement = React.createClass({
             }
         }
         return value;
+    },
+    getRawSubstrLength: function getRawSubstrLength(value, substr, pos, newState) {
+        var _ref3 = newState || this.state;
+
+        var mask = _ref3.mask;
+        var maskChar = _ref3.maskChar;
+
+        substr = substr.split("");
+        for (var i = pos; i < mask.length && substr.length;) {
+            if (!this.isPermanentChar(i, newState) || mask[i] === substr[0]) {
+                var char = substr.shift();
+                if (this.isAllowedChar(char, i, newState)) {
+                    ++i;
+                }
+            } else {
+                ++i;
+            }
+        }
+        return i - pos;
     },
     isAllowedChar: function isAllowedChar(char, pos, newState) {
         var mask = newState ? newState.mask : this.state.mask;
@@ -416,12 +448,7 @@ var InputElement = React.createClass({
         } else {
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
-                if (!maskChar && value.length < mask.length) {
-                    value = value.slice(0, editablePos) + key + value.slice(editablePos);
-                    value = this.insertRawSubstr("", value, 0);
-                } else {
-                    value = this.insertRawSubstr(value, key, caretPos);
-                }
+                value = this.insertRawSubstr(value, key, caretPos);
                 caretPos = editablePos + 1;
             }
         }
@@ -502,7 +529,10 @@ var InputElement = React.createClass({
         }
         if (text) {
             var caretPos = this.getCaretPos();
+            var textLen = this.getRawSubstrLength(this.state.value, text, caretPos);
             var value = this.insertRawSubstr(this.state.value, text, caretPos);
+            caretPos += textLen;
+            caretPos = this.getRightEditablePos(caretPos) || caretPos;
             if (value !== this.state.value) {
                 event.target.value = value;
                 this.setState({
@@ -512,7 +542,7 @@ var InputElement = React.createClass({
                     this.props.onChange(event);
                 }
             }
-            this.setCaretPos(i);
+            this.setCaretPos(caretPos);
         }
         event.preventDefault();
     },
