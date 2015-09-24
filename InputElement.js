@@ -26,10 +26,10 @@ var InputElement = React.createClass({
 
         return input.getDOMNode();
     },
-    getPrefix: function() {
+    getPrefix: function(newState) {
         var prefix = "";
-        var mask = this.state.mask;
-        for (var i = 0; i < mask.length && this.isPermanentChar(i); ++i) {
+        var { mask } = newState || this.state;
+        for (var i = 0; i < mask.length && this.isPermanentChar(i, newState); ++i) {
             prefix += mask[i];
         }
         return prefix;
@@ -86,9 +86,9 @@ var InputElement = React.createClass({
     formatValue: function(value, newState) {
         var { maskChar, mask } = newState || this.state;
         if (!maskChar) {
-            var prefixLen = this.getPrefix().length;
-            value = this.insertRawSubstr("", value, 0);
-            while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
+            var prefixLen = this.getPrefix(newState).length;
+            value = this.insertRawSubstr("", value, 0, newState);
+            while (value.length > prefixLen && this.isPermanentChar(value.length - 1, newState)) {
                 value = value.slice(0, value.length - 1);
             }
             return value;
