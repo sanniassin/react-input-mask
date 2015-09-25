@@ -4,7 +4,6 @@ var _extends = Object.assign || function (target) { for (var i = 1; i < argument
 
 // https://github.com/sanniassin/react-input-mask
 
-
 var InputElement = React.createClass({
     displayName: "InputElement",
 
@@ -533,9 +532,14 @@ var InputElement = React.createClass({
             text = event.clipboardData.getData("text/plain");
         }
         if (text) {
-            var caretPos = this.getCaretPos();
-            var textLen = this.getRawSubstrLength(this.state.value, text, caretPos);
-            var value = this.insertRawSubstr(this.state.value, text, caretPos);
+            var value = this.state.value;
+            var selection = this.getSelection();
+            var caretPos = selection.start;
+            if (selection.length) {
+                value = this.clearRange(value, caretPos, selection.length);
+            }
+            var textLen = this.getRawSubstrLength(value, text, caretPos);
+            var value = this.insertRawSubstr(value, text, caretPos);
             caretPos += textLen;
             caretPos = this.getRightEditablePos(caretPos) || caretPos;
             if (value !== this.state.value) {
@@ -565,4 +569,3 @@ var InputElement = React.createClass({
         return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps));
     }
 });
-
