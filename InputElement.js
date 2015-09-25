@@ -520,9 +520,14 @@ var InputElement = React.createClass({
             text = event.clipboardData.getData("text/plain");
         }
         if (text) {
-            var caretPos = this.getCaretPos();
-            var textLen = this.getRawSubstrLength(this.state.value, text, caretPos);
-            var value = this.insertRawSubstr(this.state.value, text, caretPos);
+            var value = this.state.value;
+            var selection = this.getSelection();
+            var caretPos = selection.start;
+            if (selection.length) {
+                value = this.clearRange(value, caretPos, selection.length);
+            }
+            var textLen = this.getRawSubstrLength(value, text, caretPos);
+            var value = this.insertRawSubstr(value, text, caretPos);
             caretPos += textLen;
             caretPos = this.getRightEditablePos(caretPos) || caretPos;
             if (value !== this.state.value) {
