@@ -14,6 +14,13 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
+    isAndroidBrowser: function isAndroidBrowser() {
+        var windows = new RegExp("windows", "i");
+        var firefox = new RegExp("firefox", "i");
+        var android = new RegExp("android", "i");
+        var ua = navigator.userAgent;
+        return !windows.test(ua) && !firefox.test(ua) && android.test(ua);
+    },
     isDOMElement: function isDOMElement(element) {
         return typeof HTMLElement === "object" ? element instanceof HTMLElement // DOM2
         : element.nodeType === 1 && typeof element.nodeName === "string";
@@ -473,16 +480,30 @@ var InputElement = React.createClass({
         this.setCaretPos(caretPos);
     },
     onChange: function onChange(event) {
+        var pasteSelection = this.pasteSelection;
+        if (pasteSelection) {
+            this.pasteSelection = null;
+            this.pasteText(this.state.value, event.target.value, pasteSelection);
+            return;
+        }
+        var caretPos = this.getCaretPos();
         var maskLen = this.state.mask.length;
+        var maskChar = this.state.maskChar;
         var target = event.target;
         var value = target.value;
-        if (value.length > maskLen) {
+        var valueLen = value.length;
+        if (valueLen > maskLen) {
             value = value.substr(0, maskLen);
+        } else if (maskChar && valueLen < maskLen) {
+            var removedLen = maskLen - valueLen;
+            value = this.clearRange(this.state.value, caretPos, removedLen);
         }
         target.value = this.formatValue(value);
         this.setState({
             value: target.value
         });
+
+        this.setCaretPos(caretPos);
 
         if (typeof this.props.onChange === "function") {
             this.props.onChange(event);
@@ -524,6 +545,11 @@ var InputElement = React.createClass({
         }
     },
     onPaste: function onPaste(event) {
+        if (this.isAndroidBrowser()) {
+            this.pasteSelection = this.getSelection();
+            event.target.value = "";
+            return;
+        }
         var text;
         if (window.clipboardData && window.clipboardData.getData) {
             // IE
@@ -534,26 +560,29 @@ var InputElement = React.createClass({
         if (text) {
             var value = this.state.value;
             var selection = this.getSelection();
-            var caretPos = selection.start;
-            if (selection.length) {
-                value = this.clearRange(value, caretPos, selection.length);
-            }
-            var textLen = this.getRawSubstrLength(value, text, caretPos);
-            var value = this.insertRawSubstr(value, text, caretPos);
-            caretPos += textLen;
-            caretPos = this.getRightEditablePos(caretPos) || caretPos;
-            if (value !== this.state.value) {
-                event.target.value = value;
-                this.setState({
-                    value: value
-                });
-                if (typeof this.props.onChange === "function") {
-                    this.props.onChange(event);
-                }
-            }
-            this.setCaretPos(caretPos);
+            this.pasteText(value, text, selection);
         }
         event.preventDefault();
+    },
+    pasteText: function pasteText(value, text, selection) {
+        var caretPos = selection.start;
+        if (selection.length) {
+            value = this.clearRange(value, caretPos, selection.length);
+        }
+        var textLen = this.getRawSubstrLength(value, text, caretPos);
+        var value = this.insertRawSubstr(value, text, caretPos);
+        caretPos += textLen;
+        caretPos = this.getRightEditablePos(caretPos) || caretPos;
+        if (value !== this.getInputDOMNode().value) {
+            event.target.value = value;
+            this.setState({
+                value: value
+            });
+            if (typeof this.props.onChange === "function") {
+                this.props.onChange(event);
+            }
+        }
+        this.setCaretPos(caretPos);
     },
     render: function render() {
         var _this5 = this;
