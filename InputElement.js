@@ -364,6 +364,9 @@ var InputElement = React.createClass({
     },
     componentDidUpdate: function(prevProps, prevState) {
         var mask = this.state.mask;
+        if (!mask) {
+            return;
+        }
         var isMaskChanged = mask && mask !== prevState.mask;
         var pos = this.lastCaretPos;
         var filledLen = this.getFilledLength();
