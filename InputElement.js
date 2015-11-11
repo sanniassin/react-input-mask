@@ -332,7 +332,7 @@ var InputElement = React.createClass({
     componentWillMount: function() {
         if (this.state.mask && this.state.value) {
             this.setState({
-                value: this.formatValue(this.state.value)
+                value: this.insertRawSubstr(this.formatValue(""), this.state.value, 0)
             });
         }
     },
