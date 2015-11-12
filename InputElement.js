@@ -322,18 +322,21 @@ var InputElement = React.createClass({
             ? this.props.value
             : defaultValue;
 
-        return {
+        value = this.getStringValue(value);
+
+        var state = {
             mask: mask.mask,
             permanents: mask.permanents,
-            value: this.getStringValue(value),
             maskChar: "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar
         };
+        state.value = this.props.alwaysShowMask ? this.formatValue(value, state) : value;
+
+        return state;
     },
     componentWillMount: function() {
-        if (this.state.mask && this.state.value) {
-            this.setState({
-                value: this.formatValue(this.state.value)
-            });
+        var { mask, value } = this.state;
+        if (mask && value) {
+            this.setState({ value });
         }
     },
     componentWillReceiveProps: function(nextProps) {
@@ -354,7 +357,7 @@ var InputElement = React.createClass({
             var emptyValue = this.formatValue("", state);
             newValue = this.insertRawSubstr(emptyValue, newValue, 0, state);
         }
-        if (mask.mask && (newValue || this.isFocused())) {
+        if (mask.mask && (newValue || nextProps.alwaysShowMask || this.isFocused())) {
             newValue = this.formatValue(newValue, state);
         }
         if (this.state.value !== newValue) {
@@ -526,7 +529,7 @@ var InputElement = React.createClass({
         }
     },
     onBlur: function(event) {
-        if (this.isEmpty(this.state.value)) {
+        if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             event.target.value = "";
             this.setState({
                 value: ""

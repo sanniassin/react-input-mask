@@ -19,6 +19,10 @@ Any character can be escaped with backslash, which usually will appear as double
 
 Character to cover unfilled editable parts of mask. Default character is "_". If set to null, unfilled parts will be empty, like in ordinary input.
 
+### `alwaysShowMask` : `boolean`
+
+Show mask even in empty input without focus.
+
 ## Example
 ```js
 var PhoneInput = React.createClass({
