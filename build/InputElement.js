@@ -545,9 +545,10 @@ var InputElement = React.createClass({
     onBlur: function onBlur(event) {
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             event.target.value = "";
-            this.setState({
-                value: ""
-            });
+            if(!this.props.showEmptyMask)
+                this.setState({
+                    value: ""
+                });
             if (typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
@@ -606,7 +607,14 @@ var InputElement = React.createClass({
             handlersKeys.forEach(function (key) {
                 ourProps[key] = _this5[key];
             });
-            ourProps.value = this.state.value;
+            if(!this.props.showEmptyMask) {
+                ourProps.value = this.state.value;
+            }
+            else if(this.isEmpty(this.state.value)){
+                var prefix = this.getPrefix();
+                var value = this.formatValue(prefix);
+                ourProps.value = value;
+            }
         }
         return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps, {
             __source: {
