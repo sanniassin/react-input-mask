@@ -336,18 +336,24 @@ var InputElement = React.createClass({
         var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
         var value = this.props.value != null ? this.props.value : defaultValue;
 
-        return {
+        value = this.getStringValue(value);
+
+        var state = {
             mask: mask.mask,
             permanents: mask.permanents,
-            value: this.getStringValue(value),
             maskChar: "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar
         };
+        state.value = this.props.alwaysShowMask ? this.formatValue(value, state) : value;
+
+        return state;
     },
     componentWillMount: function componentWillMount() {
-        if (this.state.mask && this.state.value) {
-            this.setState({
-                value: this.formatValue(this.state.value)
-            });
+        var _state = this.state;
+        var mask = _state.mask;
+        var value = _state.value;
+
+        if (mask && value) {
+            this.setState({ value: value });
         }
     },
     componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
@@ -366,7 +372,7 @@ var InputElement = React.createClass({
             var emptyValue = this.formatValue("", state);
             newValue = this.insertRawSubstr(emptyValue, newValue, 0, state);
         }
-        if (mask.mask && (newValue || this.isFocused())) {
+        if (mask.mask && (newValue || nextProps.alwaysShowMask || this.isFocused())) {
             newValue = this.formatValue(newValue, state);
         }
         if (this.state.value !== newValue) {
@@ -452,10 +458,10 @@ var InputElement = React.createClass({
         }
 
         var caretPos = this.getCaretPos();
-        var _state = this.state;
-        var value = _state.value;
-        var mask = _state.mask;
-        var maskChar = _state.maskChar;
+        var _state2 = this.state;
+        var value = _state2.value;
+        var mask = _state2.mask;
+        var maskChar = _state2.maskChar;
 
         var maskLen = mask.length;
         var prefixLen = this.getPrefix().length;
@@ -537,7 +543,7 @@ var InputElement = React.createClass({
         }
     },
     onBlur: function onBlur(event) {
-        if (this.isEmpty(this.state.value)) {
+        if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             event.target.value = "";
             this.setState({
                 value: ""
@@ -605,7 +611,7 @@ var InputElement = React.createClass({
         return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps, {
             __source: {
                 fileName: "../../../InputElement.js",
-                lineNumber: 592
+                lineNumber: 595
             }
         }));
     }
