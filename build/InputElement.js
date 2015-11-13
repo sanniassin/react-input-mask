@@ -1,10 +1,8 @@
+// https://github.com/sanniassin/react-input-mask
+
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _typeof(obj) { return obj && typeof Symbol !== "undefined" && obj.constructor === Symbol ? "symbol" : typeof obj; }
-
-// https://github.com/sanniassin/react-input-mask
 
 var React = require("react");
 
@@ -18,19 +16,19 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
-    isAndroidBrowser: function isAndroidBrowser() {
+    isAndroidBrowser: function () {
         var windows = new RegExp("windows", "i");
         var firefox = new RegExp("firefox", "i");
         var android = new RegExp("android", "i");
         var ua = navigator.userAgent;
         return !windows.test(ua) && !firefox.test(ua) && android.test(ua);
     },
-    isDOMElement: function isDOMElement(element) {
-        return (typeof HTMLElement === "undefined" ? "undefined" : _typeof(HTMLElement)) === "object" ? element instanceof HTMLElement // DOM2
+    isDOMElement: function (element) {
+        return typeof HTMLElement === "object" ? element instanceof HTMLElement // DOM2
         : element.nodeType === 1 && typeof element.nodeName === "string";
     },
     // getDOMNode is deprecated but we need it to stay compatible with React 0.12
-    getInputDOMNode: function getInputDOMNode() {
+    getInputDOMNode: function () {
         var input = this.refs.input;
 
         // React 0.14
@@ -40,7 +38,7 @@ var InputElement = React.createClass({
 
         return input.getDOMNode();
     },
-    getPrefix: function getPrefix(newState) {
+    getPrefix: function (newState) {
         var prefix = "";
 
         var _ref = newState || this.state;
@@ -52,7 +50,7 @@ var InputElement = React.createClass({
         }
         return prefix;
     },
-    getFilledLength: function getFilledLength() {
+    getFilledLength: function () {
         var value = arguments.length <= 0 || arguments[0] === undefined ? this.state.value : arguments[0];
 
         var i;
@@ -71,7 +69,7 @@ var InputElement = React.createClass({
 
         return ++i || this.getPrefix().length;
     },
-    getLeftEditablePos: function getLeftEditablePos(pos) {
+    getLeftEditablePos: function (pos) {
         for (var i = pos; i >= 0; --i) {
             if (!this.isPermanentChar(i)) {
                 return i;
@@ -79,7 +77,7 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    getRightEditablePos: function getRightEditablePos(pos) {
+    getRightEditablePos: function (pos) {
         var mask = this.state.mask;
         for (var i = pos; i < mask.length; ++i) {
             if (!this.isPermanentChar(i)) {
@@ -88,7 +86,7 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    isEmpty: function isEmpty() {
+    isEmpty: function () {
         var _this = this;
 
         var value = arguments.length <= 0 || arguments[0] === undefined ? this.state.value : arguments[0];
@@ -97,19 +95,19 @@ var InputElement = React.createClass({
             return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
         });
     },
-    isFilled: function isFilled() {
+    isFilled: function () {
         var value = arguments.length <= 0 || arguments[0] === undefined ? this.state.value : arguments[0];
 
         return this.getFilledLength(value) === this.state.mask.length;
     },
-    createFilledArray: function createFilledArray(length, val) {
+    createFilledArray: function (length, val) {
         var array = [];
         for (var i = 0; i < length; i++) {
             array[i] = val;
         }
         return array;
     },
-    formatValue: function formatValue(value, newState) {
+    formatValue: function (value, newState) {
         var _this2 = this;
 
         var _ref2 = newState || this.state;
@@ -134,7 +132,7 @@ var InputElement = React.createClass({
             return maskChar;
         }).join("");
     },
-    clearRange: function clearRange(value, start, len) {
+    clearRange: function (value, start, len) {
         var _this3 = this;
 
         var end = start + len;
@@ -157,10 +155,10 @@ var InputElement = React.createClass({
             return maskChar;
         }).join("");
     },
-    replaceSubstr: function replaceSubstr(value, newSubstr, pos) {
+    replaceSubstr: function (value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
-    insertRawSubstr: function insertRawSubstr(value, substr, pos, newState) {
+    insertRawSubstr: function (value, substr, pos, newState) {
         var _ref3 = newState || this.state;
 
         var mask = _ref3.mask;
@@ -192,7 +190,7 @@ var InputElement = React.createClass({
         }
         return value;
     },
-    getRawSubstrLength: function getRawSubstrLength(value, substr, pos, newState) {
+    getRawSubstrLength: function (value, substr, pos, newState) {
         var _ref4 = newState || this.state;
 
         var mask = _ref4.mask;
@@ -211,7 +209,7 @@ var InputElement = React.createClass({
         }
         return i - pos;
     },
-    isAllowedChar: function isAllowedChar(char, pos, newState) {
+    isAllowedChar: function (char, pos, newState) {
         var mask = newState ? newState.mask : this.state.mask;
         if (this.isPermanentChar(pos, newState)) {
             return mask[pos] === char;
@@ -220,18 +218,18 @@ var InputElement = React.createClass({
         var charRule = this.charsRules[ruleChar];
         return new RegExp(charRule).test(char || "");
     },
-    isPermanentChar: function isPermanentChar(pos, newState) {
+    isPermanentChar: function (pos, newState) {
         var permanents = newState ? newState.permanents : this.state.permanents;
         return permanents.indexOf(pos) !== -1;
     },
-    setCaretToEnd: function setCaretToEnd() {
+    setCaretToEnd: function () {
         var filledLen = this.getFilledLength();
         var pos = this.getRightEditablePos(filledLen);
         if (pos !== null) {
             this.setCaretPos(pos);
         }
     },
-    getSelection: function getSelection() {
+    getSelection: function () {
         var input = this.getInputDOMNode();
         var start = 0;
         var end = 0;
@@ -256,7 +254,7 @@ var InputElement = React.createClass({
             length: end - start
         };
     },
-    getCaretPos: function getCaretPos() {
+    getCaretPos: function () {
         var input = this.getInputDOMNode();
         var pos = 0;
 
@@ -271,9 +269,9 @@ var InputElement = React.createClass({
 
         return pos;
     },
-    setCaretPos: function setCaretPos(pos) {
+    setCaretPos: function (pos) {
         var input;
-        var setPos = function setPos() {
+        var setPos = function () {
             if ("selectionStart" in input && "selectionEnd" in input) {
                 input.selectionStart = input.selectionEnd = pos;
             } else if ("setSelectionRange" in input) {
@@ -295,10 +293,10 @@ var InputElement = React.createClass({
 
         this.lastCaretPos = pos;
     },
-    isFocused: function isFocused() {
+    isFocused: function () {
         return document.activeElement === this.getInputDOMNode();
     },
-    parseMask: function parseMask(mask) {
+    parseMask: function (mask) {
         var _this4 = this;
 
         if (typeof mask !== "string") {
@@ -328,10 +326,10 @@ var InputElement = React.createClass({
             permanents: permanents
         };
     },
-    getStringValue: function getStringValue(value) {
+    getStringValue: function (value) {
         return !value && value !== 0 ? "" : value + "";
     },
-    getInitialState: function getInitialState() {
+    getInitialState: function () {
         var mask = this.parseMask(this.props.mask);
         var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
         var value = this.props.value != null ? this.props.value : defaultValue;
@@ -347,7 +345,7 @@ var InputElement = React.createClass({
 
         return state;
     },
-    componentWillMount: function componentWillMount() {
+    componentWillMount: function () {
         var _state = this.state;
         var mask = _state.mask;
         var value = _state.value;
@@ -356,7 +354,7 @@ var InputElement = React.createClass({
             this.setState({ value: value });
         }
     },
-    componentWillReceiveProps: function componentWillReceiveProps(nextProps) {
+    componentWillReceiveProps: function (nextProps) {
         var mask = this.parseMask(nextProps.mask);
         var maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
         var state = {
@@ -380,7 +378,7 @@ var InputElement = React.createClass({
         }
         this.setState(state);
     },
-    componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate: function (prevProps, prevState) {
         var mask = this.state.mask;
         if (!mask) {
             return;
@@ -392,7 +390,7 @@ var InputElement = React.createClass({
             this.setCaretPos(this.getRightEditablePos(filledLen));
         }
     },
-    onKeyDown: function onKeyDown(event) {
+    onKeyDown: function (event) {
         var hasHandler = typeof this.props.onKeyDown === "function";
         if (event.ctrlKey || event.metaKey) {
             if (hasHandler) {
@@ -447,7 +445,7 @@ var InputElement = React.createClass({
             this.setCaretPos(caretPos);
         }
     },
-    onKeyPress: function onKeyPress(event) {
+    onKeyPress: function (event) {
         var key = event.key;
         var hasHandler = typeof this.props.onKeyPress === "function";
         if (key === "Enter" || event.ctrlKey || event.metaKey) {
@@ -492,7 +490,7 @@ var InputElement = React.createClass({
         }
         this.setCaretPos(caretPos);
     },
-    onChange: function onChange(event) {
+    onChange: function (event) {
         var pasteSelection = this.pasteSelection;
         if (pasteSelection) {
             this.pasteSelection = null;
@@ -522,7 +520,7 @@ var InputElement = React.createClass({
             this.props.onChange(event);
         }
     },
-    onFocus: function onFocus(event) {
+    onFocus: function (event) {
         if (!this.state.value) {
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
@@ -542,7 +540,7 @@ var InputElement = React.createClass({
             this.props.onFocus(event);
         }
     },
-    onBlur: function onBlur(event) {
+    onBlur: function (event) {
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             event.target.value = "";
             this.setState({
@@ -557,7 +555,7 @@ var InputElement = React.createClass({
             this.props.onBlur(event);
         }
     },
-    onPaste: function onPaste(event) {
+    onPaste: function (event) {
         if (this.isAndroidBrowser()) {
             this.pasteSelection = this.getSelection();
             event.target.value = "";
@@ -577,7 +575,7 @@ var InputElement = React.createClass({
         }
         event.preventDefault();
     },
-    pasteText: function pasteText(value, text, selection) {
+    pasteText: function (value, text, selection) {
         var caretPos = selection.start;
         if (selection.length) {
             value = this.clearRange(value, caretPos, selection.length);
@@ -597,7 +595,7 @@ var InputElement = React.createClass({
         }
         this.setCaretPos(caretPos);
     },
-    render: function render() {
+    render: function () {
         var _this5 = this;
 
         var ourProps = {};
@@ -608,12 +606,7 @@ var InputElement = React.createClass({
             });
             ourProps.value = this.state.value;
         }
-        return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps, {
-            __source: {
-                fileName: "../../../InputElement.js",
-                lineNumber: 595
-            }
-        }));
+        return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps));
     }
 });
 
