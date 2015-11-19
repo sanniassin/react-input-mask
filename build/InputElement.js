@@ -92,9 +92,10 @@ var InputElement = React.createClass({
         var _this = this;
 
         var value = arguments.length <= 0 || arguments[0] === undefined ? this.state.value : arguments[0];
+        var state = arguments.length <= 1 || arguments[1] === undefined ? this.state : arguments[1];
 
         return !value.split("").some(function (char, i) {
-            return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
+            return !_this.isPermanentChar(i, state) && _this.isAllowedChar(char, i, state);
         });
     },
     isFilled: function () {
@@ -376,8 +377,12 @@ var InputElement = React.createClass({
         var newValue = nextProps.value !== undefined ? this.getStringValue(nextProps.value) : this.state.value;
 
         var isMaskChanged = mask.mask && mask.mask !== this.state.mask;
-        if (isMaskChanged || mask.mask && (newValue || nextProps.alwaysShowMask || this.isFocused())) {
+        var showEmpty = nextProps.alwaysShowMask || this.isFocused();
+        if (isMaskChanged || mask.mask && (newValue || showEmpty)) {
             newValue = this.formatValue(newValue, state);
+        }
+        if (mask.mask && this.isEmpty(newValue, state) && !showEmpty) {
+            newValue = "";
         }
         if (this.state.value !== newValue) {
             state.value = newValue;
