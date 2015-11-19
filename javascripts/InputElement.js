@@ -90,9 +90,10 @@ var InputElement = React.createClass({
         var _this = this;
 
         var value = arguments.length <= 0 || arguments[0] === undefined ? this.state.value : arguments[0];
+        var state = arguments.length <= 1 || arguments[1] === undefined ? this.state : arguments[1];
 
         return !value.split("").some(function (char, i) {
-            return !_this.isPermanentChar(i) && _this.isAllowedChar(char, i);
+            return !_this.isPermanentChar(i, state) && _this.isAllowedChar(char, i, state);
         });
     },
     isFilled: function () {
@@ -172,7 +173,7 @@ var InputElement = React.createClass({
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i, state) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, state)) {
+                if (this.isAllowedChar(char, i, state, true)) {
                     if (i < value.length) {
                         if (maskChar || isFilled) {
                             value = this.replaceSubstr(value, char, i);
@@ -213,14 +214,16 @@ var InputElement = React.createClass({
     },
     isAllowedChar: function (char, pos) {
         var state = arguments.length <= 2 || arguments[2] === undefined ? this.state : arguments[2];
+        var allowMaskChar = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
         var mask = state.mask;
+        var maskChar = state.maskChar;
 
         if (this.isPermanentChar(pos, state)) {
             return mask[pos] === char;
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
-        return new RegExp(charRule).test(char || "");
+        return new RegExp(charRule).test(char || "") || allowMaskChar && char === maskChar;
     },
     isPermanentChar: function (pos) {
         var state = arguments.length <= 1 || arguments[1] === undefined ? this.state : arguments[1];
@@ -374,8 +377,12 @@ var InputElement = React.createClass({
         var newValue = nextProps.value !== undefined ? this.getStringValue(nextProps.value) : this.state.value;
 
         var isMaskChanged = mask.mask && mask.mask !== this.state.mask;
-        if (isMaskChanged || mask.mask && (newValue || nextProps.alwaysShowMask || this.isFocused())) {
+        var showEmpty = nextProps.alwaysShowMask || this.isFocused();
+        if (isMaskChanged || mask.mask && (newValue || showEmpty)) {
             newValue = this.formatValue(newValue, state);
+        }
+        if (mask.mask && this.isEmpty(newValue, state) && !showEmpty) {
+            newValue = "";
         }
         if (this.state.value !== newValue) {
             state.value = newValue;
