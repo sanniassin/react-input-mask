@@ -175,7 +175,7 @@ var InputElement = React.createClass({
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i, state) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, state)) {
+                if (this.isAllowedChar(char, i, state, true)) {
                     if (i < value.length) {
                         if (maskChar || isFilled) {
                             value = this.replaceSubstr(value, char, i);
@@ -216,14 +216,16 @@ var InputElement = React.createClass({
     },
     isAllowedChar: function (char, pos) {
         var state = arguments.length <= 2 || arguments[2] === undefined ? this.state : arguments[2];
+        var allowMaskChar = arguments.length <= 3 || arguments[3] === undefined ? false : arguments[3];
         var mask = state.mask;
+        var maskChar = state.maskChar;
 
         if (this.isPermanentChar(pos, state)) {
             return mask[pos] === char;
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
-        return new RegExp(charRule).test(char || "");
+        return new RegExp(charRule).test(char || "") || allowMaskChar && char === maskChar;
     },
     isPermanentChar: function (pos) {
         var state = arguments.length <= 1 || arguments[1] === undefined ? this.state : arguments[1];
