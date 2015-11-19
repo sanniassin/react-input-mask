@@ -205,7 +205,7 @@ var InputElement = React.createClass({
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i, state) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, state)) {
+                if (this.isAllowedChar(char, i, state, true)) {
                     ++i;
                 }
             } else {
