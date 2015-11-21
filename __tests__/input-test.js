@@ -71,6 +71,42 @@ describe('Input', () => {
         expect('+7 (1__) ___ __ __').toEqual(inputNode.value);
     });
 
+    it('Focus cursor position', () => {
+        var input = TestUtils.renderIntoDocument(
+            <Input mask="+7 (999) 999 99 99" />
+        );
+        input = Object.assign(input, selectionMethods);
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        input.setCaretPos(2);
+        input.onFocus({
+            target: inputNode
+        });
+        expect(input.getCaretPos()).toEqual(4);
+
+        input.onBlur({
+            target: inputNode
+        });
+
+        input.setProps({ value: '+7 (___) ___ _1 __' });
+        input.setCaretPos(2);
+        input.onFocus({
+            target: inputNode
+        });
+        expect(input.getCaretPos()).toEqual(16);
+
+        input.onBlur({
+            target: inputNode
+        });
+
+        input.setProps({ value: '+7 (___) ___ _1 _1' });
+        input.setCaretPos(2);
+        input.onFocus({
+            target: inputNode
+        });
+        expect(input.getCaretPos()).toEqual(2);
+    });
+
     it('Characters input', () => {
         var input = TestUtils.renderIntoDocument(
             <Input mask="+7 (*a9) 999 99 99" />
