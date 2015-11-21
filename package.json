@@ -16,12 +16,26 @@
     "react": ">=0.12.0"
   },
   "devDependencies": {
-    "babel": "^5.8.34"
+    "babel": "^5.8.34",
+    "babel-jest": "^5.3.0",
+    "jest": "^0.1.40",
+    "react": "^0.14.3",
+    "react-addons-test-utils": "^0.14.3"
   },
   "main": "build/InputElement.js",
   "scripts": {
     "build": "babel InputElement.js -d build",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build && npm test",
+    "test": "jest"
+  },
+  "jest": {
+    "scriptPreprocessor": "./node_modules/babel-jest",
+    "unmockedModulePathPatterns": [
+      "./node_modules/react",
+      "./node_modules/react-dom",
+      "./node_modules/react-addons-test-utils",
+      "./node_modules/fbjs"
+    ]
   },
   "repository": {
     "type": "git",

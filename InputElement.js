@@ -489,7 +489,7 @@ var InputElement = React.createClass({
         var pasteSelection = this.pasteSelection;
         if (pasteSelection) {
             this.pasteSelection = null;
-            this.pasteText(this.state.value, event.target.value, pasteSelection);
+            this.pasteText(this.state.value, event.target.value, pasteSelection, event);
             return;
         }
         var caretPos = this.getCaretPos();
@@ -568,11 +568,11 @@ var InputElement = React.createClass({
         if (text) {
             var value = this.state.value;
             var selection = this.getSelection();
-            this.pasteText(value, text, selection);
+            this.pasteText(value, text, selection, event);
         }
         event.preventDefault();
     },
-    pasteText: function(value, text, selection) {
+    pasteText: function(value, text, selection, event) {
         var caretPos = selection.start;
         if (selection.length) {
             value = this.clearRange(value, caretPos, selection.length);
@@ -582,11 +582,13 @@ var InputElement = React.createClass({
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
         if (value !== this.getInputDOMNode().value) {
-            event.target.value = value;
+            if (event) {
+                event.target.value = value;
+            }
             this.setState({
                 value: value
             });
-            if (typeof this.props.onChange === "function") {
+            if (event && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         }
