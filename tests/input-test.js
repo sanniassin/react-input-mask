@@ -7,359 +7,340 @@ const Input = require('../InputElement');
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');;
 
+function createInput(component, cb) {
+    return (done) => {
+        ReactDOM.unmountComponentAtNode(container);
+        var input = ReactDOM.render(component, container);
+
+        // IE can fail if executed synchronously
+        setImmediate(() => {
+            cb(input);
+            done();
+        });
+    };
+};
+
 describe('Input', () => {
-    it('Init format', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Init format', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        expect('+7 (495) 315 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) 315 64 54');
+    }));
+
+    it('Format unacceptable string', createInput(
+        <Input mask="+7 (9a9) 999 99 99" defaultValue="749531b6454" />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        expect(inputNode.value).toEqual('+7 (4b6) 454 __ __');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Format unacceptable string', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (9a9) 999 99 99" defaultValue="749531b6454" />,
-            container
-        );
+    it('Focus/blur', createInput(
+        <Input mask="+7 (*a9) 999 99 99" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        expect('+7 (4b6) 454 __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('');
 
-        ReactDOM.unmountComponentAtNode(container);
-    });
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
-    it('Focus/blur', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (*a9) 999 99 99" />,
-            container
-        );
-        var inputNode = ReactDOM.findDOMNode(input);
-
-        expect('').toEqual(inputNode.value);
-
-        input.onFocus({
-            target: inputNode
-        });
-        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
-
-        input.onBlur({
-            target: inputNode
-        });
-        expect('').toEqual(inputNode.value);
+        inputNode.blur();
+        TestUtils.Simulate.blur(inputNode);
+        expect(inputNode.value).toEqual('');
 
         input.setProps({ value: '+7 (___) ___ __ __' });
-        expect('').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('');
 
         input.setProps({ value: '+7 (1__) ___ __ __' });
-        expect('+7 (1__) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (1__) ___ __ __');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('alwaysShowMask', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" alwaysShowMask />,
-            container
-        );
+    it('alwaysShowMask', createInput(
+        <Input mask="+7 (999) 999 99 99" alwaysShowMask />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
-        input.onFocus({
-            target: inputNode
-        });
-        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
-        input.onBlur({
-            target: inputNode
-        });
-        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+        inputNode.blur();
+        TestUtils.Simulate.blur(inputNode);
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
         input.setProps({ alwaysShowMask: false });
-        expect('').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('');
 
         input.setProps({ alwaysShowMask: true });
-        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Focus cursor position', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" />,
-            container
-        );
+    it('Focus cursor position', createInput(
+        <Input mask="+7 (999) 999 99 99" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        input.setCaretPos(2);
-        input.onFocus({
-            target: inputNode
-        });
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
         expect(input.getCaretPos()).toEqual(4);
 
-        input.onBlur({
-            target: inputNode
-        });
+        inputNode.blur();
+        TestUtils.Simulate.blur(inputNode);
 
         input.setProps({ value: '+7 (___) ___ _1 __' });
         input.setCaretPos(2);
-        input.onFocus({
-            target: inputNode
-        });
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
         expect(input.getCaretPos()).toEqual(16);
 
-        input.onBlur({
-            target: inputNode
-        });
+        inputNode.blur();
+        TestUtils.Simulate.blur(inputNode);
 
         input.setProps({ value: '+7 (___) ___ _1 _1' });
         input.setCaretPos(2);
-        input.onFocus({
-            target: inputNode
-        });
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
         expect(input.getCaretPos()).toEqual(2);
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Characters input', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (*a9) 999 99 99" />,
-            container
-        );
+    it('Characters input', createInput(
+        <Input mask="+7 (*a9) 999 99 99" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
-        input.onFocus({
-            target: inputNode
-        });
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
-        expect('+7 (E__) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (E__) ___ __ __');
 
         TestUtils.Simulate.keyPress(inputNode, { key: '6' });
-        expect('+7 (E__) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (E__) ___ __ __');
 
         TestUtils.Simulate.keyPress(inputNode, { key: 'x' });
-        expect('+7 (Ex_) ___ __ __').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (Ex_) ___ __ __');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Characters input without maskChar', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue={"+7 (111) 123 45 6"} maskChar={null} />,
-            container
-        );
+    it('Characters input without maskChar', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue={"+7 (111) 123 45 6"} maskChar={null} />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(4);
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
-        expect('+7 (111) 123 45 6').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (111) 123 45 6');
 
         TestUtils.Simulate.keyPress(inputNode, { key: '6' });
-        expect('+7 (611) 112 34 56').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (611) 112 34 56');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Backspace single character', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Backspace single character', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect('+7 (495) _15 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) _15 64 54');
         
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect('+7 (49_) _15 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (49_) _15 64 54');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Backspace single character without maskChar', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" maskChar={null} />,
-            container
-        );
+    it('Backspace single character without maskChar', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" maskChar={null} />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect('+7 (495) 156 45 4').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) 156 45 4');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Backspace single character cursor position', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Backspace single character cursor position', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(9).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(9);
 
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(6).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(6);
 
         input.setCaretPos(4);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(4).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(4);
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Backspace range', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Backspace range', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setSelection(1, 9);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect('+7 (___) _15 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (___) _15 64 54');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Backspace range cursor position', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Backspace range cursor position', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setSelection(1, 9);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(1).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(1);
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Delete single character', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Delete single character', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(0);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect('+7 (495) 315 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) 315 64 54');
 
         input.setCaretPos(7);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect('+7 (495) _15 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) _15 64 54');
 
         input.setCaretPos(11);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect('+7 (495) _1_ 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (495) _1_ 64 54');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Delete single character cursor position', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Delete single character cursor position', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(0);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(4).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(4);
 
         input.setCaretPos(7);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(9).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(9);
 
         input.setCaretPos(11);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(11).toEqual(input.getCaretPos());
+        expect(input.getCaretPos()).toEqual(11);
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Delete range', () => {
-        var input = ReactDOM.render(
-            <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />,
-            container
-        );
+    it('Delete range', createInput(
+        <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setSelection(1, 9);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect('+7 (___) _15 64 54').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('+7 (___) _15 64 54');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Mask change', () => {
-        var input = ReactDOM.render(
-            <Input mask="9999-9999-9999-9999" defaultValue="34781226917" />,
-            container
-        );
+    it('Mask change', createInput(
+        <Input mask="9999-9999-9999-9999" defaultValue="34781226917" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
         input.setProps({ mask: "9999-999999-99999" });
-        expect('3478-122691-7____').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('3478-122691-7____');
 
         input.setProps({ mask: "9-9-9-9" });
-        expect('3-4-7-8').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('3-4-7-8');
 
         input.setProps({ mask: null });
-        expect('34781226917').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('34781226917');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Paste string', () => {
-        var input = ReactDOM.render(
-            <Input mask="9999-9999-9999-9999" defaultValue="____-____-____-6543"/>,
-            container
-        );
+    it('Paste string', createInput(
+        <Input mask="9999-9999-9999-9999" defaultValue="____-____-____-6543" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setSelection(3, 15);
         input.pasteText(inputNode.value, '34781226917', input.getSelection());
-        expect('___3-4781-2269-17_3').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('___3-4781-2269-17_3');
 
         input.setCaretPos(3);
         input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
-        expect('___3-__81-2_69-17_3').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('___3-__81-2_69-17_3');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 
-    it('Paste string without maskChar', () => {
-        var input = ReactDOM.render(
-            <Input mask="9999-9999-9999-9999" defaultValue="9999-9999-9999-9999" maskChar={null}/>,
-            container
-        );
+    it('Paste string without maskChar', createInput(
+        <Input mask="9999-9999-9999-9999" defaultValue="9999-9999-9999-9999" maskChar={null} />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
 
         input.setSelection(0, 19);
         input.pasteText(inputNode.value, '34781226917', input.getSelection());
-        expect('3478-1226-917').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('3478-1226-917');
 
         input.setCaretPos(1);
         input.pasteText(inputNode.value, '12345', input.getSelection());
-        expect('3123-4547-8122-6917').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('3123-4547-8122-6917');
 
         input.setCaretPos(1);
         input.pasteText(inputNode.value, '4321', input.getSelection());
-        expect('3432-1547-8122-6917').toEqual(inputNode.value);
+        expect(inputNode.value).toEqual('3432-1547-8122-6917');
 
         ReactDOM.unmountComponentAtNode(container);
-    });
+    }));
 });

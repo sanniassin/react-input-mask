@@ -1,8 +1,109 @@
-// Karma configuration
-// Generated on Tue Jun 02 2015 21:59:27 GMT-0400 (EDT)
+var canUseBS = false;
+
+try {
+    var bsCredentials = require(__dirname + '/browserStack.json');
+    canUseBS = true;
+} catch(e) {
+    console.warn("Can't load credentials from browserStack.json, fallback to PhantomJS");
+}
 
 module.exports = function (config) {
   config.set({
+    // global config of your BrowserStack account
+    browserStack: canUseBS && bsCredentials,
+
+    // define browsers
+    customLaunchers: {
+      bs_ie11_win7: {
+        base: 'BrowserStack',
+        browser: 'ie',
+        browser_version: '11',
+        os: 'WINDOWS',
+        os_version: '7'
+      },
+      bs_ie9_win7: {
+        base: 'BrowserStack',
+        browser: 'ie',
+        browser_version: '9',
+        os: 'WINDOWS',
+        os_version: '7'
+      },
+      bs_ie8_win7: {
+        base: 'BrowserStack',
+        browser: 'ie',
+        browser_version: '8',
+        os: 'WINDOWS',
+        os_version: '7'
+      },
+      bs_edge_win10: {
+        base: 'BrowserStack',
+        browser: 'edge',
+        browser_version: '12',
+        os: 'WINDOWS',
+        os_version: '10'
+      },
+      bs_chrome_win10: {
+        base: 'BrowserStack',
+        browser: 'chrome',
+        browser_version: '46',
+        os: 'WINDOWS',
+        os_version: '10'
+      },
+      bs_chrome_winxp: {
+        base: 'BrowserStack',
+        browser: 'chrome',
+        browser_version: '46',
+        os: 'WINDOWS',
+        os_version: 'XP'
+      },
+      bs_firefox_win10: {
+        base: 'BrowserStack',
+        browser: 'firefox',
+        browser_version: '42',
+        os: 'WINDOWS',
+        os_version: '10'
+      },
+      bs_safari_elcap: {
+        base: 'BrowserStack',
+        browser: 'safari',
+        os : 'OS X',
+        os_version : 'El Capitan'
+      },
+      bs_safari_mavericks: {
+        base: 'BrowserStack',
+        browser: 'safari',
+        os : 'OS X',
+        os_version : 'Mavericks'
+      },
+      bs_ios8: {
+        base: 'BrowserStack',
+        device: 'iPhone 6',
+        os: 'ios',
+        os_version: '8.0'
+      },
+      bs_ios6: {
+        base: 'BrowserStack',
+        device: 'iPhone 5',
+        os: 'ios',
+        os_version: '6.0'
+      }
+    },
+
+    // start these browsers
+    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
+    browsers: canUseBS ? [
+      'bs_ie11_win7',
+      'bs_ie9_win7',
+      'bs_ie8_win7',
+      'bs_edge_win10',
+      'bs_chrome_win10',
+      'bs_chrome_winxp',
+      'bs_firefox_win10',
+      'bs_safari_elcap',
+      'bs_safari_mavericks',
+      'bs_ios8',
+      'bs_ios6'
+    ] : ['PhantomJS'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath : './',
@@ -14,7 +115,8 @@ module.exports = function (config) {
     // list of files / patterns to load in the browser
     files : [
       'node_modules/babel-core/browser-polyfill.min.js',
-      'node_modules/react/dist/react-with-addons.js',
+      'node_modules/console-polyfill/index.js',
+      'node_modules/react/dist/react-with-addons.min.js',
       'tests/*.js'
     ],
 
@@ -42,23 +144,17 @@ module.exports = function (config) {
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel : config.LOG_ERROR,
+    logLevel : config.LOG_INFO,
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch : false,
-
-    // start these browsers
-    // available browser launchers: https://npmjs.org/browse/keyword/karma-launcher
-    browsers : ['PhantomJS'],
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
     singleRun : true,
 
     browserify : {
-      transform : [
-        'babelify'
-      ]
+      transform: [['babelify', { 'blacklist': ['spec.functionName'] }]]
     }
   })
 }

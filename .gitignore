@@ -2,3 +2,5 @@
 npm-debug.log
 /_site
 Gemfile.lock
+
+browserStack.json
