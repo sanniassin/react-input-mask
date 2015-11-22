@@ -212,6 +212,12 @@ var InputElement = React.createClass({
             this.setCaretPos(pos);
         }
     },
+    // used in tests
+    setSelection: function(start, len) {
+        var input = this.getInputDOMNode();
+        input.selectionStart = start;
+        input.selectionEnd = start + len;
+    },
     getSelection: function() {
         var input = this.getInputDOMNode();
         var start = 0;
