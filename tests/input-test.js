@@ -71,6 +71,32 @@ describe('Input', () => {
         expect('+7 (1__) ___ __ __').toEqual(inputNode.value);
     });
 
+    it('alwaysShowMask', () => {
+        var input = TestUtils.renderIntoDocument(
+            <Input mask="+7 (999) 999 99 99" alwaysShowMask />
+        );
+        input = Object.assign(input, selectionMethods);
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+
+        input.onFocus({
+            target: inputNode
+        });
+        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+
+        input.onBlur({
+            target: inputNode
+        });
+        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+
+        input.setProps({ alwaysShowMask: false });
+        expect('').toEqual(inputNode.value);
+
+        input.setProps({ alwaysShowMask: true });
+        expect('+7 (___) ___ __ __').toEqual(inputNode.value);
+    });
+
     it('Focus cursor position', () => {
         var input = TestUtils.renderIntoDocument(
             <Input mask="+7 (999) 999 99 99" />
@@ -274,6 +300,12 @@ describe('Input', () => {
 
         input.setProps({ mask: "9999-999999-99999" });
         expect('3478-122691-7____').toEqual(inputNode.value);
+
+        input.setProps({ mask: "9-9-9-9" });
+        expect('3-4-7-8').toEqual(inputNode.value);
+
+        input.setProps({ mask: null });
+        expect('34781226917').toEqual(inputNode.value);
     });
 
     it('Paste string', () => {
@@ -286,6 +318,10 @@ describe('Input', () => {
         input.setSelection(3, 15);
         input.pasteText(inputNode.value, '34781226917', input.getSelection());
         expect('___3-4781-2269-17_3').toEqual(inputNode.value);
+
+        input.setCaretPos(3);
+        input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
+        expect('___3-__81-2_69-17_3').toEqual(inputNode.value);
     });
 
     it('Paste string without maskChar', () => {
