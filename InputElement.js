@@ -37,20 +37,17 @@ var InputElement = React.createClass({
 
         return input.getDOMNode();
     },
-    getPrefix: function(state = this.state) {
+    getPrefix: function() {
         var prefix = "";
-        var { mask } = state;
-        for (var i = 0; i < mask.length && this.isPermanentChar(i, state); ++i) {
+        var { mask } = this;
+        for (var i = 0; i < mask.length && this.isPermanentChar(i); ++i) {
             prefix += mask[i];
         }
         return prefix;
     },
-    getFilledLength: function(value, state = this.state) {
+    getFilledLength: function(value = this.state.value) {
         var i;
-        if (value == null) {
-            value = state.value;
-        }
-        var maskChar = state.maskChar;
+        var { maskChar } = this;
 
         if (!maskChar) {
             return value.length;
@@ -58,12 +55,12 @@ var InputElement = React.createClass({
 
         for (i = value.length - 1; i >= 0; --i) {
             var char = value[i];
-            if (!this.isPermanentChar(i, state) && this.isAllowedChar(char, i, state)) {
+            if (!this.isPermanentChar(i) && this.isAllowedChar(char, i)) {
                 break;
             }
         }
 
-        return ++i || this.getPrefix(state).length;
+        return ++i || this.getPrefix().length;
     },
     getLeftEditablePos: function(pos) {
         for (var i = pos; i >= 0; --i) {
@@ -74,7 +71,7 @@ var InputElement = React.createClass({
         return null;
     },
     getRightEditablePos: function(pos) {
-        var mask = this.state.mask;
+        var { mask } = this;
         for (var i = pos; i < mask.length; ++i) {
             if (!this.isPermanentChar(i)) {
                 return i;
@@ -82,13 +79,13 @@ var InputElement = React.createClass({
         }
         return null;
     },
-    isEmpty: function(value = this.state.value, state = this.state) {
+    isEmpty: function(value = this.state.value) {
         return !value.split("").some((char, i) =>
-            !this.isPermanentChar(i, state) && this.isAllowedChar(char, i, state)
+            !this.isPermanentChar(i) && this.isAllowedChar(char, i)
         );
     },
-    isFilled: function(value = this.state.value, state = this.state) {
-        return this.getFilledLength(value, state) === state.mask.length;
+    isFilled: function(value = this.state.value) {
+        return this.getFilledLength(value) === this.mask.length;
     },
     createFilledArray: function(length, val) {
         var array = [];
@@ -97,27 +94,27 @@ var InputElement = React.createClass({
         }
         return array;
     },
-    formatValue: function(value, state = this.state) {
-        var { maskChar, mask } = state;
+    formatValue: function(value) {
+        var { maskChar, mask } = this;
         if (!maskChar) {
-            var prefixLen = this.getPrefix(state).length;
-            value = this.insertRawSubstr("", value, 0, state);
-            while (value.length > prefixLen && this.isPermanentChar(value.length - 1, state)) {
+            var prefixLen = this.getPrefix().length;
+            value = this.insertRawSubstr("", value, 0);
+            while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
                 value = value.slice(0, value.length - 1);
             }
             return value;
         }
         if (value) {
-            var emptyValue = this.formatValue("", state);
-            return this.insertRawSubstr(emptyValue, value, 0, state);
+            var emptyValue = this.formatValue("");
+            return this.insertRawSubstr(emptyValue, value, 0);
         }
         return value.split("")
                     .concat(this.createFilledArray(mask.length - value.length, null))
                     .map((char, pos) => {
-                        if (this.isAllowedChar(char, pos, state)) {
+                        if (this.isAllowedChar(char, pos)) {
                             return char;
                         }
-                        else if (this.isPermanentChar(pos, state)) {
+                        else if (this.isPermanentChar(pos)) {
                             return mask[pos];
                         }
                         return maskChar;
@@ -126,7 +123,7 @@ var InputElement = React.createClass({
     },
     clearRange: function(value, start, len) {
         var end = start + len;
-        var maskChar = this.state.maskChar;
+        var { maskChar, mask } = this;
         if (!maskChar) {
             var prefixLen = this.getPrefix().length;
             value = value.split("")
@@ -134,7 +131,6 @@ var InputElement = React.createClass({
                          .join("");
             return this.formatValue(value);
         }
-        var mask = this.state.mask;
         return value.split("")
                     .map((char, i) => {
                         if (i < start || i >= end) {
@@ -150,20 +146,20 @@ var InputElement = React.createClass({
     replaceSubstr: function(value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
-    insertRawSubstr: function(value, substr, pos, state = this.state) {
-        var { mask, maskChar } = state;
-        var isFilled = this.isFilled(value, state);
+    insertRawSubstr: function(value, substr, pos) {
+        var { mask, maskChar } = this;
+        var isFilled = this.isFilled(value);
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length; ) {
-            if (!this.isPermanentChar(i, state) || mask[i] === substr[0]) {
+            if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, state, true)) {
+                if (this.isAllowedChar(char, i, true)) {
                     if (i < value.length) {
                         if (maskChar || isFilled) {
                             value = this.replaceSubstr(value, char, i);
                         }
                         else {
-                            value = this.formatValue(value.substr(0, i) + char + value.substr(i), state);
+                            value = this.formatValue(value.substr(0, i) + char + value.substr(i));
                         }
                     }
                     else if (!maskChar) {
@@ -181,13 +177,13 @@ var InputElement = React.createClass({
         }
         return value;
     },
-    getRawSubstrLength: function(value, substr, pos, state = this.state) {
-        var { mask, maskChar } = state;
+    getRawSubstrLength: function(value, substr, pos) {
+        var { mask, maskChar } = this;
         substr = substr.split("");
         for (var i = pos; i < mask.length && substr.length; ) {
-            if (!this.isPermanentChar(i, state) || mask[i] === substr[0]) {
+            if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, state, true)) {
+                if (this.isAllowedChar(char, i, true)) {
                     ++i;
                 }
             }
@@ -197,17 +193,17 @@ var InputElement = React.createClass({
         }
         return i - pos;
     },
-    isAllowedChar: function(char, pos, state = this.state, allowMaskChar = false) {
-        var { mask, maskChar } = state;
-        if (this.isPermanentChar(pos, state)) {
+    isAllowedChar: function(char, pos, allowMaskChar = false) {
+        var { mask, maskChar } = this;
+        if (this.isPermanentChar(pos)) {
             return mask[pos] === char;
         }
         var ruleChar = mask[pos];
         var charRule = this.charsRules[ruleChar];
         return (new RegExp(charRule)).test(char || "") || (allowMaskChar && char === maskChar);
     },
-    isPermanentChar: function(pos, state = this.state) {
-        return state.permanents.indexOf(pos) !== -1;
+    isPermanentChar: function(pos) {
+        return this.permanents.indexOf(pos) !== -1;
     },
     setCaretToEnd: function() {
         var filledLen = this.getFilledLength();
@@ -260,6 +256,14 @@ var InputElement = React.createClass({
     },
     setCaretPos: function(pos) {
         var input;
+        var raf = window.requestAnimationFrame
+                  ||
+                  window.webkitRequestAnimationFrame
+                  ||
+                  window.mozRequestAnimationFrame
+                  ||
+                  function(fn) { setTimeout(fn, 0); };
+
         var setPos = function() {
             if ("selectionStart" in input && "selectionEnd" in input) {
                 input.selectionStart = input.selectionEnd = pos;
@@ -279,7 +283,7 @@ var InputElement = React.createClass({
         if (this.isMounted()) {
             input = this.getInputDOMNode();
             setPos();
-            setTimeout(setPos, 0);
+            raf(setPos);
         }
 
         this.lastCaretPos = pos;
@@ -330,60 +334,52 @@ var InputElement = React.createClass({
 
         value = this.getStringValue(value);
 
-        var state = {
-            mask: mask.mask,
-            permanents: mask.permanents,
-            maskChar: "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar
-        };
-        if (this.props.alwaysShowMask || value) {
-            value = this.formatValue(value, state);
-        }
-        state.value = value;
+        this.mask = mask.mask;
+        this.permanents = mask.permanents,
+        this.maskChar = "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar;
 
-        return state;
+        if (this.props.alwaysShowMask || value) {
+            value = this.formatValue(value);
+        }
+
+        return { value };
     },
     componentWillMount: function() {
-        var { mask, value } = this.state;
+        var { mask } = this;
+        var { value } = this.state;
         if (mask && value) {
             this.setState({ value });
         }
     },
     componentWillReceiveProps: function(nextProps) {
         var mask = this.parseMask(nextProps.mask);
-        var maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
-        var state = {
-            mask: mask.mask,
-            permanents: mask.permanents,
-            maskChar: maskChar
-        };
+        var isMaskChanged = mask.mask && mask.mask !== this.mask;
+
+        this.mask = mask.mask;
+        this.permanents = mask.permanents,
+        this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
         var newValue = nextProps.value !== undefined
             ? this.getStringValue(nextProps.value)
             : this.state.value;
 
-        var isMaskChanged = mask.mask && mask.mask !== this.state.mask;
         var showEmpty = nextProps.alwaysShowMask || this.isFocused();
         if (isMaskChanged || (mask.mask && (newValue || showEmpty))) {
-            newValue = this.formatValue(newValue, state);
+            newValue = this.formatValue(newValue);
+
+            if (isMaskChanged) {
+                var pos = this.lastCaretPos;
+                var filledLen = this.getFilledLength(newValue);
+                if (filledLen < pos) {
+                    this.setCaretPos(this.getRightEditablePos(filledLen));
+                }
+            }
         }
-        if (mask.mask && this.isEmpty(newValue, state) && !showEmpty) {
+        if (mask.mask && this.isEmpty(newValue) && !showEmpty) {
             newValue = "";
         }
         if (this.state.value !== newValue) {
-            state.value = newValue;
-        }
-        this.setState(state);
-    },
-    componentDidUpdate: function(prevProps, prevState) {
-        var mask = this.state.mask;
-        if (!mask) {
-            return;
-        }
-        var isMaskChanged = mask && mask !== prevState.mask;
-        var pos = this.lastCaretPos;
-        var filledLen = this.getFilledLength();
-        if (isMaskChanged && filledLen < pos) {
-            this.setCaretPos(this.getRightEditablePos(filledLen));
+            this.setState({ value: newValue });
         }
     },
     onKeyDown: function(event) {
@@ -454,7 +450,8 @@ var InputElement = React.createClass({
         }
 
         var caretPos = this.getCaretPos();
-        var { value, mask, maskChar } = this.state;
+        var { value } = this.state;
+        var { mask, maskChar } = this;
         var maskLen = mask.length;
         var prefixLen = this.getPrefix().length;
 
@@ -493,8 +490,8 @@ var InputElement = React.createClass({
             return;
         }
         var caretPos = this.getCaretPos();
-        var maskLen = this.state.mask.length;
-        var maskChar = this.state.maskChar;
+        var maskLen = this.mask.length;
+        var maskChar = this.maskChar;
         var target = event.target;
         var value = target.value;
         var valueLen = value.length;
@@ -529,7 +526,7 @@ var InputElement = React.createClass({
                 this.props.onChange(event);
             }
         }
-        else if (this.getFilledLength() < this.state.mask.length) {
+        else if (this.getFilledLength() < this.mask.length) {
             this.setCaretToEnd();
         }
 
@@ -596,7 +593,7 @@ var InputElement = React.createClass({
     },
     render: function() {
         var ourProps = {};
-        if (this.state.mask) {
+        if (this.mask) {
             var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
             handlersKeys.forEach((key) => {
                 ourProps[key] = this[key];
