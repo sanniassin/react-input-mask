@@ -86,6 +86,12 @@ module.exports = function (config) {
         device: 'iPhone 5',
         os: 'ios',
         os_version: '6.0'
+      },
+      bs_android44: {
+        base: 'BrowserStack',
+        device: 'Samsung Galaxy S5',
+        os: 'android',
+        os_version: '4.4'
       }
     },
 
@@ -97,12 +103,13 @@ module.exports = function (config) {
       'bs_ie8_win7',
       'bs_edge_win10',
       'bs_chrome_win10',
-      'bs_chrome_winxp',
+      //'bs_chrome_winxp',
       'bs_firefox_win10',
       'bs_safari_elcap',
-      'bs_safari_mavericks',
+      //'bs_safari_mavericks',
       'bs_ios8',
-      'bs_ios6'
+      //'bs_ios6',
+      'bs_android44'
     ] : ['PhantomJS'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
