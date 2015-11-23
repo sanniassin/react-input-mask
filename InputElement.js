@@ -271,11 +271,9 @@ var InputElement = React.createClass({
                   function(fn) { setTimeout(fn, 0); };
 
         var setPos = this.setSelection.bind(this, pos);
-
-        if (this.isMounted()) {
-            setPos();
-            raf(setPos);
-        }
+        
+        setPos();
+        raf(setPos);
 
         this.lastCaretPos = pos;
     },
