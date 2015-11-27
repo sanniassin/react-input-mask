@@ -1,8 +1,8 @@
+// https://github.com/sanniassin/react-input-mask
+
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-// https://github.com/sanniassin/react-input-mask
 
 var InputElement = React.createClass({
     displayName: "InputElement",
@@ -28,6 +28,10 @@ var InputElement = React.createClass({
     // getDOMNode is deprecated but we need it to stay compatible with React 0.12
     getInputDOMNode: function () {
         var input = this.refs.input;
+
+        if (!input) {
+            return null;
+        }
 
         // React 0.14
         if (this.isDOMElement(input)) {
@@ -226,6 +230,26 @@ var InputElement = React.createClass({
             this.setCaretPos(pos);
         }
     },
+    setSelection: function (start) {
+        var len = arguments.length <= 1 || arguments[1] === undefined ? 0 : arguments[1];
+
+        var input = this.getInputDOMNode();
+        if (!input) {
+            return;
+        }
+
+        var end = start + len;
+        if ("selectionStart" in input && "selectionEnd" in input) {
+            input.selectionStart = start;
+            input.selectionEnd = end;
+        } else {
+            var range = input.createTextRange();
+            range.collapse(true);
+            range.moveStart("character", start);
+            range.moveEnd("character", end - start);
+            range.select();
+        }
+    },
     getSelection: function () {
         var input = this.getInputDOMNode();
         var start = 0;
@@ -236,13 +260,10 @@ var InputElement = React.createClass({
             end = input.selectionEnd;
         } else {
             var range = document.selection.createRange();
-            var len = input.value.length;
-
-            var inputRange = input.createTextRange();
-            inputRange.moveToBookmark(range.getBookmark());
-
-            start = -inputRange.moveStart("character", -len);
-            end = -inputRange.moveEnd("character", -len);
+            if (range.parentElement() === input) {
+                start = -range.moveStart("character", -input.value.length);
+                end = -range.moveEnd("character", -input.value.length);
+            }
         }
 
         return {
@@ -252,45 +273,17 @@ var InputElement = React.createClass({
         };
     },
     getCaretPos: function () {
-        var input = this.getInputDOMNode();
-        var pos = 0;
-
-        if ("selectionStart" in input) {
-            pos = input.selectionStart;
-        } else {
-            var range = document.selection.createRange();
-            var len = range.text.length;
-            range.moveStart("character", -input.value.length);
-            pos = range.text.length - len;
-        }
-
-        return pos;
+        return this.getSelection().start;
     },
     setCaretPos: function (pos) {
-        var input;
         var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (fn) {
             setTimeout(fn, 0);
         };
 
-        var setPos = function () {
-            if ("selectionStart" in input && "selectionEnd" in input) {
-                input.selectionStart = input.selectionEnd = pos;
-            } else if ("setSelectionRange" in input) {
-                input.setSelectionRange(pos, pos);
-            } else {
-                var inputRange = input.createTextRange();
-                inputRange.collapse(true);
-                inputRange.moveStart("character", pos);
-                inputRange.moveEnd("character", 0);
-                inputRange.select();
-            }
-        };
+        var setPos = this.setSelection.bind(this, pos, 0);
 
-        if (this.isMounted()) {
-            input = this.getInputDOMNode();
-            setPos();
-            raf(setPos);
-        }
+        setPos();
+        raf(setPos);
 
         this.lastCaretPos = pos;
     },
