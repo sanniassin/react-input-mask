@@ -270,7 +270,7 @@ var InputElement = React.createClass({
                   ||
                   function(fn) { setTimeout(fn, 0); };
 
-        var setPos = this.setSelection.bind(this, pos);
+        var setPos = this.setSelection.bind(this, pos, 0);
         
         setPos();
         raf(setPos);
