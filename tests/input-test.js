@@ -113,6 +113,75 @@ describe('Input', () => {
         ReactDOM.unmountComponentAtNode(container);
     }));
 
+    it('onChange input', createInput(
+        <Input mask="**** **** **** ****" />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
+        input.setCaretPos(0);
+        inputNode.value = 'a' + inputNode.value;
+        input.setCaretPos(1);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('a___ ____ ____ ____');
+        expect(input.getCaretPos()).toEqual(1);
+
+        input.setSelection(0, 19);
+        inputNode.value = 'a';
+        input.setCaretPos(1);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('a___ ____ ____ ____');
+        expect(input.getCaretPos()).toEqual(1);
+
+        inputNode.value = 'aaaaa___ ____ ____ ____';
+        input.setSelection(1, 4);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa a___ ____ ____');
+        expect(input.getCaretPos()).toEqual(6);
+
+        inputNode.value = 'aaa a___ ____ ____';
+        input.setCaretPos(3);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaa_ a___ ____ ____');
+
+        inputNode.value = 'aaaaaa___ ____ ____';
+        input.setCaretPos(6);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa aa__ ____ ____');
+
+        inputNode.value = 'aaaaxa__ ____ ____';
+        input.setCaretPos(5);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa xa__ ____ ____');
+        expect(input.getCaretPos()).toEqual(6);
+
+        ReactDOM.unmountComponentAtNode(container);
+    }));
+
+    it('onChange input without mask', createInput(
+        <Input mask="**** **** **** ****" maskChar={null} />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
+        input.setCaretPos(0);
+        inputNode.value = "aaaa";
+        input.setCaretPos(4);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa');
+        expect(input.getCaretPos()).toEqual(4);
+
+        inputNode.value = "aaaaa";
+        input.setCaretPos(5);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa a');
+        expect(input.getCaretPos()).toEqual(6);
+
+        ReactDOM.unmountComponentAtNode(container);
+    }));
+
     it('Characters input', createInput(
         <Input mask="+7 (*a9) 999 99 99" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
