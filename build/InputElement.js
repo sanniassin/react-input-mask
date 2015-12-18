@@ -478,26 +478,58 @@ var InputElement = React.createClass({
     },
     onChange: function (event) {
         var pasteSelection = this.pasteSelection;
-        if (pasteSelection) {
-            this.pasteSelection = null;
-            this.pasteText(this.state.value, event.target.value, pasteSelection, event);
-            return;
-        }
-        var caretPos = this.getCaretPos();
-        var maskLen = this.mask.length;
-        var maskChar = this.maskChar;
+
         var target = event.target;
         var value = target.value;
+        var oldValue = this.state.value;
+        if (pasteSelection) {
+            this.pasteSelection = null;
+            this.pasteText(oldValue, value, pasteSelection, event);
+            return;
+        }
+        var selection = this.getSelection();
+        var caretPos = selection.end;
+        var maskLen = this.mask.length;
+        var maskChar = this.maskChar;
         var valueLen = value.length;
-        if (valueLen > maskLen) {
-            value = value.substr(0, maskLen);
+        var oldValueLen = oldValue.length;
+
+        if (valueLen > oldValueLen) {
+            var substrLen = valueLen - oldValueLen;
+            var startPos = selection.end - substrLen;
+            var enteredSubstr = value.substr(startPos, substrLen);
+
+            value = value.substr(0, startPos) + value.substr(startPos + substrLen);
+
+            var clearedValue = this.clearRange(value, startPos, maskLen - startPos);
+            clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, startPos);
+
+            value = this.insertRawSubstr(oldValue, enteredSubstr, startPos);
+
+            caretPos = this.getFilledLength(clearedValue);
         } else if (maskChar && valueLen < maskLen) {
             var removedLen = maskLen - valueLen;
-            value = this.clearRange(this.state.value, caretPos, removedLen);
+            var clearedValue = this.clearRange(oldValue, selection.end, removedLen);
+            var substr = value.substr(0, selection.end);
+            var clearOnly = substr === oldValue.substr(0, selection.end);
+            value = this.insertRawSubstr(clearedValue, substr, 0);
+
+            clearedValue = this.clearRange(clearedValue, selection.end, maskLen - selection.end);
+            clearedValue = this.insertRawSubstr(clearedValue, substr, 0);
+
+            if (!clearOnly) {
+                caretPos = this.getFilledLength(clearedValue);
+            }
         }
-        target.value = this.formatValue(value);
+        var value = this.formatValue(value);
+
+        // prevent android autocomplete insertion on backspace
+        if (!this.isAndroidBrowser()) {
+            target.value = value;
+        }
+
         this.setState({
-            value: target.value
+            value: value
         });
 
         this.setCaretPos(caretPos);
