@@ -167,17 +167,29 @@ describe('Input', () => {
         TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(0);
-        inputNode.value = "aaaa";
+        inputNode.value = 'aaaa';
         input.setCaretPos(4);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa');
         expect(input.getCaretPos()).toEqual(4);
 
-        inputNode.value = "aaaaa";
+        inputNode.value = 'aaaaa';
         input.setCaretPos(5);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa a');
         expect(input.getCaretPos()).toEqual(6);
+
+        inputNode.value = 'aaaa afgh ijkl mnop';
+        input.setCaretPos(19);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa afgh ijkl mnop');
+        expect(input.getCaretPos()).toEqual(19);
+
+        inputNode.value = 'aaaa afgh ijkl mnopq';
+        input.setCaretPos(20);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('aaaa afgh ijkl mnop');
+        expect(input.getCaretPos()).toEqual(19);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -224,7 +236,7 @@ describe('Input', () => {
         TestUtils.Simulate.keyPress(inputNode, { key: '6' });
         expect(inputNode.value).toEqual('+7 (611) 112 34 56');
 
-        inputNode.value = "+7 (";
+        inputNode.value = '+7 (';
         input.setCaretPos(4);
         TestUtils.Simulate.change(inputNode);
         input.setCaretPos(0);
@@ -261,6 +273,16 @@ describe('Input', () => {
         input.setCaretPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
         expect(inputNode.value).toEqual('+7 (495) 156 45 4');
+
+        inputNode.value = '+7 (';
+        input.setCaretPos(4);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('+7 (');
+
+        inputNode.value = '+7 ';
+        input.setCaretPos(3);
+        TestUtils.Simulate.change(inputNode);
+        expect(inputNode.value).toEqual('+7 (');
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -376,10 +398,10 @@ describe('Input', () => {
         <Input mask="9999-9999-9999-9999" defaultValue="34781226917" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        input.setProps({ mask: "9999-999999-99999" });
+        input.setProps({ mask: '9999-999999-99999' });
         expect(inputNode.value).toEqual('3478-122691-7____');
 
-        input.setProps({ mask: "9-9-9-9" });
+        input.setProps({ mask: '9-9-9-9' });
         expect(inputNode.value).toEqual('3-4-7-8');
 
         input.setProps({ mask: null });

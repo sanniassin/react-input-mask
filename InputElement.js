@@ -101,11 +101,17 @@ var InputElement = React.createClass({
     formatValue: function(value) {
         var { maskChar, mask } = this;
         if (!maskChar) {
-            var prefixLen = this.getPrefix().length;
+            var prefix = this.getPrefix();
+            var prefixLen = prefix.length;
             value = this.insertRawSubstr("", value, 0);
             while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
                 value = value.slice(0, value.length - 1);
             }
+
+            if (value.length < prefixLen) {
+                value = prefix;
+            }
+
             return value;
         }
         if (value) {
@@ -499,7 +505,7 @@ var InputElement = React.createClass({
             var startPos = selection.end - substrLen;
             var enteredSubstr = value.substr(startPos, substrLen);
 
-            if (substrLen !== 1 || enteredSubstr !== mask[startPos]) {
+            if (startPos < maskLen && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
                 caretPos = this.getRightEditablePos(startPos);
             }
             else {
@@ -520,18 +526,24 @@ var InputElement = React.createClass({
                 caretPos++;
             }
         }
-        else if (maskChar && valueLen < maskLen) {
+        else if (valueLen < oldValueLen) {
             var removedLen = maskLen - valueLen;
             var clearedValue = this.clearRange(oldValue, selection.end, removedLen);
             var substr = value.substr(0, selection.end);
             var clearOnly = substr === oldValue.substr(0, selection.end);
-            value = this.insertRawSubstr(clearedValue, substr, 0);
+
+            if (maskChar) {
+                value = this.insertRawSubstr(clearedValue, substr, 0);
+            }
 
             clearedValue = this.clearRange(clearedValue, selection.end, maskLen - selection.end);
             clearedValue = this.insertRawSubstr(clearedValue, substr, 0);
 
             if (!clearOnly) {
                 caretPos = this.getFilledLength(clearedValue);
+            }
+            else if (caretPos < prefixLen) {
+                caretPos = prefixLen;
             }
         }
         var value = this.formatValue(value);
