@@ -168,13 +168,19 @@ var InputElement = React.createClass({
         var maskChar = this.maskChar;
 
         var isFilled = this.isFilled(value);
+        var prefixLen = this.getPrefix().length;
         substr = substr.split("");
+
+        if (!maskChar && pos > value.length) {
+            value += mask.slice(value.length, pos);
+        }
+
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
                 var char = substr.shift();
                 if (this.isAllowedChar(char, i, true)) {
                     if (i < value.length) {
-                        if (maskChar || isFilled) {
+                        if (maskChar || isFilled || i < prefixLen) {
                             value = this.replaceSubstr(value, char, i);
                         } else {
                             value = this.formatValue(value.substr(0, i) + char + value.substr(i));
@@ -456,7 +462,7 @@ var InputElement = React.createClass({
         } else {
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
-                value = this.insertRawSubstr(value, key, caretPos);
+                value = this.insertRawSubstr(value, key, editablePos);
                 caretPos = editablePos + 1;
             }
         }
@@ -471,13 +477,15 @@ var InputElement = React.createClass({
             }
         }
         event.preventDefault();
-        while (caretPos > prefixLen && this.isPermanentChar(caretPos)) {
-            ++caretPos;
+        if (caretPos < maskLen && caretPos > prefixLen) {
+            caretPos = this.getRightEditablePos(caretPos);
         }
         this.setCaretPos(caretPos);
     },
     onChange: function (event) {
         var pasteSelection = this.pasteSelection;
+        var mask = this.mask;
+        var maskChar = this.maskChar;
 
         var target = event.target;
         var value = target.value;
@@ -489,24 +497,34 @@ var InputElement = React.createClass({
         }
         var selection = this.getSelection();
         var caretPos = selection.end;
-        var maskLen = this.mask.length;
-        var maskChar = this.maskChar;
+        var maskLen = mask.length;
         var valueLen = value.length;
         var oldValueLen = oldValue.length;
+        var prefixLen = this.getPrefix().length;
 
         if (valueLen > oldValueLen) {
             var substrLen = valueLen - oldValueLen;
             var startPos = selection.end - substrLen;
             var enteredSubstr = value.substr(startPos, substrLen);
 
+            if (substrLen !== 1 || enteredSubstr !== mask[startPos]) {
+                caretPos = this.getRightEditablePos(startPos);
+            } else {
+                caretPos = startPos;
+            }
+
             value = value.substr(0, startPos) + value.substr(startPos + substrLen);
 
             var clearedValue = this.clearRange(value, startPos, maskLen - startPos);
-            clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, startPos);
+            clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, caretPos);
 
-            value = this.insertRawSubstr(oldValue, enteredSubstr, startPos);
+            value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
 
-            caretPos = this.getFilledLength(clearedValue);
+            if (substrLen !== 1 || caretPos >= prefixLen && caretPos < maskLen) {
+                caretPos = this.getFilledLength(clearedValue);
+            } else if (caretPos < maskLen) {
+                caretPos++;
+            }
         } else if (maskChar && valueLen < maskLen) {
             var removedLen = maskLen - valueLen;
             var clearedValue = this.clearRange(oldValue, selection.end, removedLen);
