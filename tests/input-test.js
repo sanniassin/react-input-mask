@@ -190,6 +190,14 @@ describe('Input', () => {
         TestUtils.Simulate.focus(inputNode);
 
         input.setCaretPos(0);
+        TestUtils.Simulate.keyPress(inputNode, { key: '+' });
+        expect(inputNode.value).toEqual('+7 (___) ___ __ __');
+
+        input.setCaretPos(0);
+        TestUtils.Simulate.keyPress(inputNode, { key: '7' });
+        expect(inputNode.value).toEqual('+7 (7__) ___ __ __');
+
+        input.setCaretPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
         expect(inputNode.value).toEqual('+7 (E__) ___ __ __');
 
@@ -215,6 +223,13 @@ describe('Input', () => {
 
         TestUtils.Simulate.keyPress(inputNode, { key: '6' });
         expect(inputNode.value).toEqual('+7 (611) 112 34 56');
+
+        inputNode.value = "+7 (";
+        input.setCaretPos(4);
+        TestUtils.Simulate.change(inputNode);
+        input.setCaretPos(0);
+        TestUtils.Simulate.keyPress(inputNode, { key: '+' });
+        expect(inputNode.value).toEqual('+7 (');
 
         ReactDOM.unmountComponentAtNode(container);
     }));
