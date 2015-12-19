@@ -233,8 +233,16 @@ describe('Input', () => {
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
         expect(inputNode.value).toEqual('+7 (111) 123 45 6');
 
-        TestUtils.Simulate.keyPress(inputNode, { key: '6' });
-        expect(inputNode.value).toEqual('+7 (611) 112 34 56');
+        input.setSelection(4, 3);
+        TestUtils.Simulate.keyPress(inputNode, { key: '0' });
+        expect(inputNode.value).toEqual('+7 (012) 345 6');
+
+        input.setCaretPos(14)
+        TestUtils.Simulate.keyPress(inputNode, { key: '7' });
+        TestUtils.Simulate.keyPress(inputNode, { key: '8' });
+        TestUtils.Simulate.keyPress(inputNode, { key: '9' });
+        TestUtils.Simulate.keyPress(inputNode, { key: '4' });
+        expect(inputNode.value).toEqual('+7 (012) 345 67 89');
 
         inputNode.value = '+7 (';
         input.setCaretPos(4);

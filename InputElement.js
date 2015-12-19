@@ -451,6 +451,7 @@ var InputElement = React.createClass({
         }
 
         var caretPos = this.getCaretPos();
+        var selection = this.getSelection();
         var { value } = this.state;
         var { mask, maskChar } = this;
         var maskLen = mask.length;
@@ -463,6 +464,7 @@ var InputElement = React.createClass({
         else {
             var editablePos = this.getRightEditablePos(caretPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
+                value = this.clearRange(value, selection.start, selection.length);
                 value = this.insertRawSubstr(value, key, editablePos);
                 caretPos = editablePos + 1;
             }
