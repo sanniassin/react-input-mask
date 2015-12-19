@@ -13,7 +13,7 @@ Mask string. Format characters are:<br/>
 <code>a</code>: <code>A-Z, a-z</code><br/>
 <code>*</code>: <code>A-Z, a-z, 0-9</code>
 
-Any character can be escaped with backslash, which usually will appear as double backslash in JS strings. For example, German phone mask with unremoveable prefix +49 will look like <code>mask="+4\\9 99 999 99" or mask={"+4\\\\9 99 999 99"}</code>
+Any character can be escaped with backslash, which usually will appear as double backslash in JS strings. For example, German phone mask with unremoveable prefix +49 will look like <code>mask="+4\\9 99 999 99"</code> or <code>mask={"+4\\\\9 99 999 99"}</code>
 
 ### `maskChar` : `string`
 
