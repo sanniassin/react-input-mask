@@ -457,4 +457,11 @@ describe('Input', () => {
 
         ReactDOM.unmountComponentAtNode(container);
     }));
+
+    it('Custom rules', createInput(
+        <Input mask="11-11" defaultValue="1234" charsRules={{'1': '[1-3]'}} />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        expect(inputNode.value).toEqual('12-3_');
+    }));    
 });
