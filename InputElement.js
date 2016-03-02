@@ -355,6 +355,8 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function(nextProps) {
+        this.charsRules = "charsRules" in nextProps ? nextProps.charsRules : this.defaultCharsRules;
+
         var mask = this.parseMask(nextProps.mask);
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
 
