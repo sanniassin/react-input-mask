@@ -156,7 +156,7 @@ var InputElement = React.createClass({
     replaceSubstr: function(value, newSubstr, pos) {
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
-    insertRawSubstr: function(value, substr, pos) {
+    insertRawSubstr: function(value, substr, pos, allowMask = true) {
         var { mask, maskChar } = this;
         var isFilled = this.isFilled(value);
         var prefixLen = this.getPrefix().length;
@@ -169,7 +169,7 @@ var InputElement = React.createClass({
         for (var i = pos; i < mask.length && substr.length; ) {
             if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, true)) {
+                if (this.isAllowedChar(char, i, allowMask)) {
                     if (i < value.length) {
                         if (maskChar || isFilled || i < prefixLen) {
                             value = this.replaceSubstr(value, char, i);
@@ -631,7 +631,7 @@ var InputElement = React.createClass({
             value = this.clearRange(value, caretPos, selection.length);
         }
         var textLen = this.getRawSubstrLength(value, text, caretPos);
-        var value = this.insertRawSubstr(value, text, caretPos);
+        var value = this.insertRawSubstr(value, text, caretPos, false);
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
         if (value !== this.getInputDOMNode().value) {
