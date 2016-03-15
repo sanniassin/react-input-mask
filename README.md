@@ -19,6 +19,17 @@ Any character can be escaped with backslash, which usually will appear as double
 
 Character to cover unfilled editable parts of mask. Default character is "_". If set to null, unfilled parts will be empty, like in ordinary input.
 
+### `charsRules` : `object`
+
+Defines format characters with characters as keys and corresponding RegExp string as values. Default ones:
+```js
+{
+  "9": "[0-9]",
+  "a": "[A-Za-z]",
+  "*": "[A-Za-z0-9]"
+}
+```
+
 ### `alwaysShowMask` : `boolean`
 
 Show mask even in empty input without focus.
