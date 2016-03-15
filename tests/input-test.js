@@ -459,7 +459,7 @@ describe('Input', () => {
     }));
 
     it('Paste string with maskChar at place of permanent char', createInput(
-        <Input mask='9999-9999-9999' maskChar=' ' />, (input) => {
+        <Input mask="9999-9999-9999" maskChar=" " />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
         inputNode.focus();
@@ -470,7 +470,7 @@ describe('Input', () => {
     }));
 
     it('Custom rules', createInput(
-        <Input mask="11-11" defaultValue="1234" charsRules={{'1': '[1-3]'}} />, (input) => {
+        <Input mask="11-11" defaultValue="1234" formatCharsRules={{'1': '[1-3]'}} />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
         expect(inputNode.value).toEqual('12-3_');
