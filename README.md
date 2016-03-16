@@ -19,7 +19,7 @@ Any character can be escaped with backslash, which usually will appear as double
 
 Character to cover unfilled editable parts of mask. Default character is "_". If set to null, unfilled parts will be empty, like in ordinary input.
 
-### `formatCharsRules` : `object`
+### `formatChars` : `object`
 
 Defines format characters with characters as keys and corresponding RegExp string as values. Default ones:
 ```js

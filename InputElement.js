@@ -329,7 +329,7 @@ var InputElement = React.createClass({
         return !value && value !== 0 ? "" : value + "";
     },
     getInitialState: function() {
-        this.charsRules = "formatCharsRules" in this.props ? this.props.formatCharsRules : this.defaultCharsRules;
+        this.charsRules = "formatChars" in this.props ? this.props.formatChars : this.defaultCharsRules;
 
         var mask = this.parseMask(this.props.mask);
         var defaultValue = this.props.defaultValue != null
@@ -359,7 +359,7 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function(nextProps) {
-        this.charsRules = "formatCharsRules" in nextProps ? nextProps.formatCharsRules : this.defaultCharsRules;
+        this.charsRules = "formatChars" in nextProps ? nextProps.formatChars : this.defaultCharsRules;
 
         var mask = this.parseMask(nextProps.mask);
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
