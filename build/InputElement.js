@@ -635,7 +635,7 @@ var InputElement = React.createClass({
             value = this.clearRange(value, caretPos, selection.length);
         }
         var textLen = this.getRawSubstrLength(value, text, caretPos);
-        var value = this.insertRawSubstr(value, text, caretPos, false);
+        var value = this.insertRawSubstr(value, text, caretPos, !this.props.cardModeFix);
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
         if (value !== this.getInputDOMNode().value) {
