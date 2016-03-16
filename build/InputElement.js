@@ -9,7 +9,7 @@ var React = require("react");
 var InputElement = React.createClass({
     displayName: "InputElement",
 
-    charsRules: {
+    defaultCharsRules: {
         "9": "[0-9]",
         "a": "[A-Za-z]",
         "*": "[A-Za-z0-9]"
@@ -182,7 +182,8 @@ var InputElement = React.createClass({
         }
 
         for (var i = pos; i < mask.length && substr.length;) {
-            if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
+            var isPermanent = this.isPermanentChar(i);
+            if (!isPermanent || mask[i] === substr[0]) {
                 var char = substr.shift();
                 if (this.isAllowedChar(char, i, true)) {
                     if (i < value.length) {
@@ -199,6 +200,8 @@ var InputElement = React.createClass({
             } else {
                 if (!maskChar && i >= value.length) {
                     value += mask[i];
+                } else if (maskChar && isPermanent && substr[0] === maskChar) {
+                    substr.shift();
                 }
                 ++i;
             }
@@ -338,6 +341,8 @@ var InputElement = React.createClass({
         return !value && value !== 0 ? "" : value + "";
     },
     getInitialState: function () {
+        this.charsRules = "formatChars" in this.props ? this.props.formatChars : this.defaultCharsRules;
+
         var mask = this.parseMask(this.props.mask);
         var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
         var value = this.props.value != null ? this.props.value : defaultValue;
@@ -362,6 +367,8 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function (nextProps) {
+        this.charsRules = "formatChars" in nextProps ? nextProps.formatChars : this.defaultCharsRules;
+
         var mask = this.parseMask(nextProps.mask);
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
 
