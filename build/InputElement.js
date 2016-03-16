@@ -9,7 +9,7 @@ var React = require("react");
 var InputElement = React.createClass({
     displayName: "InputElement",
 
-    charsRules: {
+    defaultCharsRules: {
         "9": "[0-9]",
         "a": "[A-Za-z]",
         "*": "[A-Za-z0-9]"
@@ -170,6 +170,7 @@ var InputElement = React.createClass({
         return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
     },
     insertRawSubstr: function (value, substr, pos) {
+        var allowMask = arguments.length <= 3 || arguments[3] === undefined ? true : arguments[3];
         var mask = this.mask;
         var maskChar = this.maskChar;
 
@@ -184,7 +185,7 @@ var InputElement = React.createClass({
         for (var i = pos; i < mask.length && substr.length;) {
             if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
                 var char = substr.shift();
-                if (this.isAllowedChar(char, i, true)) {
+                if (this.isAllowedChar(char, i, allowMask)) {
                     if (i < value.length) {
                         if (maskChar || isFilled || i < prefixLen) {
                             value = this.replaceSubstr(value, char, i);
@@ -338,6 +339,8 @@ var InputElement = React.createClass({
         return !value && value !== 0 ? "" : value + "";
     },
     getInitialState: function () {
+        this.charsRules = "charsRules" in this.props ? this.props.charsRules : this.defaultCharsRules;
+
         var mask = this.parseMask(this.props.mask);
         var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
         var value = this.props.value != null ? this.props.value : defaultValue;
@@ -362,6 +365,8 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function (nextProps) {
+        this.charsRules = "charsRules" in nextProps ? nextProps.charsRules : this.defaultCharsRules;
+
         var mask = this.parseMask(nextProps.mask);
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
 
@@ -630,7 +635,7 @@ var InputElement = React.createClass({
             value = this.clearRange(value, caretPos, selection.length);
         }
         var textLen = this.getRawSubstrLength(value, text, caretPos);
-        var value = this.insertRawSubstr(value, text, caretPos);
+        var value = this.insertRawSubstr(value, text, caretPos, !this.props.cardModeFix);
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
         if (value !== this.getInputDOMNode().value) {
