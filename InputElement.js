@@ -21,6 +21,11 @@ var InputElement = React.createClass({
                &&
                android.test(ua);
     },
+    isWindowsPhoneBrowser: function() {
+        var windowsPhone = new RegExp("Windows Phone", "i");
+
+        return windowsPhone.test(navigator.userAgent);
+    },
     isDOMElement: function(element) {
         return typeof HTMLElement === "object"
                ? element instanceof HTMLElement // DOM2
@@ -449,6 +454,10 @@ var InputElement = React.createClass({
         }
     },
     onKeyPress: function(event) {
+        if(this.isWindowsPhoneBrowser()) {
+            return;
+        }
+
         var key = event.key;
         var hasHandler = typeof this.props.onKeyPress === "function";
         if (key === "Enter" || event.ctrlKey || event.metaKey) {
