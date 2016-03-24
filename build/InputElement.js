@@ -300,7 +300,7 @@ var InputElement = React.createClass({
     },
     setCaretPos: function (pos) {
         var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (fn) {
-            setTimeout(fn, 0);
+            return setTimeout(fn, 0);
         };
 
         var setPos = this.setSelection.bind(this, pos, 0);
@@ -356,7 +356,8 @@ var InputElement = React.createClass({
         value = this.getStringValue(value);
 
         this.mask = mask.mask;
-        this.permanents = mask.permanents, this.maskChar = "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar;
+        this.permanents = mask.permanents;
+        this.maskChar = "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar;
 
         if (this.props.alwaysShowMask || value) {
             value = this.formatValue(value);
@@ -379,7 +380,8 @@ var InputElement = React.createClass({
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
 
         this.mask = mask.mask;
-        this.permanents = mask.permanents, this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
+        this.permanents = mask.permanents;
+        this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
         var newValue = nextProps.value !== undefined ? this.getStringValue(nextProps.value) : this.state.value;
 
@@ -526,6 +528,7 @@ var InputElement = React.createClass({
         var valueLen = value.length;
         var oldValueLen = oldValue.length;
         var prefixLen = this.getPrefix().length;
+        var clearedValue;
 
         if (valueLen > oldValueLen) {
             var substrLen = valueLen - oldValueLen;
@@ -540,7 +543,7 @@ var InputElement = React.createClass({
 
             value = value.substr(0, startPos) + value.substr(startPos + substrLen);
 
-            var clearedValue = this.clearRange(value, startPos, maskLen - startPos);
+            clearedValue = this.clearRange(value, startPos, maskLen - startPos);
             clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, caretPos);
 
             value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
@@ -552,7 +555,7 @@ var InputElement = React.createClass({
             }
         } else if (valueLen < oldValueLen) {
             var removedLen = maskLen - valueLen;
-            var clearedValue = this.clearRange(oldValue, selection.end, removedLen);
+            clearedValue = this.clearRange(oldValue, selection.end, removedLen);
             var substr = value.substr(0, selection.end);
             var clearOnly = substr === oldValue.substr(0, selection.end);
 
@@ -569,7 +572,7 @@ var InputElement = React.createClass({
                 caretPos = prefixLen;
             }
         }
-        var value = this.formatValue(value);
+        value = this.formatValue(value);
 
         // prevent android autocomplete insertion on backspace
         // prevent hanging after first entered character on Windows 10 Mobile
@@ -648,7 +651,7 @@ var InputElement = React.createClass({
             value = this.clearRange(value, caretPos, selection.length);
         }
         var textLen = this.getRawSubstrLength(value, text, caretPos);
-        var value = this.insertRawSubstr(value, text, caretPos);
+        value = this.insertRawSubstr(value, text, caretPos);
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
         if (value !== this.getInputDOMNode().value) {
