@@ -16,13 +16,19 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
-    isAndroidBrowser: function () {
+    isAndroidBrowser: (function () {
         var windows = new RegExp("windows", "i");
         var firefox = new RegExp("firefox", "i");
         var android = new RegExp("android", "i");
         var ua = navigator.userAgent;
         return !windows.test(ua) && !firefox.test(ua) && android.test(ua);
-    },
+    })(),
+    isWindowsPhoneBrowser: (function () {
+        var windows = new RegExp("windows", "i");
+        var phone = new RegExp("phone", "i");
+        var ua = navigator.userAgent;
+        return windows.test(ua) && phone.test(ua);
+    })(),
     isDOMElement: function (element) {
         return typeof HTMLElement === "object" ? element instanceof HTMLElement // DOM2
         : element.nodeType === 1 && typeof element.nodeName === "string";
@@ -461,6 +467,10 @@ var InputElement = React.createClass({
             return;
         }
 
+        if (this.isWindowsPhoneBrowser) {
+            return;
+        }
+
         var caretPos = this.getCaretPos();
         var selection = this.getSelection();
         var value = this.state.value;
@@ -562,7 +572,8 @@ var InputElement = React.createClass({
         var value = this.formatValue(value);
 
         // prevent android autocomplete insertion on backspace
-        if (!this.isAndroidBrowser()) {
+        // prevent hanging after first entered character on Windows 10 Mobile
+        if (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser) {
             target.value = value;
         }
 
@@ -612,7 +623,7 @@ var InputElement = React.createClass({
         }
     },
     onPaste: function (event) {
-        if (this.isAndroidBrowser()) {
+        if (this.isAndroidBrowser) {
             this.pasteSelection = this.getSelection();
             event.target.value = "";
             return;
