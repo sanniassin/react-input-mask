@@ -1,0 +1,2 @@
+echo -n 'Test prerender: '
+cat tests_prerender/prerender.js | node | grep "<input" > /dev/null && echo 'Ok' || echo 'Fail'
