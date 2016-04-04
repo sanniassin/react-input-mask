@@ -2,6 +2,25 @@
 
 var React = require("react");
 
+var isAndroidBrowserTest = function() {
+    var windows = new RegExp("windows", "i");
+    var firefox = new RegExp("firefox", "i");
+    var android = new RegExp("android", "i");
+    var ua = navigator.userAgent;
+    return !windows.test(ua)
+           &&
+           !firefox.test(ua)
+           &&
+           android.test(ua);
+};
+
+var isWindowsPhoneBrowserTest = function () {
+    var windows = new RegExp("windows", "i");
+    var phone = new RegExp("phone", "i");
+    var ua = navigator.userAgent;
+    return windows.test(ua) && phone.test(ua);
+};
+
 var InputElement = React.createClass({
     defaultCharsRules: {
         "9": "[0-9]",
@@ -10,23 +29,6 @@ var InputElement = React.createClass({
     },
     defaultMaskChar: "_",
     lastCaretPos: null,
-    isAndroidBrowser: (function() {
-        var windows = new RegExp("windows", "i");
-        var firefox = new RegExp("firefox", "i");
-        var android = new RegExp("android", "i");
-        var ua = navigator.userAgent;
-        return !windows.test(ua)
-               &&
-               !firefox.test(ua)
-               &&
-               android.test(ua);
-    })(),
-    isWindowsPhoneBrowser: (function () {
-        var windows = new RegExp("windows", "i");
-        var phone = new RegExp("phone", "i");
-        var ua = navigator.userAgent;
-        return windows.test(ua) && phone.test(ua);
-    })(),
     isDOMElement: function(element) {
         return typeof HTMLElement === "object"
                ? element instanceof HTMLElement // DOM2
@@ -662,6 +664,10 @@ var InputElement = React.createClass({
             }
         }
         this.setCaretPos(caretPos);
+    },
+    componentDidMount: function() {
+      this.isAndroidBrowser = isAndroidBrowserTest();
+      this.isWindowsPhoneBrowserTest = isWindowsPhoneBrowserTest();
     },
     render: function() {
         var ourProps = {};
