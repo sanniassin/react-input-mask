@@ -347,10 +347,11 @@ var InputElement = React.createClass({
         return !value && value !== 0 ? "" : value + "";
     },
     getInitialState: function () {
+        this.hasValue = this.props.value != null;
         this.charsRules = "formatChars" in this.props ? this.props.formatChars : this.defaultCharsRules;
 
         var mask = this.parseMask(this.props.mask);
-        var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : null;
+        var defaultValue = this.props.defaultValue != null ? this.props.defaultValue : '';
         var value = this.props.value != null ? this.props.value : defaultValue;
 
         value = this.getStringValue(value);
@@ -374,6 +375,7 @@ var InputElement = React.createClass({
         }
     },
     componentWillReceiveProps: function (nextProps) {
+        this.hasValue = this.props.value != null;
         this.charsRules = "formatChars" in nextProps ? nextProps.formatChars : this.defaultCharsRules;
 
         var mask = this.parseMask(nextProps.mask);
@@ -383,10 +385,10 @@ var InputElement = React.createClass({
         this.permanents = mask.permanents;
         this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
-        var newValue = nextProps.value !== undefined ? this.getStringValue(nextProps.value) : this.state.value;
+        var newValue = nextProps.value != null ? this.getStringValue(nextProps.value) : this.state.value;
 
         var showEmpty = nextProps.alwaysShowMask || this.isFocused();
-        if (isMaskChanged || mask.mask && (newValue || showEmpty)) {
+        if (isMaskChanged || mask.mask && (newValue || showEmpty && !this.hasValue)) {
             newValue = this.formatValue(newValue);
 
             if (isMaskChanged) {
@@ -397,7 +399,7 @@ var InputElement = React.createClass({
                 }
             }
         }
-        if (mask.mask && this.isEmpty(newValue) && !showEmpty) {
+        if (mask.mask && this.isEmpty(newValue) && !showEmpty && !this.hasValue) {
             newValue = "";
         }
         if (this.state.value !== newValue) {
@@ -447,7 +449,7 @@ var InputElement = React.createClass({
         if (value !== this.state.value) {
             event.target.value = value;
             this.setState({
-                value: value
+                value: this.hasValue ? this.state.value : value
             });
             preventDefault = true;
             if (typeof this.props.onChange === "function") {
@@ -497,7 +499,7 @@ var InputElement = React.createClass({
         if (value !== this.state.value) {
             event.target.value = value;
             this.setState({
-                value: value
+                value: this.hasValue ? this.state.value : value
             });
             if (typeof this.props.onChange === "function") {
                 this.props.onChange(event);
@@ -581,22 +583,22 @@ var InputElement = React.createClass({
         }
 
         this.setState({
-            value: value
+            value: this.hasValue ? this.state.value : value
         });
-
-        this.setCaretPos(caretPos);
 
         if (typeof this.props.onChange === "function") {
             this.props.onChange(event);
         }
+        this.setCaretPos(caretPos);
     },
     onFocus: function (event) {
         if (!this.state.value) {
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
             event.target.value = this.formatValue(value);
+
             this.setState({
-                value: value
+                value: this.hasValue ? this.state.value : value
             }, this.setCaretToEnd);
 
             if (typeof this.props.onChange === "function") {
@@ -614,7 +616,7 @@ var InputElement = React.createClass({
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             event.target.value = "";
             this.setState({
-                value: ""
+                value: this.hasValue ? this.state.value : ""
             });
             if (typeof this.props.onChange === "function") {
                 this.props.onChange(event);
@@ -659,7 +661,7 @@ var InputElement = React.createClass({
                 event.target.value = value;
             }
             this.setState({
-                value: value
+                value: this.hasValue ? this.state.value : value
             });
             if (event && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
