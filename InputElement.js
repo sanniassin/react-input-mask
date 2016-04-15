@@ -27,6 +27,17 @@ var InputElement = React.createClass({
         var ua = navigator.userAgent;
         return windows.test(ua) && phone.test(ua);
     },
+    isAndroidFirefox: function() {
+        var windows = new RegExp("windows", "i");
+        var firefox = new RegExp("firefox", "i");
+        var android = new RegExp("android", "i");
+        var ua = navigator.userAgent;
+        return !windows.test(ua)
+               &&
+               firefox.test(ua)
+               &&
+               android.test(ua);
+    },
     isDOMElement: function(element) {
         return typeof HTMLElement === "object"
                ? element instanceof HTMLElement // DOM2
@@ -46,6 +57,45 @@ var InputElement = React.createClass({
         }
 
         return input.getDOMNode();
+    },
+    enableValueAccessors: function() {
+        var canUseAccessors = !!(Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty);
+        if (canUseAccessors) {
+            var input = this.getInputDOMNode();
+            this.valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+            Object.defineProperty(input, 'value', {
+                configurable: true,
+                enumerable: true,
+                get: () => this.value,
+                set: (val) => {
+                    this.value = val;
+                    this.valueDescriptor.set.call(input, val);
+                }
+            });
+        }
+    },
+    disableValueAccessors: function() {
+        var { valueDescriptor } = this;
+        if (!valueDescriptor) {
+            return;
+        }
+        this.valueDescriptor = null;
+        var input = this.getInputDOMNode();
+        Object.defineProperty(input, 'value', valueDescriptor);
+    },
+    getInputValue: function() {
+        var input = this.getInputDOMNode();
+        var { valueDescriptor } = this;
+
+        var value;
+        if (valueDescriptor) {
+            value = valueDescriptor.get.call(input);
+        }
+        else {
+            value = input.value;
+        }
+
+        return value;
     },
     getPrefix: function() {
         var prefix = "";
@@ -395,6 +445,7 @@ var InputElement = React.createClass({
         if (mask.mask && this.isEmpty(newValue) && !showEmpty && !this.hasValue) {
             newValue = "";
         }
+        this.value = newValue;
         if (this.state.value !== newValue) {
             this.setState({ value: newValue });
         }
@@ -508,7 +559,13 @@ var InputElement = React.createClass({
     onChange: function(event) {
         var { pasteSelection, mask, maskChar } = this;
         var target = event.target;
-        var value = target.value;
+        var value = this.getInputValue();
+        if (!value && this.preventEmptyChange) {
+            this.disableValueAccessors();
+            this.preventEmptyChange = false;
+            target.value = this.state.value;
+            return;
+        }
         var oldValue = this.state.value;
         if (pasteSelection) {
             this.pasteSelection = null;
@@ -575,6 +632,18 @@ var InputElement = React.createClass({
         // prevent hanging after first entered character on Windows 10 Mobile
         if (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser) {
             target.value = value;
+
+            if (value && !this.getInputValue()) {
+                if (this.isAndroidFirefox) {
+                    this.value = value;
+                    this.enableValueAccessors();
+                }
+                this.preventEmptyChange = true;
+                setTimeout(() => {
+                    this.preventEmptyChange = false;
+                    this.disableValueAccessors();
+                }, 0);
+            }
         }
 
         this.setState({
@@ -668,6 +737,7 @@ var InputElement = React.createClass({
     componentDidMount: function() {
         this.isAndroidBrowser = this.isAndroidBrowser();
         this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
+        this.isAndroidFirefox = this.isAndroidFirefox();
     },
     render: function() {
         var ourProps = {};
