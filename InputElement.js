@@ -402,7 +402,7 @@ var InputElement = React.createClass({
         this.permanents = mask.permanents;
         this.maskChar = "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar;
 
-        if (this.props.alwaysShowMask || value) {
+        if (this.mask && (this.props.alwaysShowMask || value)) {
             value = this.formatValue(value);
         }
 
@@ -425,6 +425,10 @@ var InputElement = React.createClass({
         this.mask = mask.mask;
         this.permanents = mask.permanents;
         this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
+
+        if (!this.mask) {
+            return;
+        }
 
         var newValue = nextProps.value != null
             ? this.getStringValue(nextProps.value)
