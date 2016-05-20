@@ -743,6 +743,12 @@ var InputElement = React.createClass({
         this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
         this.isAndroidFirefox = this.isAndroidFirefox();
     },
+    focus: function() {
+        this.refs.input.focus();
+    },
+    blur: function() {
+        this.refs.input.blur();
+    },
     render: function() {
         var ourProps = {};
         if (this.mask) {
