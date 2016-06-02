@@ -5,6 +5,9 @@ Yet another React component for input masking with attention to small usability 
 ## Demo
 [http://sanniassin.github.io/react-input-mask/demo.html](http://sanniassin.github.io/react-input-mask/demo.html)
 
+## Install
+```npm install react-input-mask --save```
+
 ## Properties
 ### `mask` : `string`
 
