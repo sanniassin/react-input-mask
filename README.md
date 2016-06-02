@@ -2,8 +2,7 @@
 
 Yet another React component for input masking with attention to small usability details with cursor position, copy-paste, etc.
 
-## Demo
-[http://sanniassin.github.io/react-input-mask/demo.html](http://sanniassin.github.io/react-input-mask/demo.html)
+## [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
 ## Install
 ```
