@@ -556,7 +556,7 @@ var InputElement = React.createClass({
         }
         event.preventDefault();
         if (caretPos < maskLen && caretPos > prefixLen) {
-            caretPos = this.getRightEditablePos(caretPos);
+            caretPos = this.getRightEditablePos(caretPos) || caretPos;
         }
         this.setCaretPos(caretPos);
     },
