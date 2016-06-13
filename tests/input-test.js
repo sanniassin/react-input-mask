@@ -254,6 +254,21 @@ describe('Input', () => {
         ReactDOM.unmountComponentAtNode(container);
     }));
 
+    it('Characters input cursor position', createInput(
+        <Input mask="(999)" defaultValue={"11"} />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
+        input.setCaretPos(3);
+        TestUtils.Simulate.keyPress(inputNode, { key: '1' });
+        expect(inputNode.value).toEqual('(111)');
+        expect(input.getCaretPos()).toEqual(4);
+
+        ReactDOM.unmountComponentAtNode(container);
+    }));
+
     it('Backspace single character', createInput(
         <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
