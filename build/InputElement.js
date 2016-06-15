@@ -369,12 +369,14 @@ var InputElement = React.createClass({
         if (typeof mask !== "string") {
             return {
                 mask: null,
+                lastEditablePos: null,
                 permanents: []
             };
         }
         var str = "";
         var permanents = [];
         var isPermanent = false;
+        var lastEditablePos = null;
 
         mask.split("").forEach(function (character) {
             if (!isPermanent && character === "\\") {
@@ -382,6 +384,8 @@ var InputElement = React.createClass({
             } else {
                 if (isPermanent || !_this5.charsRules[character]) {
                     permanents.push(str.length);
+                } else {
+                    lastEditablePos = str.length;
                 }
                 str += character;
                 isPermanent = false;
@@ -390,6 +394,7 @@ var InputElement = React.createClass({
 
         return {
             mask: str,
+            lastEditablePos: lastEditablePos,
             permanents: permanents
         };
     },
@@ -408,6 +413,7 @@ var InputElement = React.createClass({
 
         this.mask = mask.mask;
         this.permanents = mask.permanents;
+        this.lastEditablePos = mask.lastEditablePos;
         this.maskChar = "maskChar" in this.props ? this.props.maskChar : this.defaultMaskChar;
 
         if (this.mask && (this.props.alwaysShowMask || value)) {
@@ -433,6 +439,7 @@ var InputElement = React.createClass({
 
         this.mask = mask.mask;
         this.permanents = mask.permanents;
+        this.lastEditablePos = mask.lastEditablePos;
         this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
         if (!this.mask) {
@@ -535,6 +542,7 @@ var InputElement = React.createClass({
         var value = this.state.value;
         var mask = this.mask;
         var maskChar = this.maskChar;
+        var lastEditablePos = this.lastEditablePos;
 
         var maskLen = mask.length;
         var prefixLen = this.getPrefix().length;
@@ -561,7 +569,7 @@ var InputElement = React.createClass({
             }
         }
         event.preventDefault();
-        if (caretPos < maskLen && caretPos > prefixLen) {
+        if (caretPos < lastEditablePos && caretPos > prefixLen) {
             caretPos = this.getRightEditablePos(caretPos);
         }
         this.setCaretPos(caretPos);
@@ -572,6 +580,7 @@ var InputElement = React.createClass({
         var pasteSelection = this.pasteSelection;
         var mask = this.mask;
         var maskChar = this.maskChar;
+        var lastEditablePos = this.lastEditablePos;
 
         var target = event.target;
         var value = this.getInputValue();
@@ -613,9 +622,9 @@ var InputElement = React.createClass({
 
             value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
 
-            if (substrLen !== 1 || caretPos >= prefixLen && caretPos < maskLen) {
+            if (substrLen !== 1 || caretPos >= prefixLen && caretPos < lastEditablePos) {
                 caretPos = this.getFilledLength(clearedValue);
-            } else if (caretPos < maskLen) {
+            } else if (caretPos < lastEditablePos) {
                 caretPos++;
             }
         } else if (valueLen < oldValueLen) {
