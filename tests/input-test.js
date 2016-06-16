@@ -428,7 +428,12 @@ describe('Input', () => {
         expect(inputNode.value).toEqual('3-4-7-8');
 
         input.setProps({ mask: null });
-        expect(inputNode.value).toEqual('34781226917');
+        expect(inputNode.value).toEqual('3-4-7-8');
+
+        inputNode.value = '0-1-2-3';
+
+        input.setProps({ mask: '9999' });
+        expect(inputNode.value).toEqual('0123');
 
         ReactDOM.unmountComponentAtNode(container);
     }));
