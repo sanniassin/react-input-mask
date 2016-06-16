@@ -762,14 +762,17 @@ var InputElement = React.createClass({
         var _this7 = this;
 
         var ourProps = {};
+        var props = this.props;
         if (this.mask) {
             var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
             handlersKeys.forEach(function (key) {
                 ourProps[key] = _this7[key];
             });
             ourProps.value = this.state.value;
+            props = _extends({}, props);
+            delete props.defaultValue;
         }
-        return React.createElement("input", _extends({ ref: "input" }, this.props, ourProps));
+        return React.createElement("input", _extends({ ref: "input" }, props, ourProps));
     }
 });
 

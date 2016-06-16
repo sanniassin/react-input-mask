@@ -753,14 +753,17 @@ var InputElement = React.createClass({
     },
     render: function() {
         var ourProps = {};
+        var props = this.props;
         if (this.mask) {
             var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
             handlersKeys.forEach((key) => {
                 ourProps[key] = this[key];
             });
             ourProps.value = this.state.value;
+            props = {...props};
+            delete props.defaultValue;
         }
-        return <input ref="input" {...this.props} {...ourProps}/>;
+        return <input ref="input" {...props} {...ourProps}/>;
     }
 });
 
