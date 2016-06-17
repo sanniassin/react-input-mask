@@ -366,7 +366,7 @@ var InputElement = React.createClass({
     parseMask: function (mask) {
         var _this5 = this;
 
-        if (typeof mask !== "string") {
+        if (!mask || typeof mask !== "string") {
             return {
                 mask: null,
                 lastEditablePos: null,
@@ -434,6 +434,7 @@ var InputElement = React.createClass({
         this.hasValue = this.props.value != null;
         this.charsRules = "formatChars" in nextProps ? nextProps.formatChars : this.defaultCharsRules;
 
+        var oldMask = this.mask;
         var mask = this.parseMask(nextProps.mask);
         var isMaskChanged = mask.mask && mask.mask !== this.mask;
 
@@ -447,6 +448,10 @@ var InputElement = React.createClass({
         }
 
         var newValue = nextProps.value != null ? this.getStringValue(nextProps.value) : this.state.value;
+
+        if (!oldMask && nextProps.value == null) {
+            newValue = this.getInputDOMNode().value;
+        }
 
         var showEmpty = nextProps.alwaysShowMask || this.isFocused();
         if (isMaskChanged || mask.mask && (newValue || showEmpty && !this.hasValue)) {
@@ -466,6 +471,16 @@ var InputElement = React.createClass({
         this.value = newValue;
         if (this.state.value !== newValue) {
             this.setState({ value: newValue });
+        }
+    },
+    componentDidUpdate: function (prevProps, prevState) {
+        if ((this.mask || prevProps.mask) && this.props.value == null) {
+            this.updateUncontrolledInput();
+        }
+    },
+    updateUncontrolledInput: function () {
+        if (this.getInputDOMNode().value !== this.state.value) {
+            this.getInputDOMNode().value = this.state.value;
         }
     },
     onKeyDown: function (event) {
@@ -757,22 +772,32 @@ var InputElement = React.createClass({
         this.isAndroidBrowser = this.isAndroidBrowser();
         this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
         this.isAndroidFirefox = this.isAndroidFirefox();
+
+        if (this.mask && this.props.value == null) {
+            this.updateUncontrolledInput();
+        }
     },
     render: function () {
         var _this7 = this;
 
-        var ourProps = {};
         var props = this.props;
+
         if (this.mask) {
+            var componentKeys = ["mask", "alwaysShowMask", "maskChar", "formatChars"];
             var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
-            handlersKeys.forEach(function (key) {
-                ourProps[key] = _this7[key];
-            });
-            ourProps.value = this.state.value;
             props = _extends({}, props);
-            delete props.defaultValue;
+            componentKeys.forEach(function (key) {
+                delete props[key];
+            });
+            handlersKeys.forEach(function (key) {
+                props[key] = _this7[key];
+            });
+
+            if (props.value != null) {
+                props.value = this.state.value;
+            }
         }
-        return React.createElement("input", _extends({ ref: "input" }, props, ourProps));
+        return React.createElement("input", _extends({ ref: "input" }, props));
     }
 });
 
