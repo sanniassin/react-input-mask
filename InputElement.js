@@ -686,13 +686,18 @@ var InputElement = React.createClass({
         if (!this.state.value) {
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
-            event.target.value = this.formatValue(value);
+            var inputValue = this.formatValue(value);
+            var isInputValueChanged = inputValue !== event.target.value;
+
+            if (isInputValueChanged) {
+                event.target.value = inputValue;
+            }
 
             this.setState({
-                value: this.hasValue ? this.state.value : value
+                value: this.hasValue ? this.state.value : inputValue
             }, this.setCaretToEnd);
 
-            if (typeof this.props.onChange === "function") {
+            if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         }
@@ -706,11 +711,15 @@ var InputElement = React.createClass({
     },
     onBlur: function(event) {
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
-            event.target.value = "";
+            var inputValue = "";
+            var isInputValueChanged = inputValue !== event.target.value;
+            if (isInputValueChanged) {
+                event.target.value = inputValue;
+            }
             this.setState({
                 value: this.hasValue ? this.state.value : ""
             });
-            if (typeof this.props.onChange === "function") {
+            if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         }
