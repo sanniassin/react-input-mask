@@ -387,7 +387,7 @@ var InputElement = React.createClass({
                 if (isPermanent || !_this5.charsRules[character]) {
                     permanents.push(str.length);
                 } else {
-                    lastEditablePos = str.length;
+                    lastEditablePos = str.length + 1;
                 }
                 str += character;
                 isPermanent = false;
@@ -626,7 +626,7 @@ var InputElement = React.createClass({
             var startPos = selection.end - substrLen;
             var enteredSubstr = value.substr(startPos, substrLen);
 
-            if (startPos < maskLen && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
+            if (startPos < lastEditablePos && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
                 caretPos = this.getRightEditablePos(startPos);
             } else {
                 caretPos = startPos;
@@ -696,13 +696,18 @@ var InputElement = React.createClass({
         if (!this.state.value) {
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
-            event.target.value = this.formatValue(value);
+            var inputValue = this.formatValue(value);
+            var isInputValueChanged = inputValue !== event.target.value;
+
+            if (isInputValueChanged) {
+                event.target.value = inputValue;
+            }
 
             this.setState({
-                value: this.hasValue ? this.state.value : value
+                value: this.hasValue ? this.state.value : inputValue
             }, this.setCaretToEnd);
 
-            if (typeof this.props.onChange === "function") {
+            if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         } else if (this.getFilledLength() < this.mask.length) {
@@ -715,11 +720,15 @@ var InputElement = React.createClass({
     },
     onBlur: function (event) {
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
-            event.target.value = "";
+            var inputValue = "";
+            var isInputValueChanged = inputValue !== event.target.value;
+            if (isInputValueChanged) {
+                event.target.value = inputValue;
+            }
             this.setState({
                 value: this.hasValue ? this.state.value : ""
             });
-            if (typeof this.props.onChange === "function") {
+            if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         }
@@ -790,13 +799,8 @@ var InputElement = React.createClass({
 
         var props = _objectWithoutProperties(_props, ["mask", "alwaysShowMask", "maskChar", "formatChars"]);
 
-        var componentKeys = ["mask", "alwaysShowMask", "maskChar", "formatChars"];
         if (this.mask) {
             var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
-            props = _extends({}, props);
-            componentKeys.forEach(function (key) {
-                delete props[key];
-            });
             handlersKeys.forEach(function (key) {
                 props[key] = _this7[key];
             });

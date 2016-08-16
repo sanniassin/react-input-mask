@@ -374,7 +374,7 @@ var InputElement = React.createClass({
                     permanents.push(str.length);
                 }
                 else {
-                    lastEditablePos = str.length;
+                    lastEditablePos = str.length + 1;
                 }
                 str += character;
                 isPermanent = false;
@@ -612,7 +612,7 @@ var InputElement = React.createClass({
             var startPos = selection.end - substrLen;
             var enteredSubstr = value.substr(startPos, substrLen);
 
-            if (startPos < maskLen && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
+            if (startPos < lastEditablePos && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
                 caretPos = this.getRightEditablePos(startPos);
             }
             else {
@@ -626,7 +626,7 @@ var InputElement = React.createClass({
 
             value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
 
-            if (substrLen !== 1 || caretPos >= prefixLen && caretPos < lastEditablePos) {
+            if (substrLen !== 1 || (caretPos >= prefixLen && caretPos < lastEditablePos)) {
                 caretPos = this.getFilledLength(clearedValue);
             }
             else if (caretPos < lastEditablePos) {
