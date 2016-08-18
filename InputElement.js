@@ -471,7 +471,7 @@ var InputElement = React.createClass({
         if ((this.mask || prevProps.mask) && this.props.value == null) {
             this.updateUncontrolledInput();
         }
-        if (this.valueDescriptor && this.getInputValue() !== this.getInputDOMNode().value) {
+        if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
             this.getInputDOMNode().value = this.state.value;
         }
     },
