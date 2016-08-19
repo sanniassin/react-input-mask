@@ -49,3 +49,6 @@ var PhoneInput = React.createClass({
 
 ## Known issues
 Screen keyboard backspace may not work in Android 4.x browser due to broken input events.
+
+## Thanks
+Thanks to [BrowserStack](https://www.browserstack.com/) for help with testing on real devices
