@@ -479,6 +479,9 @@ var InputElement = React.createClass({
         if ((this.mask || prevProps.mask) && this.props.value == null) {
             this.updateUncontrolledInput();
         }
+        if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
+            this.getInputDOMNode().value = this.state.value;
+        }
     },
     updateUncontrolledInput: function () {
         if (this.getInputDOMNode().value !== this.state.value) {
@@ -669,18 +672,18 @@ var InputElement = React.createClass({
         // prevent hanging after first entered character on Windows 10 Mobile
         if (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser) {
             target.value = value;
+        }
 
-            if (value && !this.getInputValue()) {
-                if (this.isAndroidFirefox) {
-                    this.value = value;
-                    this.enableValueAccessors();
-                }
+        if (this.isAndroidFirefox && value && !this.getInputValue() || this.isAndroidBrowser || this.isWindowsPhoneBrowser) {
+            this.value = value;
+            this.enableValueAccessors();
+            if (this.isAndroidFirefox) {
                 this.preventEmptyChange = true;
-                setTimeout(function () {
-                    _this6.preventEmptyChange = false;
-                    _this6.disableValueAccessors();
-                }, 0);
             }
+            setTimeout(function () {
+                _this6.preventEmptyChange = false;
+                _this6.disableValueAccessors();
+            }, 0);
         }
 
         this.setState({
