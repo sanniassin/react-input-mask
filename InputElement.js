@@ -59,8 +59,7 @@ var InputElement = React.createClass({
         return input.getDOMNode();
     },
     enableValueAccessors: function() {
-        var canUseAccessors = !!(Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty);
-        if (canUseAccessors) {
+        if (this.canUseAccessors) {
             var input = this.getInputDOMNode();
             this.valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
             Object.defineProperty(input, 'value', {
@@ -96,6 +95,11 @@ var InputElement = React.createClass({
         }
 
         return value;
+    },
+    setInputValue: function(val) {
+        var input = this.getInputDOMNode();
+        this.value = val;
+        input.value = val;
     },
     getPrefix: function() {
         var prefix = "";
@@ -472,12 +476,12 @@ var InputElement = React.createClass({
             this.updateUncontrolledInput();
         }
         if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
-            this.getInputDOMNode().value = this.state.value;
+            this.setInputValue(this.state.value);
         }
     },
     updateUncontrolledInput: function() {
-        if (this.getInputDOMNode().value !== this.state.value) {
-            this.getInputDOMNode().value = this.state.value;
+        if (this.getInputValue() !== this.state.value) {
+            this.setInputValue(this.state.value);
         }
     },
     onKeyDown: function(event) {
@@ -523,7 +527,7 @@ var InputElement = React.createClass({
         }
 
         if (value !== this.state.value) {
-            event.target.value = value;
+            this.setInputValue(value);
             this.setState({
                 value: this.hasValue ? this.state.value : value
             });
@@ -572,7 +576,7 @@ var InputElement = React.createClass({
         }
 
         if (value !== this.state.value) {
-            event.target.value = value;
+            this.setInputValue(value);
             this.setState({
                 value: this.hasValue ? this.state.value : value
             });
@@ -587,13 +591,13 @@ var InputElement = React.createClass({
         this.setCaretPos(caretPos);
     },
     onChange: function(event) {
-        var { pasteSelection, mask, maskChar, lastEditablePos } = this;
+        var { pasteSelection, mask, maskChar, lastEditablePos, preventEmptyChange } = this;
         var target = event.target;
         var value = this.getInputValue();
         if (!value && this.preventEmptyChange) {
             this.disableValueAccessors();
             this.preventEmptyChange = false;
-            target.value = this.state.value;
+            this.setInputValue(this.state.value);
             return;
         }
         var oldValue = this.state.value;
@@ -660,11 +664,11 @@ var InputElement = React.createClass({
 
         // prevent android autocomplete insertion on backspace
         // prevent hanging after first entered character on Windows 10 Mobile
-        if (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser) {
-            target.value = value;
+        if (!this.canUseAccessors || (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser)) {
+            this.setInputValue(value);
         }
 
-        if ((this.isAndroidFirefox && value && !this.getInputValue()) || this.isAndroidBrowser || this.isWindowsPhoneBrowser) {
+        if (this.canUseAccessors && ((this.isAndroidFirefox && value && !this.getInputValue()) || this.isAndroidBrowser || this.isWindowsPhoneBrowser)) {
             this.value = value;
             this.enableValueAccessors();
             if (this.isAndroidFirefox) {
@@ -683,6 +687,7 @@ var InputElement = React.createClass({
         if (typeof this.props.onChange === "function") {
             this.props.onChange(event);
         }
+
         this.setCaretPos(caretPos);
     },
     onFocus: function(event) {
@@ -690,10 +695,10 @@ var InputElement = React.createClass({
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
             var inputValue = this.formatValue(value);
-            var isInputValueChanged = inputValue !== event.target.value;
+            var isInputValueChanged = inputValue !== this.getInputValue();
 
             if (isInputValueChanged) {
-                event.target.value = inputValue;
+                this.setInputValue(inputValue);
             }
 
             this.setState({
@@ -715,9 +720,9 @@ var InputElement = React.createClass({
     onBlur: function(event) {
         if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
             var inputValue = "";
-            var isInputValueChanged = inputValue !== event.target.value;
+            var isInputValueChanged = inputValue !== this.getInputValue();
             if (isInputValueChanged) {
-                event.target.value = inputValue;
+                this.setInputValue(inputValue);
             }
             this.setState({
                 value: this.hasValue ? this.state.value : ""
@@ -734,7 +739,7 @@ var InputElement = React.createClass({
     onPaste: function(event) {
         if (this.isAndroidBrowser) {
             this.pasteSelection = this.getSelection();
-            event.target.value = "";
+            this.setInputValue("");
             return;
         }
         var text;
@@ -760,9 +765,9 @@ var InputElement = React.createClass({
         value = this.insertRawSubstr(value, text, caretPos);
         caretPos += textLen;
         caretPos = this.getRightEditablePos(caretPos) || caretPos;
-        if (value !== this.getInputDOMNode().value) {
+        if (value !== this.getInputValue()) {
             if (event) {
-                event.target.value = value;
+                this.setInputValue(value);
             }
             this.setState({
                 value: this.hasValue ? this.state.value : value
@@ -777,6 +782,12 @@ var InputElement = React.createClass({
         this.isAndroidBrowser = this.isAndroidBrowser();
         this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
         this.isAndroidFirefox = this.isAndroidFirefox();
+
+        if (Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
+            var input = this.getInputDOMNode();
+            var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+            this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
+        }
 
         if (this.mask && this.props.value == null) {
             this.updateUncontrolledInput();
