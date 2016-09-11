@@ -706,10 +706,13 @@ var InputElement = React.createClass({
             var prefix = this.getPrefix();
             var value = this.formatValue(prefix);
             var inputValue = this.formatValue(value);
-            var isInputValueChanged = inputValue !== this.getInputValue();
+
+            // do not use this.getInputValue and this.setInputValue as this.refs.input
+            // can be undefined at this moment if autoFocus attribute is set
+            var isInputValueChanged = inputValue !== event.target.value;
 
             if (isInputValueChanged) {
-                this.setInputValue(inputValue);
+                event.target.value = inputValue;
             }
 
             this.setState({
