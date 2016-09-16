@@ -181,12 +181,15 @@ var InputElement = React.createClass({
             var prefix = this.getPrefix();
             var prefixLen = prefix.length;
             value = this.insertRawSubstr("", value, 0);
-            while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
-                value = value.slice(0, value.length - 1);
-            }
 
             if (value.length < prefixLen) {
                 value = prefix;
+            }
+
+            var maskLen = mask.length;
+
+            while (value.length < maskLen && this.isPermanentChar(value.length)) {
+                value += mask[value.length];
             }
 
             return value;
@@ -629,7 +632,7 @@ var InputElement = React.createClass({
         var prefixLen = this.getPrefix().length;
         var clearedValue;
 
-        if (valueLen > oldValueLen) {
+        if (valueLen >= oldValueLen) {
             var substrLen = valueLen - oldValueLen;
             var startPos = selection.end - substrLen;
             var enteredSubstr = value.substr(startPos, substrLen);
@@ -645,7 +648,7 @@ var InputElement = React.createClass({
             clearedValue = this.clearRange(value, startPos, maskLen - startPos);
             clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, caretPos);
 
-            value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
+            value = enteredSubstr ? this.insertRawSubstr(oldValue, enteredSubstr, caretPos) : clearedValue;
 
             if (substrLen !== 1 || caretPos >= prefixLen && caretPos < lastEditablePos) {
                 caretPos = this.getFilledLength(clearedValue);
