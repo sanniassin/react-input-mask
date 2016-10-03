@@ -519,7 +519,7 @@ var InputElement = React.createClass({
                     var editablePos = deleteFromRight ? this.getRightEditablePos(caretPos) : this.getLeftEditablePos(caretPos - 1);
                     if (editablePos !== null) {
                         value = this.clearRange(value, editablePos, 1);
-                        caretPos = editablePos;
+                        caretPos = editablePos + (deleteFromRight ? 1 : 0);
                     }
                 }
                 preventDefault = true;
