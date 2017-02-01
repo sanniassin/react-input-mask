@@ -450,6 +450,7 @@ var InputElement = React.createClass({
         this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
         if (!this.mask) {
+            this.lastCaretPos = null;
             return;
         }
 
@@ -466,7 +467,7 @@ var InputElement = React.createClass({
             if (isMaskChanged) {
                 var pos = this.lastCaretPos;
                 var filledLen = this.getFilledLength(newValue);
-                if (filledLen < pos) {
+                if (pos === null || filledLen < pos) {
                     this.setCaretPos(this.getRightEditablePos(filledLen));
                 }
             }
