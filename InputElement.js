@@ -460,7 +460,13 @@ var InputElement = React.createClass({
                 var pos = this.lastCaretPos;
                 var filledLen = this.getFilledLength(newValue);
                 if (pos === null || filledLen < pos) {
-                    this.setCaretPos(this.getRightEditablePos(filledLen));
+                    if (this.isFilled(newValue)) {
+                        pos = filledLen;
+                    }
+                    else {
+                        pos = this.getRightEditablePos(filledLen);
+                    }
+                    this.setCaretPos(pos);
                 }
             }
         }
