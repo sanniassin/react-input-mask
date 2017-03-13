@@ -805,11 +805,13 @@ var InputElement = React.createClass({
     },
     render: function() {
         var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
-        if (this.mask && !props.disabled && !props.readOnly) {
-            var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
-            handlersKeys.forEach((key) => {
-                props[key] = this[key];
-            });
+        if (this.mask) {
+            if (!props.disabled && !props.readOnly) {
+                var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
+                handlersKeys.forEach((key) => {
+                    props[key] = this[key];
+                });
+            }
 
             if (props.value != null) {
                 props.value = this.state.value;
