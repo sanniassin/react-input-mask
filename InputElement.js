@@ -542,6 +542,11 @@ var InputElement = React.createClass({
             if (typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
+            if (typeof this.props.onMaskComplete === "function") {
+                if(this.getFilledLength() + 1 === this.mask.length){
+                    this.props.onMaskComplete(event);
+                }
+            }
         }
         if (preventDefault) {
             event.preventDefault();
@@ -589,6 +594,11 @@ var InputElement = React.createClass({
             });
             if (typeof this.props.onChange === "function") {
                 this.props.onChange(event);
+            }
+            if (typeof this.props.onMaskComplete === "function") {
+                if(this.getFilledLength() + 1 === this.mask.length){
+                    this.props.onMaskComplete(event);
+                }
             }
         }
         event.preventDefault();
@@ -694,6 +704,11 @@ var InputElement = React.createClass({
         if (typeof this.props.onChange === "function") {
             this.props.onChange(event);
         }
+         if (typeof this.props.onMaskComplete === "function") {
+            if(this.getFilledLength() + 1 === this.mask.length){
+                this.props.onMaskComplete(event);
+            }
+        }
 
         this.setCaretPos(caretPos);
     },
@@ -718,6 +733,11 @@ var InputElement = React.createClass({
             if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
+            if (isInputValueChanged && typeof this.props.onMaskComplete === "function") {
+                if(this.getFilledLength() + 1 === this.mask.length){
+                    this.props.onMaskComplete(event);
+                }
+            }
         }
         else if (this.getFilledLength() < this.mask.length) {
             this.setCaretToEnd();
@@ -739,6 +759,11 @@ var InputElement = React.createClass({
             });
             if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
+            }
+            if (isInputValueChanged && typeof this.props.onMaskComplete === "function") {
+                if(this.getFilledLength() + 1 === this.mask.length){
+                    this.props.onMaskComplete(event);
+                }
             }
         }
 
