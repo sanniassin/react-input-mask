@@ -470,7 +470,7 @@ var InputElement = React.createClass({
                 }
             }
         }
-        if (mask.mask && this.isEmpty(newValue) && !showEmpty && !this.hasValue) {
+        if (mask.mask && this.isEmpty(newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
             newValue = "";
         }
         this.value = newValue;
