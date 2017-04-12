@@ -803,6 +803,12 @@ var InputElement = React.createClass({
             this.updateUncontrolledInput();
         }
     },
+    focus: function() {
+        this.refs.input.focus();
+    },
+    blur: function() {
+        this.refs.input.blur();
+    },
     render: function() {
         var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
         if (this.mask) {
