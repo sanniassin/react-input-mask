@@ -669,33 +669,52 @@ var InputElement = React.createClass({
         }
         value = this.formatValue(value);
 
-        // prevent android autocomplete insertion on backspace
-        // prevent hanging after first entered character on Windows 10 Mobile
-        if (!this.canUseAccessors || (!this.isAndroidBrowser && !this.isWindowsPhoneBrowser)) {
-            this.setInputValue(value);
-        }
-
-        if (this.canUseAccessors && ((this.isAndroidFirefox && value && !this.getInputValue()) || this.isAndroidBrowser || this.isWindowsPhoneBrowser)) {
-            this.value = value;
-            this.enableValueAccessors();
-            if (this.isAndroidFirefox) {
-                this.preventEmptyChange = true;
-            }
+        if (this.isWindowsPhoneBrowser) {
+            event.persist();
             setTimeout(() => {
-                this.preventEmptyChange = false;
-                this.disableValueAccessors();
+                this.setInputValue(value);
+
+                if (!this.hasValue) {
+                    this.setState({
+                        value: value
+                    });
+                }
+
+                if (typeof this.props.onChange === "function") {
+                    this.props.onChange(event);
+                }
+
+                this.setCaretPos(caretPos);
             }, 0);
         }
+        else {
+            // prevent android autocomplete insertion on backspace
+            if (!this.canUseAccessors || (!this.isAndroidBrowser)) {
+                this.setInputValue(value);
+            }
 
-        this.setState({
-            value: this.hasValue ? this.state.value : value
-        });
+            if (this.canUseAccessors && ((this.isAndroidFirefox && value && !this.getInputValue()) || this.isAndroidBrowser)) {
+                this.value = value;
+                this.enableValueAccessors();
+                if (this.isAndroidFirefox) {
+                    this.preventEmptyChange = true;
+                }
+                setTimeout(() => {
+                    this.preventEmptyChange = false;
+                    this.disableValueAccessors();
+                }, 0);
+            }
 
-        if (typeof this.props.onChange === "function") {
-            this.props.onChange(event);
+            this.setState({
+                value: this.hasValue ? this.state.value : value
+            });
+
+            if (typeof this.props.onChange === "function") {
+                this.props.onChange(event);
+            }
+
+            this.setCaretPos(caretPos);
         }
-
-        this.setCaretPos(caretPos);
     },
     onFocus: function(event) {
         if (!this.state.value) {
