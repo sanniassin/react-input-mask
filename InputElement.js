@@ -3,6 +3,19 @@
 var React = require("react");
 
 var InputElement = React.createClass({
+    propTypes: {
+        value: React.PropTypes.string,
+        defaultValue: React.PropTypes.string,
+        formatChars: React.PropTypes.objectOf(React.PropTypes.string),
+        mask: React.PropTypes.oneOfType([ React.PropTypes.string, React.PropTypes.bool ]),
+        maskChar: React.PropTypes.string,
+        alwaysShowMask: React.PropTypes.bool,
+        onKeyDown: React.PropTypes.func,
+        onChange: React.PropTypes.func,
+        onKeyPress: React.PropTypes.func,
+        onFocus: React.PropTypes.func,
+        onBlur: React.PropTypes.func
+    },
     defaultCharsRules: {
         "9": "[0-9]",
         "a": "[A-Za-z]",
