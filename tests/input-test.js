@@ -1,8 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import TestUtils from 'react-addons-test-utils';
-
-const Input = require('../InputElement');
+import TestUtils from 'react-dom/test-utils';
+import Input from '../InputElement';
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');;
@@ -18,6 +17,10 @@ function createInput(component, cb) {
             done();
         });
     };
+};
+
+function setInputProps(input, props) {
+    ReactDOM.render(React.createElement(Input, { ...input.props, ...props }), container);
 };
 
 describe('Input', () => {
@@ -51,10 +54,10 @@ describe('Input', () => {
         TestUtils.Simulate.blur(inputNode);
         expect(inputNode.value).toEqual('');
 
-        input.setProps({ value: '+7 (___) ___ __ __' });
+        setInputProps(input, { value: '+7 (___) ___ __ __' });
         expect(inputNode.value).toEqual('');
 
-        input.setProps({ value: '+7 (1__) ___ __ __' });
+        setInputProps(input, { value: '+7 (1__) ___ __ __' });
         expect(inputNode.value).toEqual('+7 (1__) ___ __ __');
 
         ReactDOM.unmountComponentAtNode(container);
@@ -74,10 +77,10 @@ describe('Input', () => {
         TestUtils.Simulate.blur(inputNode);
         expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
-        input.setProps({ alwaysShowMask: false });
+        setInputProps(input, { alwaysShowMask: false });
         expect(inputNode.value).toEqual('');
 
-        input.setProps({ alwaysShowMask: true });
+        setInputProps(input, { alwaysShowMask: true });
         expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
         ReactDOM.unmountComponentAtNode(container);
@@ -95,7 +98,7 @@ describe('Input', () => {
         inputNode.blur();
         TestUtils.Simulate.blur(inputNode);
 
-        input.setProps({ value: '+7 (___) ___ _1 __' });
+        setInputProps(input, { value: '+7 (___) ___ _1 __' });
         input.setCaretPos(2);
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
@@ -104,7 +107,7 @@ describe('Input', () => {
         inputNode.blur();
         TestUtils.Simulate.blur(inputNode);
 
-        input.setProps({ value: '+7 (___) ___ _1 _1' });
+        setInputProps(input, { value: '+7 (___) ___ _1 _1' });
         input.setCaretPos(2);
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
@@ -421,18 +424,18 @@ describe('Input', () => {
         <Input mask="9999-9999-9999-9999" defaultValue="34781226917" />, (input) => {
         var inputNode = ReactDOM.findDOMNode(input);
 
-        input.setProps({ mask: '9999-999999-99999' });
+        setInputProps(input, { mask: '9999-999999-99999' });
         expect(inputNode.value).toEqual('3478-122691-7____');
 
-        input.setProps({ mask: '9-9-9-9' });
+        setInputProps(input, { mask: '9-9-9-9' });
         expect(inputNode.value).toEqual('3-4-7-8');
 
-        input.setProps({ mask: null });
+        setInputProps(input, { mask: null });
         expect(inputNode.value).toEqual('3-4-7-8');
 
         inputNode.value = '0-1-2-3';
 
-        input.setProps({ mask: '9999' });
+        setInputProps(input, { mask: '9999' });
         expect(inputNode.value).toEqual('0123');
 
         ReactDOM.unmountComponentAtNode(container);

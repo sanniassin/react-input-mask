@@ -121,7 +121,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files : [
-      'node_modules/babel-core/browser-polyfill.min.js',
+      'node_modules/babel-polyfill/dist/polyfill.min.js',
       'node_modules/console-polyfill/index.js',
       'node_modules/react/dist/react-with-addons.min.js',
       'tests/*.js'
@@ -161,7 +161,10 @@ module.exports = function (config) {
     singleRun : true,
 
     browserify : {
-      transform: [['babelify', { 'blacklist': ['spec.functionName'] }]]
+      transform: [['babelify', {
+        presets: ['es2015', 'react'],
+        plugins: ['transform-class-properties', 'transform-object-rest-spread']
+      }]]
     }
   })
 }
