@@ -170,7 +170,7 @@ describe('Input', () => {
         inputNode.value = 'aaaa';
         input.setCaretPos(4);
         TestUtils.Simulate.change(inputNode);
-        expect(inputNode.value).toEqual('aaaa');
+        expect(inputNode.value).toEqual('aaaa ');
         expect(input.getCaretPos()).toEqual(4);
 
         inputNode.value = 'aaaaa';
@@ -279,7 +279,7 @@ describe('Input', () => {
         input.setCaretPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
         expect(inputNode.value).toEqual('+7 (495) _15 64 54');
-        
+
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
         expect(inputNode.value).toEqual('+7 (49_) _15 64 54');
 
