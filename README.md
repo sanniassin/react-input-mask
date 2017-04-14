@@ -40,8 +40,10 @@ Show mask even in empty input without focus.
 
 ## Example
 ```js
-var PhoneInput = React.createClass({
-  render: function() {
+import InputMask from 'react-input-mask';
+
+class PhoneInput extends React.Component({
+  render() {
     return <InputElement {...this.props} mask="+4\9 99 999 99" maskChar=" "/>;
   }
 });
