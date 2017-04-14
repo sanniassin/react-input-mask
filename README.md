@@ -42,11 +42,11 @@ Show mask even in empty input without focus.
 ```js
 import InputMask from 'react-input-mask';
 
-class PhoneInput extends React.Component({
+class PhoneInput extends React.Component {
   render() {
     return <InputMask {...this.props} mask="+4\9 99 999 99" maskChar=" "/>;
   }
-});
+}
 ```
 
 ## Known issues
