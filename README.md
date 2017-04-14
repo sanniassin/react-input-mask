@@ -44,7 +44,7 @@ import InputMask from 'react-input-mask';
 
 class PhoneInput extends React.Component({
   render() {
-    return <InputElement {...this.props} mask="+4\9 99 999 99" maskChar=" "/>;
+    return <InputMask {...this.props} mask="+4\9 99 999 99" maskChar=" "/>;
   }
 });
 ```
