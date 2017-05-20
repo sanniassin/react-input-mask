@@ -891,7 +891,13 @@ var _initialiseProps = function _initialiseProps() {
             alwaysShowMask = _props.alwaysShowMask,
             maskChar = _props.maskChar,
             formatChars = _props.formatChars,
-            props = _objectWithoutProperties(_props, ["mask", "alwaysShowMask", "maskChar", "formatChars"]);
+            _props$Component = _props.Component,
+            Component = _props$Component === undefined ? 'input' : _props$Component,
+            _props$getInputRef = _props.getInputRef,
+            getInputRef = _props$getInputRef === undefined ? function (ref) {
+            return ref;
+        } : _props$getInputRef,
+            props = _objectWithoutProperties(_props, ["mask", "alwaysShowMask", "maskChar", "formatChars", "Component", "getInputRef"]);
 
         if (_this2.mask) {
             if (!props.disabled && !props.readOnly) {
@@ -905,8 +911,9 @@ var _initialiseProps = function _initialiseProps() {
                 props.value = _this2.state.value;
             }
         }
-        return React.createElement("input", _extends({ ref: function ref(_ref) {
-                return _this2.input = _ref;
+
+        return React.createElement(Component, _extends({ ref: function ref(_ref) {
+                return _this2.input = getInputRef(_ref);
             } }, props));
     };
 };
