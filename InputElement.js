@@ -869,7 +869,16 @@ class InputElement extends React.Component {
     }
 
     render = () => {
-        var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
+        var {
+            mask,
+            alwaysShowMask,
+            maskChar,
+            formatChars,
+            Component = 'input',
+            getInputRef = ref => ref,
+            ...props
+        } = this.props;
+
         if (this.mask) {
             if (!props.disabled && !props.readOnly) {
                 var handlersKeys = ["onFocus", "onBlur", "onChange", "onKeyDown", "onKeyPress", "onPaste"];
@@ -882,7 +891,8 @@ class InputElement extends React.Component {
                 props.value = this.state.value;
             }
         }
-        return <input ref={ref => this.input = ref} {...props}/>;
+
+        return <Component ref={ref => this.input = getInputRef(ref)} {...props}/>;
     }
 }
 

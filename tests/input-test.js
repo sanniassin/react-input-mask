@@ -498,4 +498,38 @@ describe('Input', () => {
 
         expect(inputNode.value).toEqual('12-3_');
     }));
+
+    it('Custom component', done => {
+        class CustomComponent extends React.Component {
+            getInputNodeRef = () => this.inputRef;
+
+            render() {
+                return (
+                    <div>
+                        <label htmlFor="custom-component-input">
+                            This is custom component!
+                        </label>
+                        <input
+                            id="custom-component-input"
+                            ref={ref => this.inputRef = ref}
+                            {...this.props}
+                        />
+                    </div>
+                );
+            }
+        }
+
+        createInput(
+            <Input
+                Component={CustomComponent}
+                getInputRef={ref => ref.getInputNodeRef()}
+                mask="99-99"
+                defaultValue="1234"
+            />,
+            (input) => {
+                var inputNode = ReactDOM.findDOMNode(input).querySelector('#custom-component-input');
+                expect(inputNode.value).toEqual('12-34');
+            }
+        )(done)
+    })
 });
