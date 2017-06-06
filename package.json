@@ -41,7 +41,7 @@
   "main": "build/InputElement.js",
   "scripts": {
     "build": "babel InputElement.js --out-dir build --presets=es2015,react --plugins transform-class-properties,transform-object-rest-spread",
-    "prepublish": "npm test && npm run build",
+    "prepare": "npm test && npm run build",
     "test": "npm run test:karma && npm run test:mocha",
     "test:karma": "karma start",
     "test:mocha": "mocha ./tests_prerender"
