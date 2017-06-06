@@ -507,7 +507,7 @@ var _initialiseProps = function _initialiseProps() {
         }
 
         var showEmpty = nextProps.alwaysShowMask || _this2.isFocused();
-        if (isMaskChanged || mask.mask && (newValue || showEmpty && !_this2.hasValue)) {
+        if (isMaskChanged || mask.mask && (newValue || showEmpty)) {
             newValue = _this2.formatValue(newValue);
 
             if (isMaskChanged) {
