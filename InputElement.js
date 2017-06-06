@@ -488,7 +488,7 @@ class InputElement extends React.Component {
         }
 
         var showEmpty = nextProps.alwaysShowMask || this.isFocused();
-        if (isMaskChanged || (mask.mask && (newValue || (showEmpty && !this.hasValue)))) {
+        if (isMaskChanged || (mask.mask && (newValue || showEmpty))) {
             newValue = this.formatValue(newValue);
 
             if (isMaskChanged) {

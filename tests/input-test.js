@@ -498,4 +498,12 @@ describe('Input', () => {
 
         expect(inputNode.value).toEqual('12-3_');
     }));
+
+    it('Rerender alwaysShowMask with empty value', createInput(
+        <Input mask="99-99" value="" alwaysShowMask />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+        setInputProps(input, { value: '' });
+
+        expect(inputNode.value).toEqual('__-__');
+    }));
 });
