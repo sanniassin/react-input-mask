@@ -465,8 +465,8 @@ class InputElement extends React.Component {
 
     componentWillReceiveProps = (nextProps) => {
         this.hasValue = this.props.value != null;
-        this.charsRules = props.formatChars != null 
-            ? props.formatChars
+        this.charsRules = nextProps.formatChars != null 
+            ? nextProps.formatChars
             : this.defaultCharsRules;
 
         var oldMask = this.mask;
