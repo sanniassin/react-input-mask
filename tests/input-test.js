@@ -506,4 +506,11 @@ describe('Input', () => {
 
         expect(inputNode.value).toEqual('__-__');
     }));
+
+    it('Null as formatChars', createInput(
+        <Input mask="99-99" formatChars={null} alwaysShowMask />, (input) => {
+        var inputNode = ReactDOM.findDOMNode(input);
+
+        expect(inputNode.value).toEqual('__-__');
+    }));
 });
