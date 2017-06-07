@@ -9,7 +9,7 @@ class InputElement extends React.Component {
         "*": "[A-Za-z0-9]"
     }
     defaultMaskChar = "_"
-    lastCaretPos = null
+    lastCursorPos = null
 
     constructor(props) {
         super(props);
@@ -336,11 +336,11 @@ class InputElement extends React.Component {
         return this.permanents.indexOf(pos) !== -1;
     }
 
-    setCaretToEnd = () => {
+    setCursorToEnd = () => {
         var filledLen = this.getFilledLength();
         var pos = this.getRightEditablePos(filledLen);
         if (pos !== null) {
-            this.setCaretPos(pos);
+            this.setCursorPos(pos);
         }
     }
 
@@ -388,11 +388,11 @@ class InputElement extends React.Component {
         };
     }
 
-    getCaretPos = () => {
+    getCursorPos = () => {
         return this.getSelection().start;
     }
 
-    setCaretPos = (pos) => {
+    setCursorPos = (pos) => {
         var raf = window.requestAnimationFrame
                   ||
                   window.webkitRequestAnimationFrame
@@ -406,7 +406,7 @@ class InputElement extends React.Component {
         setPos();
         raf(setPos);
 
-        this.lastCaretPos = pos;
+        this.lastCursorPos = pos;
     }
 
     isFocused = () => {
@@ -475,7 +475,7 @@ class InputElement extends React.Component {
         this.maskChar = "maskChar" in nextProps ? nextProps.maskChar : this.defaultMaskChar;
 
         if (!this.mask) {
-            this.lastCaretPos = null;
+            this.lastCursorPos = null;
             return;
         }
 
@@ -492,7 +492,7 @@ class InputElement extends React.Component {
             newValue = this.formatValue(newValue);
 
             if (isMaskChanged) {
-                var pos = this.lastCaretPos;
+                var pos = this.lastCursorPos;
                 var filledLen = this.getFilledLength(newValue);
                 if (pos === null || filledLen < pos) {
                     if (this.isFilled(newValue)) {
@@ -501,7 +501,7 @@ class InputElement extends React.Component {
                     else {
                         pos = this.getRightEditablePos(filledLen);
                     }
-                    this.setCaretPos(pos);
+                    this.setCursorPos(pos);
                 }
             }
         }
@@ -538,7 +538,7 @@ class InputElement extends React.Component {
             return;
         }
 
-        var caretPos = this.getCaretPos();
+        var cursorPos = this.getCursorPos();
         var value = this.state.value;
         var key = event.key;
         var preventDefault = false;
@@ -551,14 +551,14 @@ class InputElement extends React.Component {
                 if (selectionRange.length) {
                     value = this.clearRange(value, selectionRange.start, selectionRange.length);
                 }
-                else if (caretPos < prefixLen || (!deleteFromRight && caretPos === prefixLen)) {
-                    caretPos = prefixLen;
+                else if (cursorPos < prefixLen || (!deleteFromRight && cursorPos === prefixLen)) {
+                    cursorPos = prefixLen;
                 }
                 else {
-                    var editablePos = deleteFromRight ? this.getRightEditablePos(caretPos) : this.getLeftEditablePos(caretPos - 1);
+                    var editablePos = deleteFromRight ? this.getRightEditablePos(cursorPos) : this.getLeftEditablePos(cursorPos - 1);
                     if (editablePos !== null) {
                         value = this.clearRange(value, editablePos, 1);
-                        caretPos = editablePos;
+                        cursorPos = editablePos;
                     }
                 }
                 preventDefault = true;
@@ -583,7 +583,7 @@ class InputElement extends React.Component {
         }
         if (preventDefault) {
             event.preventDefault();
-            this.setCaretPos(caretPos);
+            this.setCursorPos(cursorPos);
         }
     }
 
@@ -601,23 +601,23 @@ class InputElement extends React.Component {
             return;
         }
 
-        var caretPos = this.getCaretPos();
+        var cursorPos = this.getCursorPos();
         var selection = this.getSelection();
         var { value } = this.state;
         var { mask, maskChar, lastEditablePos } = this;
         var maskLen = mask.length;
         var prefixLen = this.getPrefix().length;
 
-        if (this.isPermanentChar(caretPos) && mask[caretPos] === key) {
-            value = this.insertRawSubstr(value, key, caretPos);
-            ++caretPos;
+        if (this.isPermanentChar(cursorPos) && mask[cursorPos] === key) {
+            value = this.insertRawSubstr(value, key, cursorPos);
+            ++cursorPos;
         }
         else {
-            var editablePos = this.getRightEditablePos(caretPos);
+            var editablePos = this.getRightEditablePos(cursorPos);
             if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
                 value = this.clearRange(value, selection.start, selection.length);
                 value = this.insertRawSubstr(value, key, editablePos);
-                caretPos = editablePos + 1;
+                cursorPos = editablePos + 1;
             }
         }
 
@@ -631,10 +631,10 @@ class InputElement extends React.Component {
             }
         }
         event.preventDefault();
-        if (caretPos < lastEditablePos && caretPos > prefixLen) {
-            caretPos = this.getRightEditablePos(caretPos);
+        if (cursorPos < lastEditablePos && cursorPos > prefixLen) {
+            cursorPos = this.getRightEditablePos(cursorPos);
         }
-        this.setCaretPos(caretPos);
+        this.setCursorPos(cursorPos);
     }
 
     onChange = (event) => {
@@ -654,7 +654,7 @@ class InputElement extends React.Component {
             return;
         }
         var selection = this.getSelection();
-        var caretPos = selection.end;
+        var cursorPos = selection.end;
         var maskLen = mask.length;
         var valueLen = value.length;
         var oldValueLen = oldValue.length;
@@ -667,24 +667,24 @@ class InputElement extends React.Component {
             var enteredSubstr = value.substr(startPos, substrLen);
 
             if (startPos < lastEditablePos && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
-                caretPos = this.getRightEditablePos(startPos);
+                cursorPos = this.getRightEditablePos(startPos);
             }
             else {
-                caretPos = startPos;
+                cursorPos = startPos;
             }
 
             value = value.substr(0, startPos) + value.substr(startPos + substrLen);
 
             clearedValue = this.clearRange(value, startPos, maskLen - startPos);
-            clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, caretPos);
+            clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, cursorPos);
 
-            value = this.insertRawSubstr(oldValue, enteredSubstr, caretPos);
+            value = this.insertRawSubstr(oldValue, enteredSubstr, cursorPos);
 
-            if (substrLen !== 1 || (caretPos >= prefixLen && caretPos < lastEditablePos)) {
-                caretPos = this.getFilledLength(clearedValue);
+            if (substrLen !== 1 || (cursorPos >= prefixLen && cursorPos < lastEditablePos)) {
+                cursorPos = this.getFilledLength(clearedValue);
             }
-            else if (caretPos < lastEditablePos) {
-                caretPos++;
+            else if (cursorPos < lastEditablePos) {
+                cursorPos++;
             }
         }
         else if (valueLen < oldValueLen) {
@@ -701,10 +701,10 @@ class InputElement extends React.Component {
             clearedValue = this.insertRawSubstr(clearedValue, substr, 0);
 
             if (!clearOnly) {
-                caretPos = this.getFilledLength(clearedValue);
+                cursorPos = this.getFilledLength(clearedValue);
             }
-            else if (caretPos < prefixLen) {
-                caretPos = prefixLen;
+            else if (cursorPos < prefixLen) {
+                cursorPos = prefixLen;
             }
         }
         value = this.formatValue(value);
@@ -724,7 +724,7 @@ class InputElement extends React.Component {
                     this.props.onChange(event);
                 }
 
-                this.setCaretPos(caretPos);
+                this.setCursorPos(cursorPos);
             }, 0);
         }
         else {
@@ -753,7 +753,7 @@ class InputElement extends React.Component {
                 this.props.onChange(event);
             }
 
-            this.setCaretPos(caretPos);
+            this.setCursorPos(cursorPos);
         }
     }
 
@@ -773,14 +773,14 @@ class InputElement extends React.Component {
 
             this.setState({
                 value: this.hasValue ? this.state.value : inputValue
-            }, this.setCaretToEnd);
+            }, this.setCursorToEnd);
 
             if (isInputValueChanged && typeof this.props.onChange === "function") {
                 this.props.onChange(event);
             }
         }
         else if (this.getFilledLength() < this.mask.length) {
-            this.setCaretToEnd();
+            this.setCursorToEnd();
         }
 
         if (typeof this.props.onFocus === "function") {
@@ -830,14 +830,14 @@ class InputElement extends React.Component {
     }
 
     pasteText = (value, text, selection, event) => {
-        var caretPos = selection.start;
+        var cursorPos = selection.start;
         if (selection.length) {
-            value = this.clearRange(value, caretPos, selection.length);
+            value = this.clearRange(value, cursorPos, selection.length);
         }
-        var textLen = this.getRawSubstrLength(value, text, caretPos);
-        value = this.insertRawSubstr(value, text, caretPos);
-        caretPos += textLen;
-        caretPos = this.getRightEditablePos(caretPos) || caretPos;
+        var textLen = this.getRawSubstrLength(value, text, cursorPos);
+        value = this.insertRawSubstr(value, text, cursorPos);
+        cursorPos += textLen;
+        cursorPos = this.getRightEditablePos(cursorPos) || cursorPos;
         if (value !== this.getInputValue()) {
             if (event) {
                 this.setInputValue(value);
@@ -849,7 +849,7 @@ class InputElement extends React.Component {
                 this.props.onChange(event);
             }
         }
-        this.setCaretPos(caretPos);
+        this.setCursorPos(cursorPos);
     }
 
     componentDidMount = () => {

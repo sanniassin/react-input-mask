@@ -93,25 +93,25 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        expect(input.getCaretPos()).toEqual(4);
+        expect(input.getCursorPos()).toEqual(4);
 
         inputNode.blur();
         TestUtils.Simulate.blur(inputNode);
 
         setInputProps(input, { value: '+7 (___) ___ _1 __' });
-        input.setCaretPos(2);
+        input.setCursorPos(2);
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
-        expect(input.getCaretPos()).toEqual(16);
+        expect(input.getCursorPos()).toEqual(16);
 
         inputNode.blur();
         TestUtils.Simulate.blur(inputNode);
 
         setInputProps(input, { value: '+7 (___) ___ _1 _1' });
-        input.setCaretPos(2);
+        input.setCursorPos(2);
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
-        expect(input.getCaretPos()).toEqual(2);
+        expect(input.getCursorPos()).toEqual(2);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -123,41 +123,41 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         inputNode.value = 'a' + inputNode.value;
-        input.setCaretPos(1);
+        input.setCursorPos(1);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('a___ ____ ____ ____');
-        expect(input.getCaretPos()).toEqual(1);
+        expect(input.getCursorPos()).toEqual(1);
 
         input.setSelection(0, 19);
         inputNode.value = 'a';
-        input.setCaretPos(1);
+        input.setCursorPos(1);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('a___ ____ ____ ____');
-        expect(input.getCaretPos()).toEqual(1);
+        expect(input.getCursorPos()).toEqual(1);
 
         inputNode.value = 'aaaaa___ ____ ____ ____';
         input.setSelection(1, 4);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa a___ ____ ____');
-        expect(input.getCaretPos()).toEqual(6);
+        expect(input.getCursorPos()).toEqual(6);
 
         inputNode.value = 'aaa a___ ____ ____';
-        input.setCaretPos(3);
+        input.setCursorPos(3);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaa_ a___ ____ ____');
 
         inputNode.value = 'aaaaaa___ ____ ____';
-        input.setCaretPos(6);
+        input.setCursorPos(6);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa aa__ ____ ____');
 
         inputNode.value = 'aaaaxa__ ____ ____';
-        input.setCaretPos(5);
+        input.setCursorPos(5);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa xa__ ____ ____');
-        expect(input.getCaretPos()).toEqual(6);
+        expect(input.getCursorPos()).toEqual(6);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -169,30 +169,30 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         inputNode.value = 'aaaa';
-        input.setCaretPos(4);
+        input.setCursorPos(4);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa');
-        expect(input.getCaretPos()).toEqual(4);
+        expect(input.getCursorPos()).toEqual(4);
 
         inputNode.value = 'aaaaa';
-        input.setCaretPos(5);
+        input.setCursorPos(5);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa a');
-        expect(input.getCaretPos()).toEqual(6);
+        expect(input.getCursorPos()).toEqual(6);
 
         inputNode.value = 'aaaa afgh ijkl mnop';
-        input.setCaretPos(19);
+        input.setCursorPos(19);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa afgh ijkl mnop');
-        expect(input.getCaretPos()).toEqual(19);
+        expect(input.getCursorPos()).toEqual(19);
 
         inputNode.value = 'aaaa afgh ijkl mnopq';
-        input.setCaretPos(20);
+        input.setCursorPos(20);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('aaaa afgh ijkl mnop');
-        expect(input.getCaretPos()).toEqual(19);
+        expect(input.getCursorPos()).toEqual(19);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -204,15 +204,15 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: '+' });
         expect(inputNode.value).toEqual('+7 (___) ___ __ __');
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: '7' });
         expect(inputNode.value).toEqual('+7 (7__) ___ __ __');
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
         expect(inputNode.value).toEqual('+7 (E__) ___ __ __');
 
@@ -232,7 +232,7 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(4);
+        input.setCursorPos(4);
         TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
         expect(inputNode.value).toEqual('+7 (111) 123 45 6');
 
@@ -240,7 +240,7 @@ describe('Input', () => {
         TestUtils.Simulate.keyPress(inputNode, { key: '0' });
         expect(inputNode.value).toEqual('+7 (012) 345 6');
 
-        input.setCaretPos(14)
+        input.setCursorPos(14)
         TestUtils.Simulate.keyPress(inputNode, { key: '7' });
         TestUtils.Simulate.keyPress(inputNode, { key: '8' });
         TestUtils.Simulate.keyPress(inputNode, { key: '9' });
@@ -248,9 +248,9 @@ describe('Input', () => {
         expect(inputNode.value).toEqual('+7 (012) 345 67 89');
 
         inputNode.value = '+7 (';
-        input.setCaretPos(4);
+        input.setCursorPos(4);
         TestUtils.Simulate.change(inputNode);
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyPress(inputNode, { key: '+' });
         expect(inputNode.value).toEqual('+7 (');
 
@@ -264,10 +264,10 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(3);
+        input.setCursorPos(3);
         TestUtils.Simulate.keyPress(inputNode, { key: '1' });
         expect(inputNode.value).toEqual('(111)');
-        expect(input.getCaretPos()).toEqual(4);
+        expect(input.getCursorPos()).toEqual(4);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -279,7 +279,7 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(10);
+        input.setCursorPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
         expect(inputNode.value).toEqual('+7 (495) _15 64 54');
         
@@ -296,17 +296,17 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(10);
+        input.setCursorPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
         expect(inputNode.value).toEqual('+7 (495) 156 45 4');
 
         inputNode.value = '+7 (';
-        input.setCaretPos(4);
+        input.setCursorPos(4);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('+7 (');
 
         inputNode.value = '+7 ';
-        input.setCaretPos(3);
+        input.setCursorPos(3);
         TestUtils.Simulate.change(inputNode);
         expect(inputNode.value).toEqual('+7 (');
 
@@ -320,16 +320,16 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(10);
+        input.setCursorPos(10);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(input.getCaretPos()).toEqual(9);
+        expect(input.getCursorPos()).toEqual(9);
 
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(input.getCaretPos()).toEqual(6);
+        expect(input.getCursorPos()).toEqual(6);
 
-        input.setCaretPos(4);
+        input.setCursorPos(4);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(input.getCaretPos()).toEqual(4);
+        expect(input.getCursorPos()).toEqual(4);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -357,7 +357,7 @@ describe('Input', () => {
 
         input.setSelection(1, 9);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-        expect(input.getCaretPos()).toEqual(1);
+        expect(input.getCursorPos()).toEqual(1);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -369,15 +369,15 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
         expect(inputNode.value).toEqual('+7 (495) 315 64 54');
 
-        input.setCaretPos(7);
+        input.setCursorPos(7);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
         expect(inputNode.value).toEqual('+7 (495) _15 64 54');
 
-        input.setCaretPos(11);
+        input.setCursorPos(11);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
         expect(inputNode.value).toEqual('+7 (495) _1_ 64 54');
 
@@ -391,17 +391,17 @@ describe('Input', () => {
         inputNode.focus();
         TestUtils.Simulate.focus(inputNode);
 
-        input.setCaretPos(0);
+        input.setCursorPos(0);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(input.getCaretPos()).toEqual(4);
+        expect(input.getCursorPos()).toEqual(4);
 
-        input.setCaretPos(7);
+        input.setCursorPos(7);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(input.getCaretPos()).toEqual(9);
+        expect(input.getCursorPos()).toEqual(9);
 
-        input.setCaretPos(11);
+        input.setCursorPos(11);
         TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
-        expect(input.getCaretPos()).toEqual(11);
+        expect(input.getCursorPos()).toEqual(11);
 
         ReactDOM.unmountComponentAtNode(container);
     }));
@@ -452,7 +452,7 @@ describe('Input', () => {
         input.pasteText(inputNode.value, '34781226917', input.getSelection());
         expect(inputNode.value).toEqual('___3-4781-2269-17_3');
 
-        input.setCaretPos(3);
+        input.setCursorPos(3);
         input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
         expect(inputNode.value).toEqual('___3-__81-2_69-17_3');
 
@@ -470,11 +470,11 @@ describe('Input', () => {
         input.pasteText(inputNode.value, '34781226917', input.getSelection());
         expect(inputNode.value).toEqual('3478-1226-917');
 
-        input.setCaretPos(1);
+        input.setCursorPos(1);
         input.pasteText(inputNode.value, '12345', input.getSelection());
         expect(inputNode.value).toEqual('3123-4547-8122-6917');
 
-        input.setCaretPos(1);
+        input.setCursorPos(1);
         input.pasteText(inputNode.value, '4321', input.getSelection());
         expect(inputNode.value).toEqual('3432-1547-8122-6917');
 
