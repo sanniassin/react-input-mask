@@ -27,7 +27,7 @@ var InputElement = function (_React$Component) {
         _initialiseProps.call(_this);
 
         _this.hasValue = props.value != null;
-        _this.charsRules = "formatChars" in props ? props.formatChars : _this.defaultCharsRules;
+        _this.charsRules = props.formatChars != null ? props.formatChars : _this.defaultCharsRules;
 
         var mask = _this.parseMask(props.mask);
         var defaultValue = props.defaultValue != null ? props.defaultValue : '';
@@ -60,7 +60,7 @@ var _initialiseProps = function _initialiseProps() {
         "*": "[A-Za-z0-9]"
     };
     this.defaultMaskChar = "_";
-    this.lastCaretPos = null;
+    this.lastCursorPos = null;
 
     this.isAndroidBrowser = function () {
         var windows = new RegExp("windows", "i");
@@ -362,11 +362,11 @@ var _initialiseProps = function _initialiseProps() {
         return _this2.permanents.indexOf(pos) !== -1;
     };
 
-    this.setCaretToEnd = function () {
+    this.setCursorToEnd = function () {
         var filledLen = _this2.getFilledLength();
         var pos = _this2.getRightEditablePos(filledLen);
         if (pos !== null) {
-            _this2.setCaretPos(pos);
+            _this2.setCursorPos(pos);
         }
     };
 
@@ -414,11 +414,11 @@ var _initialiseProps = function _initialiseProps() {
         };
     };
 
-    this.getCaretPos = function () {
+    this.getCursorPos = function () {
         return _this2.getSelection().start;
     };
 
-    this.setCaretPos = function (pos) {
+    this.setCursorPos = function (pos) {
         var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (fn) {
             return setTimeout(fn, 0);
         };
@@ -428,7 +428,7 @@ var _initialiseProps = function _initialiseProps() {
         setPos();
         raf(setPos);
 
-        _this2.lastCaretPos = pos;
+        _this2.lastCursorPos = pos;
     };
 
     this.isFocused = function () {
@@ -484,7 +484,7 @@ var _initialiseProps = function _initialiseProps() {
 
     this.componentWillReceiveProps = function (nextProps) {
         _this2.hasValue = _this2.props.value != null;
-        _this2.charsRules = "formatChars" in nextProps ? nextProps.formatChars : _this2.defaultCharsRules;
+        _this2.charsRules = nextProps.formatChars != null ? nextProps.formatChars : _this2.defaultCharsRules;
 
         var oldMask = _this2.mask;
         var mask = _this2.parseMask(nextProps.mask);
@@ -496,7 +496,7 @@ var _initialiseProps = function _initialiseProps() {
         _this2.maskChar = "maskChar" in nextProps ? nextProps.maskChar : _this2.defaultMaskChar;
 
         if (!_this2.mask) {
-            _this2.lastCaretPos = null;
+            _this2.lastCursorPos = null;
             return;
         }
 
@@ -511,7 +511,7 @@ var _initialiseProps = function _initialiseProps() {
             newValue = _this2.formatValue(newValue);
 
             if (isMaskChanged) {
-                var pos = _this2.lastCaretPos;
+                var pos = _this2.lastCursorPos;
                 var filledLen = _this2.getFilledLength(newValue);
                 if (pos === null || filledLen < pos) {
                     if (_this2.isFilled(newValue)) {
@@ -519,7 +519,7 @@ var _initialiseProps = function _initialiseProps() {
                     } else {
                         pos = _this2.getRightEditablePos(filledLen);
                     }
-                    _this2.setCaretPos(pos);
+                    _this2.setCursorPos(pos);
                 }
             }
         }
@@ -556,7 +556,7 @@ var _initialiseProps = function _initialiseProps() {
             return;
         }
 
-        var caretPos = _this2.getCaretPos();
+        var cursorPos = _this2.getCursorPos();
         var value = _this2.state.value;
         var key = event.key;
         var preventDefault = false;
@@ -568,13 +568,13 @@ var _initialiseProps = function _initialiseProps() {
                 var selectionRange = _this2.getSelection();
                 if (selectionRange.length) {
                     value = _this2.clearRange(value, selectionRange.start, selectionRange.length);
-                } else if (caretPos < prefixLen || !deleteFromRight && caretPos === prefixLen) {
-                    caretPos = prefixLen;
+                } else if (cursorPos < prefixLen || !deleteFromRight && cursorPos === prefixLen) {
+                    cursorPos = prefixLen;
                 } else {
-                    var editablePos = deleteFromRight ? _this2.getRightEditablePos(caretPos) : _this2.getLeftEditablePos(caretPos - 1);
+                    var editablePos = deleteFromRight ? _this2.getRightEditablePos(cursorPos) : _this2.getLeftEditablePos(cursorPos - 1);
                     if (editablePos !== null) {
                         value = _this2.clearRange(value, editablePos, 1);
-                        caretPos = editablePos;
+                        cursorPos = editablePos;
                     }
                 }
                 preventDefault = true;
@@ -599,7 +599,7 @@ var _initialiseProps = function _initialiseProps() {
         }
         if (preventDefault) {
             event.preventDefault();
-            _this2.setCaretPos(caretPos);
+            _this2.setCursorPos(cursorPos);
         }
     };
 
@@ -617,7 +617,7 @@ var _initialiseProps = function _initialiseProps() {
             return;
         }
 
-        var caretPos = _this2.getCaretPos();
+        var cursorPos = _this2.getCursorPos();
         var selection = _this2.getSelection();
         var value = _this2.state.value;
         var mask = _this2.mask,
@@ -627,15 +627,15 @@ var _initialiseProps = function _initialiseProps() {
         var maskLen = mask.length;
         var prefixLen = _this2.getPrefix().length;
 
-        if (_this2.isPermanentChar(caretPos) && mask[caretPos] === key) {
-            value = _this2.insertRawSubstr(value, key, caretPos);
-            ++caretPos;
+        if (_this2.isPermanentChar(cursorPos) && mask[cursorPos] === key) {
+            value = _this2.insertRawSubstr(value, key, cursorPos);
+            ++cursorPos;
         } else {
-            var editablePos = _this2.getRightEditablePos(caretPos);
+            var editablePos = _this2.getRightEditablePos(cursorPos);
             if (editablePos !== null && _this2.isAllowedChar(key, editablePos)) {
                 value = _this2.clearRange(value, selection.start, selection.length);
                 value = _this2.insertRawSubstr(value, key, editablePos);
-                caretPos = editablePos + 1;
+                cursorPos = editablePos + 1;
             }
         }
 
@@ -649,10 +649,10 @@ var _initialiseProps = function _initialiseProps() {
             }
         }
         event.preventDefault();
-        if (caretPos < lastEditablePos && caretPos > prefixLen) {
-            caretPos = _this2.getRightEditablePos(caretPos);
+        if (cursorPos < lastEditablePos && cursorPos > prefixLen) {
+            cursorPos = _this2.getRightEditablePos(cursorPos);
         }
-        _this2.setCaretPos(caretPos);
+        _this2.setCursorPos(cursorPos);
     };
 
     this.onChange = function (event) {
@@ -677,7 +677,7 @@ var _initialiseProps = function _initialiseProps() {
             return;
         }
         var selection = _this2.getSelection();
-        var caretPos = selection.end;
+        var cursorPos = selection.end;
         var maskLen = mask.length;
         var valueLen = value.length;
         var oldValueLen = oldValue.length;
@@ -690,22 +690,22 @@ var _initialiseProps = function _initialiseProps() {
             var enteredSubstr = value.substr(startPos, substrLen);
 
             if (startPos < lastEditablePos && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
-                caretPos = _this2.getRightEditablePos(startPos);
+                cursorPos = _this2.getRightEditablePos(startPos);
             } else {
-                caretPos = startPos;
+                cursorPos = startPos;
             }
 
             value = value.substr(0, startPos) + value.substr(startPos + substrLen);
 
             clearedValue = _this2.clearRange(value, startPos, maskLen - startPos);
-            clearedValue = _this2.insertRawSubstr(clearedValue, enteredSubstr, caretPos);
+            clearedValue = _this2.insertRawSubstr(clearedValue, enteredSubstr, cursorPos);
 
-            value = _this2.insertRawSubstr(oldValue, enteredSubstr, caretPos);
+            value = _this2.insertRawSubstr(oldValue, enteredSubstr, cursorPos);
 
-            if (substrLen !== 1 || caretPos >= prefixLen && caretPos < lastEditablePos) {
-                caretPos = _this2.getFilledLength(clearedValue);
-            } else if (caretPos < lastEditablePos) {
-                caretPos++;
+            if (substrLen !== 1 || cursorPos >= prefixLen && cursorPos < lastEditablePos) {
+                cursorPos = _this2.getFilledLength(clearedValue);
+            } else if (cursorPos < lastEditablePos) {
+                cursorPos++;
             }
         } else if (valueLen < oldValueLen) {
             var removedLen = maskLen - valueLen;
@@ -721,9 +721,9 @@ var _initialiseProps = function _initialiseProps() {
             clearedValue = _this2.insertRawSubstr(clearedValue, substr, 0);
 
             if (!clearOnly) {
-                caretPos = _this2.getFilledLength(clearedValue);
-            } else if (caretPos < prefixLen) {
-                caretPos = prefixLen;
+                cursorPos = _this2.getFilledLength(clearedValue);
+            } else if (cursorPos < prefixLen) {
+                cursorPos = prefixLen;
             }
         }
         value = _this2.formatValue(value);
@@ -743,7 +743,7 @@ var _initialiseProps = function _initialiseProps() {
                     _this2.props.onChange(event);
                 }
 
-                _this2.setCaretPos(caretPos);
+                _this2.setCursorPos(cursorPos);
             }, 0);
         } else {
             // prevent android autocomplete insertion on backspace
@@ -771,7 +771,7 @@ var _initialiseProps = function _initialiseProps() {
                 _this2.props.onChange(event);
             }
 
-            _this2.setCaretPos(caretPos);
+            _this2.setCursorPos(cursorPos);
         }
     };
 
@@ -791,13 +791,13 @@ var _initialiseProps = function _initialiseProps() {
 
             _this2.setState({
                 value: _this2.hasValue ? _this2.state.value : inputValue
-            }, _this2.setCaretToEnd);
+            }, _this2.setCursorToEnd);
 
             if (isInputValueChanged && typeof _this2.props.onChange === "function") {
                 _this2.props.onChange(event);
             }
         } else if (_this2.getFilledLength() < _this2.mask.length) {
-            _this2.setCaretToEnd();
+            _this2.setCursorToEnd();
         }
 
         if (typeof _this2.props.onFocus === "function") {
@@ -847,14 +847,14 @@ var _initialiseProps = function _initialiseProps() {
     };
 
     this.pasteText = function (value, text, selection, event) {
-        var caretPos = selection.start;
+        var cursorPos = selection.start;
         if (selection.length) {
-            value = _this2.clearRange(value, caretPos, selection.length);
+            value = _this2.clearRange(value, cursorPos, selection.length);
         }
-        var textLen = _this2.getRawSubstrLength(value, text, caretPos);
-        value = _this2.insertRawSubstr(value, text, caretPos);
-        caretPos += textLen;
-        caretPos = _this2.getRightEditablePos(caretPos) || caretPos;
+        var textLen = _this2.getRawSubstrLength(value, text, cursorPos);
+        value = _this2.insertRawSubstr(value, text, cursorPos);
+        cursorPos += textLen;
+        cursorPos = _this2.getRightEditablePos(cursorPos) || cursorPos;
         if (value !== _this2.getInputValue()) {
             if (event) {
                 _this2.setInputValue(value);
@@ -866,7 +866,7 @@ var _initialiseProps = function _initialiseProps() {
                 _this2.props.onChange(event);
             }
         }
-        _this2.setCaretPos(caretPos);
+        _this2.setCursorPos(cursorPos);
     };
 
     this.componentDidMount = function () {
@@ -874,8 +874,11 @@ var _initialiseProps = function _initialiseProps() {
         _this2.isWindowsPhoneBrowser = _this2.isWindowsPhoneBrowser();
         _this2.isAndroidFirefox = _this2.isAndroidFirefox();
 
-        if (Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-            var input = _this2.getInputDOMNode();
+        var input = _this2.getInputDOMNode();
+
+        // workaround for Jest
+        // it doesn't mount a real node so input will be null
+        if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
             var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
             _this2.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
         }
