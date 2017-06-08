@@ -861,8 +861,11 @@ class InputElement extends React.Component {
         this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
         this.isAndroidFirefox = this.isAndroidFirefox();
 
-        if (Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-            var input = this.getInputDOMNode();
+        var input = this.getInputDOMNode();
+
+        // workaround for Jest
+        // it doesn't mount a real node so input will be null
+        if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
             var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
             this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
         }
