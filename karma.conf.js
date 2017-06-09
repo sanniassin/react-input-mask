@@ -124,8 +124,8 @@ module.exports = function (config) {
     files: [
       'node_modules/babel-polyfill/dist/polyfill.min.js',
       'node_modules/console-polyfill/index.js',
-      'node_modules/react/dist/react-with-addons.min.js',
-      'tests/*.js'
+      'node_modules/react/dist/react.min.js',
+      'tests/input/*.js'
     ],
 
     // list of files to exclude
@@ -136,7 +136,7 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'tests/*.js': ['browserify']
+      'tests/input/*.js': ['browserify']
     },
 
     // test results reporter to use

@@ -42,7 +42,7 @@
     "prepare": "npm test && npm run build",
     "test": "npm run test:input && npm run test:server-render",
     "test:input": "karma start",
-    "test:server-render": "mocha --compilers js:babel-core/register ./tests_prerender"
+    "test:server-render": "mocha --compilers js:babel-core/register ./tests/server-render"
   },
   "repository": {
     "type": "git",

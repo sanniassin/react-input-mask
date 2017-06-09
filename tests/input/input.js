@@ -4,7 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
-import Input from '../InputElement';
+import Input from '../../InputElement';
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');
