@@ -496,7 +496,7 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.componentWillReceiveProps = function (nextProps) {
-    _this2.hasValue = _this2.props.value != null;
+    _this2.hasValue = nextProps.value != null;
     _this2.charsRules = nextProps.formatChars != null ? nextProps.formatChars : _this2.defaultCharsRules;
 
     var oldMask = _this2.mask;
