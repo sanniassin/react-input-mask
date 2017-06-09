@@ -1,5 +1,6 @@
 tests
 karma.conf.js
+rollup.config.js
 package-lock.json
 .babelrc
 .gitignore
