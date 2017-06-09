@@ -10,6 +10,15 @@ Yet another React component for input masking with attention to small usability 
 ```
 npm install react-input-mask --save
 ```
+<br/>
+
+Also you can use `react-input-mask` without module bundler
+```html
+<!-- Load React first -->
+<script src="https://unpkg.com/react/dist/react.min.js"></script>
+<!-- Will be exported to window.ReactInputMask -->
+<script src="https://unpkg.com/react-input-mask/dist/react-input-mask.min.js"></script>
+```
 
 ## Properties
 ### `mask` : `string`
