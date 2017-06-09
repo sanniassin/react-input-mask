@@ -1,10 +1,11 @@
+var bsCredentials;
 var canUseBS = false;
 
 try {
-    var bsCredentials = require(__dirname + '/browserStack.json');
-    canUseBS = true;
-} catch(e) {
-    console.warn("Can't load credentials from browserStack.json, fallback to PhantomJS");
+  bsCredentials = require(__dirname + '/browserStack.json');
+  canUseBS = true;
+} catch (e) {
+  console.warn("Can't load credentials from browserStack.json, fallback to PhantomJS");
 }
 
 module.exports = function (config) {
@@ -66,14 +67,14 @@ module.exports = function (config) {
       bs_safari_elcap: {
         base: 'BrowserStack',
         browser: 'safari',
-        os : 'OS X',
-        os_version : 'El Capitan'
+        os: 'OS X',
+        os_version: 'El Capitan'
       },
       bs_safari_mavericks: {
         base: 'BrowserStack',
         browser: 'safari',
-        os : 'OS X',
-        os_version : 'Mavericks'
+        os: 'OS X',
+        os_version: 'Mavericks'
       },
       bs_ios8: {
         base: 'BrowserStack',
@@ -113,14 +114,14 @@ module.exports = function (config) {
     ] : ['PhantomJS'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
-    basePath : './',
+    basePath: './',
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks : ['jasmine', 'browserify'],
+    frameworks: ['jasmine', 'browserify'],
 
     // list of files / patterns to load in the browser
-    files : [
+    files: [
       'node_modules/babel-polyfill/dist/polyfill.min.js',
       'node_modules/console-polyfill/index.js',
       'node_modules/react/dist/react-with-addons.min.js',
@@ -128,43 +129,43 @@ module.exports = function (config) {
     ],
 
     // list of files to exclude
-    exclude : [
+    exclude: [
       'karma.conf.js'
     ],
 
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
-    preprocessors : {
-      'tests/*.js' : ['browserify']
+    preprocessors: {
+      'tests/*.js': ['browserify']
     },
 
     // test results reporter to use
     // possible values: 'dots', 'progress'
     // available reporters: https://npmjs.org/browse/keyword/karma-reporter
-    reporters : ['progress'],
+    reporters: ['progress'],
 
     // web server port
-    port : 9876,
+    port: 9876,
 
     // enable / disable colors in the output (reporters and logs)
-    colors : true,
+    colors: true,
 
     // level of logging
     // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-    logLevel : config.LOG_INFO,
+    logLevel: config.LOG_INFO,
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch : false,
+    autoWatch: false,
 
     // Continuous Integration mode
     // if true, Karma captures browsers, runs the tests and exits
-    singleRun : true,
+    singleRun: true,
 
-    browserify : {
+    browserify: {
       transform: [['babelify', {
         presets: ['es2015', 'react'],
         plugins: ['transform-class-properties', 'transform-object-rest-spread']
       }]]
     }
-  })
-}
+  });
+};
