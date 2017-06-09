@@ -45,10 +45,17 @@ describe('Input', () => {
       expect(inputNode.value).to.equal('+7 (4b6) 454 __ __');
     }));
 
-  it('Focus/blur', createInput(
+  it('Show placeholder on focus', createInput(
     <Input mask="+7 (*a9) 999 99 99" />, (input, inputNode) => {
       expect(inputNode.value).to.equal('');
 
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      expect(inputNode.value).to.equal('+7 (___) ___ __ __');
+    }));
+
+  it('Clear input on blur', createInput(
+    <Input mask="+7 (*a9) 999 99 99" />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
       expect(inputNode.value).to.equal('+7 (___) ___ __ __');
@@ -57,10 +64,14 @@ describe('Input', () => {
       TestUtils.Simulate.blur(inputNode);
       expect(inputNode.value).to.equal('');
 
-      setInputProps(input, { value: '+7 (___) ___ __ __' });
-      expect(inputNode.value).to.equal('');
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      inputNode.value = '+7 (1__) ___ __ __';
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+7 (1__) ___ __ __');
 
-      setInputProps(input, { value: '+7 (1__) ___ __ __' });
+      inputNode.blur();
+      TestUtils.Simulate.blur(inputNode);
       expect(inputNode.value).to.equal('+7 (1__) ___ __ __');
     }));
 
@@ -84,7 +95,7 @@ describe('Input', () => {
     }));
 
   it('Focus cursor position', createInput(
-    <Input mask="+7 (999) 999 99 99" />, (input, inputNode) => {
+    <Input mask="+7 (999) 999 99 99" value="+7" />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
@@ -434,5 +445,11 @@ describe('Input', () => {
   it('Null as formatChars', createInput(
     <Input mask="99-99" formatChars={null} alwaysShowMask />, (input, inputNode) => {
       expect(inputNode.value).to.equal('__-__');
+    }));
+
+  it('Show empty value if input switched from uncontrolled to controlled', createInput(
+    <Input mask="+7 (*a9) 999 99 99" />, (input, inputNode) => {
+      setInputProps(input, { value: '+7 (___) ___ __ __' });
+      expect(inputNode.value).to.equal('+7 (___) ___ __ __');
     }));
 });
