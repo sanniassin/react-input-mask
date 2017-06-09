@@ -162,10 +162,7 @@ module.exports = function (config) {
     singleRun: true,
 
     browserify: {
-      transform: [['babelify', {
-        presets: ['es2015', 'react'],
-        plugins: ['transform-class-properties', 'transform-object-rest-spread']
-      }]]
+      transform: [['babelify']]
     }
   });
 };

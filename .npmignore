@@ -2,5 +2,6 @@ tests
 tests_prerender
 karma.conf.js
 package-lock.json
+.babelrc
 .gitignore
 .travis.yml

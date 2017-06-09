@@ -1,13 +1,13 @@
 /* global describe, it */
 
-var React = require('react');
-var ReactDOMServer = require('react-dom/server');
-var expect = require('chai').expect;
-var InputElement = require('../build/InputElement.js');
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import { expect } from 'chai';
+import InputElement from '../InputElement';
 
 describe('Test prerender', () => {
   it('should return a string', () => {
-    var result = ReactDOMServer.renderToString(React.createElement(InputElement, { value: 'some', mask: '799' }));
+    var result = ReactDOMServer.renderToString(<InputElement value="some" mask="799" />);
     expect(typeof result).to.equal('string');
   });
 });
