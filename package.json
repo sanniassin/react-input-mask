@@ -40,9 +40,9 @@
   "scripts": {
     "build": "babel InputElement.js --out-dir build --presets=es2015,react --plugins transform-class-properties,transform-object-rest-spread",
     "prepare": "npm test && npm run build",
-    "test": "npm run test:karma && npm run test:mocha",
-    "test:karma": "karma start",
-    "test:mocha": "mocha --compilers js:babel-core/register ./tests_prerender"
+    "test": "npm run test:input && npm run test:server-render",
+    "test:input": "karma start",
+    "test:server-render": "mocha --compilers js:babel-core/register ./tests_prerender"
   },
   "repository": {
     "type": "git",
