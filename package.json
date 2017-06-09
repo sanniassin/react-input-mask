@@ -38,7 +38,7 @@
   },
   "main": "build/InputElement.js",
   "scripts": {
-    "build": "babel InputElement.js --out-dir build --presets=es2015,react --plugins transform-class-properties,transform-object-rest-spread",
+    "build": "babel InputElement.js --out-dir build",
     "prepare": "npm test && npm run build",
     "test": "npm run test:input && npm run test:server-render",
     "test:input": "karma start",
