@@ -45,6 +45,11 @@
   "main": "lib/InputElement.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
+  "files": [
+    "es",
+    "lib",
+    "dist"
+  ],
   "scripts": {
     "clean": "rimraf lib dist es",
     "build": "npm run build:commonjs && npm run build:es && npm run build:umd && npm run build:umd:min",
