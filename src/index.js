@@ -872,11 +872,26 @@ class InputElement extends React.Component {
     }
   }
 
+  onInput = (event) => {
+    if (this.isAndroidFirefox) {
+      var input = this.getInputDOMNode();
+      input.type = 'password';
+
+      requestAnimationFrame(() => {
+        input.type = this.props.type;
+      });
+    }
+
+    if (typeof this.props.onInput === 'function') {
+      this.props.onInput(event);
+    }
+  }
+
   render = () => {
     var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
     if (this.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onKeyPress', 'onPaste'];
+        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onKeyPress', 'onPaste', 'onInput'];
         handlersKeys.forEach((key) => {
           props[key] = this[key];
         });
