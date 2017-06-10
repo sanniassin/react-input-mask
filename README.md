@@ -4,18 +4,18 @@
 
 Yet another React component for input masking with attention to small usability details with cursor position, copy-paste, etc.
 
-## [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
+#### [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
 ## Install
 ```
 npm install react-input-mask --save
 ```
-<br/>
 
-Also you can use `react-input-mask` without module bundler
+Also you can use it without module bundler
 ```html
 <!-- Load React first -->
 <script src="https://unpkg.com/react/dist/react.min.js"></script>
+<script src="https://unpkg.com/react-dom/dist/react-dom.min.js"></script>
 <!-- Will be exported to window.ReactInputMask -->
 <script src="https://unpkg.com/react-input-mask/dist/react-input-mask.min.js"></script>
 ```
@@ -32,7 +32,7 @@ Any character can be escaped with backslash, which usually will appear as double
 
 ### `maskChar` : `string`
 
-Character to cover unfilled editable parts of mask. Default character is "_". If set to null, unfilled parts will be empty, like in ordinary input.
+Character to cover unfilled editable parts of mask. Default character is "_". If set to null or empty string, unfilled parts will be empty, like in ordinary input.
 
 ### `formatChars` : `object`
 
