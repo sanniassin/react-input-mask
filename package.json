@@ -42,7 +42,7 @@
     "rollup-plugin-uglify": "^2.0.1",
     "watchify": "^3.7.0"
   },
-  "main": "lib/InputElement.js",
+  "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "files": [
