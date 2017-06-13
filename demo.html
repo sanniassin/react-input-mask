@@ -8,13 +8,13 @@ layout: master
 
 <h2>Phones</h2>
 
-<pre><code>&lt;ReactInputMask mask="+4\9 99 999 99" maskChar={null} /&gt;</code></pre>
+<pre><code>&lt;InputMask mask="+4\9 99 999 99" maskChar={null} /&gt;</code></pre>
 <div id="phone1"></div>
 <script>
   ReactDOM.render(React.createElement(ReactInputMask, { mask: '+4\\9 99 999 99', maskChar: null }), document.getElementById('phone1'));
 </script>
 
-<pre><code>&lt;ReactInputMask mask="+7 (999) 999-99-99" /&gt;</code></pre>
+<pre><code>&lt;InputMask mask="+7 (999) 999-99-99" /&gt;</code></pre>
 <div id="phone2"></div>
 <script>
   ReactDOM.render(React.createElement(ReactInputMask, { mask: '+7 (999) 999-99-99' }), document.getElementById('phone2'));
@@ -22,7 +22,7 @@ layout: master
 
 <h2>Dates</h2>
 
-<pre><code id="date1-code">&lt;ReactInputMask mask="99-99-9999" defaultValue="01-01-2015" /&gt;</code></pre>
+<pre><code id="date1-code">&lt;InputMask mask="99-99-9999" defaultValue="01-01-2015" /&gt;</code></pre>
 <div id="date1"></div>
 <script>
   var date = new Date();
@@ -34,7 +34,7 @@ layout: master
   ReactDOM.render(React.createElement(ReactInputMask, { mask: '99-99-9999', defaultValue: defaultValue }), date1);
 </script>
 
-<pre><code id="date2-code">&lt;ReactInputMask mask="99/99/9999" placeholder="Enter birthdate" /&gt;</code></pre>
+<pre><code id="date2-code">&lt;InputMask mask="99/99/9999" placeholder="Enter birthdate" /&gt;</code></pre>
 <div id="date2"></div>
 <script>
   var date2 = document.getElementById('date2');
@@ -61,7 +61,7 @@ onChange: function(event) {
   this.setState(newState);
 },
 render: function() {
-  return &lt;ReactInputMask {...this.state} onChange={this.onChange} /&gt;;
+  return &lt;InputMask {...this.state} onChange={this.onChange} /&gt;;
 }</code></pre>
 <div id="card1"></div>
 <script>
