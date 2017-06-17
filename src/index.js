@@ -1,25 +1,31 @@
 // https://github.com/sanniassin/react-input-mask
-
 import React from 'react';
 
+import parseMask from './utils/parseMask';
+import { isAndroidBrowser, isWindowsPhoneBrowser, isAndroidFirefox } from './utils/environment';
+import {
+  clearRange,
+  formatValue,
+  getPrefix,
+  getFilledLength,
+  isFilled,
+  isEmpty,
+  isPermanentChar,
+  isAllowedChar,
+  getRawSubstrLength,
+  insertRawSubstr
+} from './utils/string';
+
 class InputElement extends React.Component {
-  defaultCharsRules = {
-    '9': '[0-9]',
-    'a': '[A-Za-z]',
-    '*': '[A-Za-z0-9]'
-  }
-  defaultMaskChar = '_'
   lastCursorPos = null
 
   constructor(props) {
     super(props);
 
     this.hasValue = props.value != null;
-    this.charsRules = props.formatChars != null
-      ? props.formatChars
-      : this.defaultCharsRules;
 
-    var mask = this.parseMask(props.mask);
+    this.maskOptions = parseMask(props.mask, props.maskChar, props.formatChars);
+
     var defaultValue = props.defaultValue != null
       ? props.defaultValue
       : '';
@@ -29,55 +35,17 @@ class InputElement extends React.Component {
 
     value = this.getStringValue(value);
 
-    this.mask = mask.mask;
-    this.permanents = mask.permanents;
-    this.lastEditablePos = mask.lastEditablePos;
-    this.maskChar = 'maskChar' in props
-      ? props.maskChar
-      : this.defaultMaskChar;
-
-    if (this.mask && (props.alwaysShowMask || value)) {
-      value = this.formatValue(value);
+    if (this.maskOptions.mask && (props.alwaysShowMask || value)) {
+      value = formatValue(this.maskOptions, value);
     }
 
     this.state = { value };
   }
 
-  isAndroidBrowser = () => {
-    var windows = new RegExp('windows', 'i');
-    var firefox = new RegExp('firefox', 'i');
-    var android = new RegExp('android', 'i');
-    var ua = navigator.userAgent;
-    return !windows.test(ua)
-           &&
-           !firefox.test(ua)
-           &&
-           android.test(ua);
-  }
-
-  isWindowsPhoneBrowser = () => {
-    var windows = new RegExp('windows', 'i');
-    var phone = new RegExp('phone', 'i');
-    var ua = navigator.userAgent;
-    return windows.test(ua) && phone.test(ua);
-  }
-
-  isAndroidFirefox = () => {
-    var windows = new RegExp('windows', 'i');
-    var firefox = new RegExp('firefox', 'i');
-    var android = new RegExp('android', 'i');
-    var ua = navigator.userAgent;
-    return !windows.test(ua)
-           &&
-           firefox.test(ua)
-           &&
-           android.test(ua);
-  }
-
   isDOMElement = (element) => {
     return typeof HTMLElement === 'object'
-         ? element instanceof HTMLElement // DOM2
-         : element.nodeType === 1 && typeof element.nodeName === 'string';
+      ? element instanceof HTMLElement // DOM2
+      : element.nodeType === 1 && typeof element.nodeName === 'string';
   }
 
   getInputDOMNode = () => {
@@ -103,9 +71,9 @@ class InputElement extends React.Component {
         configurable: true,
         enumerable: true,
         get: () => this.value,
-        set: (val) => {
-          this.value = val;
-          this.valueDescriptor.set.call(input, val);
+        set: (value) => {
+          this.value = value;
+          this.valueDescriptor.set.call(input, value);
         }
       });
     }
@@ -135,42 +103,15 @@ class InputElement extends React.Component {
     return value;
   }
 
-  setInputValue = (val) => {
+  setInputValue = (value) => {
     var input = this.getInputDOMNode();
-    this.value = val;
-    input.value = val;
-  }
-
-  getPrefix = () => {
-    var prefix = '';
-    var { mask } = this;
-    for (var i = 0; i < mask.length && this.isPermanentChar(i); ++i) {
-      prefix += mask[i];
-    }
-    return prefix;
-  }
-
-  getFilledLength = (value = this.state.value) => {
-    var i;
-    var { maskChar } = this;
-
-    if (!maskChar) {
-      return value.length;
-    }
-
-    for (i = value.length - 1; i >= 0; --i) {
-      var character = value[i];
-      if (!this.isPermanentChar(i) && this.isAllowedChar(character, i)) {
-        break;
-      }
-    }
-
-    return ++i || this.getPrefix().length;
+    this.value = value;
+    input.value = value;
   }
 
   getLeftEditablePos = (pos) => {
     for (var i = pos; i >= 0; --i) {
-      if (!this.isPermanentChar(i)) {
+      if (!isPermanentChar(this.maskOptions, i)) {
         return i;
       }
     }
@@ -178,176 +119,17 @@ class InputElement extends React.Component {
   }
 
   getRightEditablePos = (pos) => {
-    var { mask } = this;
+    var { mask } = this.maskOptions;
     for (var i = pos; i < mask.length; ++i) {
-      if (!this.isPermanentChar(i)) {
+      if (!isPermanentChar(this.maskOptions, i)) {
         return i;
       }
     }
     return null;
   }
 
-  isEmpty = (value = this.state.value) => {
-    return !value.split('').some((character, i) =>
-      !this.isPermanentChar(i) && this.isAllowedChar(character, i)
-    );
-  }
-
-  isFilled = (value = this.state.value) => {
-    return this.getFilledLength(value) === this.mask.length;
-  }
-
-  createFilledArray = (length, val) => {
-    var array = [];
-    for (var i = 0; i < length; i++) {
-      array[i] = val;
-    }
-    return array;
-  }
-
-  formatValue = (value) => {
-    var { maskChar, mask } = this;
-
-    if (!maskChar) {
-      var prefix = this.getPrefix();
-      var prefixLen = prefix.length;
-      value = this.insertRawSubstr('', value, 0);
-      while (value.length > prefixLen && this.isPermanentChar(value.length - 1)) {
-        value = value.slice(0, value.length - 1);
-      }
-
-      if (value.length < prefixLen) {
-        value = prefix;
-      }
-
-      return value;
-    }
-
-    if (value) {
-      var emptyValue = this.formatValue('');
-      return this.insertRawSubstr(emptyValue, value, 0);
-    }
-
-    return value.split('')
-                .concat(this.createFilledArray(mask.length - value.length, null))
-                .map((character, pos) => {
-                  if (this.isAllowedChar(character, pos)) {
-                    return character;
-                  } else if (this.isPermanentChar(pos)) {
-                    return mask[pos];
-                  }
-                  return maskChar;
-                })
-                .join('');
-  }
-
-  clearRange = (value, start, len) => {
-    var end = start + len;
-    var { maskChar, mask } = this;
-
-    if (!maskChar) {
-      var prefixLen = this.getPrefix().length;
-      value = value.split('')
-                   .filter((character, i) => i < prefixLen || i < start || i >= end)
-                   .join('');
-
-      return this.formatValue(value);
-    }
-
-    return value
-      .split('')
-      .map((character, i) => {
-        if (i < start || i >= end) {
-          return character;
-        }
-        if (this.isPermanentChar(i)) {
-          return mask[i];
-        }
-        return maskChar;
-      })
-      .join('');
-  }
-
-  replaceSubstr = (value, newSubstr, pos) => {
-    return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
-  }
-
-  insertRawSubstr = (value, substr, pos) => {
-    var { mask, maskChar } = this;
-    var isFilled = this.isFilled(value);
-    var prefixLen = this.getPrefix().length;
-    substr = substr.split('');
-
-    if (!maskChar && pos > value.length) {
-      value += mask.slice(value.length, pos);
-    }
-
-    for (var i = pos; i < mask.length && substr.length;) {
-      var isPermanent = this.isPermanentChar(i);
-      if (!isPermanent || mask[i] === substr[0]) {
-        var character = substr.shift();
-        if (this.isAllowedChar(character, i, true)) {
-          if (i < value.length) {
-            if (maskChar || isFilled || i < prefixLen) {
-              value = this.replaceSubstr(value, character, i);
-            } else {
-              value = this.formatValue(value.substr(0, i) + character + value.substr(i));
-            }
-          } else if (!maskChar) {
-            value += character;
-          }
-          ++i;
-        }
-      } else {
-        if (!maskChar && i >= value.length) {
-          value += mask[i];
-        } else if (maskChar && isPermanent && substr[0] === maskChar) {
-          substr.shift();
-        }
-        ++i;
-      }
-    }
-    return value;
-  }
-
-  getRawSubstrLength = (value, substr, pos) => {
-    var { mask } = this;
-    var i = pos;
-    substr = substr.split('');
-    while (i < mask.length && substr.length) {
-      if (!this.isPermanentChar(i) || mask[i] === substr[0]) {
-        var character = substr.shift();
-        if (this.isAllowedChar(character, i, true)) {
-          ++i;
-        }
-      } else {
-        ++i;
-      }
-    }
-    return i - pos;
-  }
-
-  isAllowedChar = (character, pos, allowMaskChar = false) => {
-    var { mask, maskChar } = this;
-
-    if (this.isPermanentChar(pos)) {
-      return mask[pos] === character;
-    }
-
-    var ruleChar = mask[pos];
-    var charRule = this.charsRules[ruleChar];
-
-    return (new RegExp(charRule)).test(character || '')
-           ||
-           (allowMaskChar && character === maskChar);
-  }
-
-  isPermanentChar = (pos) => {
-    return this.permanents.indexOf(pos) !== -1;
-  }
-
   setCursorToEnd = () => {
-    var filledLen = this.getFilledLength();
+    var filledLen = getFilledLength(this.maskOptions, this.state.value);
     var pos = this.getRightEditablePos(filledLen);
     if (pos !== null) {
       this.setCursorPos(pos);
@@ -402,12 +184,12 @@ class InputElement extends React.Component {
 
   setCursorPos = (pos) => {
     var raf = window.requestAnimationFrame
-        ||
-        window.webkitRequestAnimationFrame
-        ||
-        window.mozRequestAnimationFrame
-        ||
-        ((fn) => setTimeout(fn, 0));
+              ||
+              window.webkitRequestAnimationFrame
+              ||
+              window.mozRequestAnimationFrame
+              ||
+              ((fn) => setTimeout(fn, 0));
 
     var setPos = this.setSelection.bind(this, pos, 0);
 
@@ -421,47 +203,12 @@ class InputElement extends React.Component {
     return document.activeElement === this.getInputDOMNode();
   }
 
-  parseMask = (mask) => {
-    if (!mask || typeof mask !== 'string') {
-      return {
-        mask: null,
-        lastEditablePos: null,
-        permanents: []
-      };
-    }
-    var str = '';
-    var permanents = [];
-    var isPermanent = false;
-    var lastEditablePos = null;
-
-    mask.split('')
-        .forEach((character) => {
-          if (!isPermanent && character === '\\') {
-            isPermanent = true;
-          } else {
-            if (isPermanent || !this.charsRules[character]) {
-              permanents.push(str.length);
-            } else {
-              lastEditablePos = str.length + 1;
-            }
-            str += character;
-            isPermanent = false;
-          }
-        });
-
-    return {
-      mask: str,
-      lastEditablePos: lastEditablePos,
-      permanents: permanents
-    };
-  }
-
   getStringValue = (value) => {
     return !value && value !== 0 ? '' : value + '';
   }
 
   componentWillMount = () => {
-    var { mask } = this;
+    var { mask } = this.maskOptions;
     var { value } = this.state;
     if (mask && value) {
       this.setState({ value });
@@ -469,23 +216,14 @@ class InputElement extends React.Component {
   }
 
   componentWillReceiveProps = (nextProps) => {
+    var oldMask = this.maskOptions.mask;
+
     this.hasValue = nextProps.value != null;
-    this.charsRules = nextProps.formatChars != null
-      ? nextProps.formatChars
-      : this.defaultCharsRules;
+    this.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
 
-    var oldMask = this.mask;
-    var mask = this.parseMask(nextProps.mask);
-    var isMaskChanged = mask.mask && mask.mask !== this.mask;
+    var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMask;
 
-    this.mask = mask.mask;
-    this.permanents = mask.permanents;
-    this.lastEditablePos = mask.lastEditablePos;
-    this.maskChar = 'maskChar' in nextProps
-      ? nextProps.maskChar
-      : this.defaultMaskChar;
-
-    if (!this.mask) {
+    if (!this.maskOptions.mask) {
       this.lastCursorPos = null;
       return;
     }
@@ -499,14 +237,14 @@ class InputElement extends React.Component {
     }
 
     var showEmpty = nextProps.alwaysShowMask || this.isFocused();
-    if (isMaskChanged || (mask.mask && (newValue || showEmpty))) {
-      newValue = this.formatValue(newValue);
+    if (isMaskChanged || (this.maskOptions.mask && (newValue || showEmpty))) {
+      newValue = formatValue(this.maskOptions, newValue);
 
       if (isMaskChanged) {
         var pos = this.lastCursorPos;
-        var filledLen = this.getFilledLength(newValue);
+        var filledLen = getFilledLength(this.maskOptions, newValue);
         if (pos === null || filledLen < pos) {
-          if (this.isFilled(newValue)) {
+          if (isFilled(this.maskOptions, newValue)) {
             pos = filledLen;
           } else {
             pos = this.getRightEditablePos(filledLen);
@@ -515,7 +253,7 @@ class InputElement extends React.Component {
         }
       }
     }
-    if (mask.mask && this.isEmpty(newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
+    if (this.maskOptions.mask && isEmpty(this.maskOptions, newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
       newValue = '';
     }
     this.value = newValue;
@@ -525,7 +263,7 @@ class InputElement extends React.Component {
   }
 
   componentDidUpdate = (prevProps) => {
-    if ((this.mask || prevProps.mask) && this.props.value == null) {
+    if ((this.maskOptions.mask || prevProps.mask) && this.props.value == null) {
       this.updateUncontrolledInput();
     }
     if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
@@ -555,11 +293,11 @@ class InputElement extends React.Component {
     switch (key) {
       case 'Backspace':
       case 'Delete':
-        var prefixLen = this.getPrefix().length;
+        var prefixLen = getPrefix(this.maskOptions).length;
         var deleteFromRight = key === 'Delete';
         var selectionRange = this.getSelection();
         if (selectionRange.length) {
-          value = this.clearRange(value, selectionRange.start, selectionRange.length);
+          value = clearRange(this.maskOptions, value, selectionRange.start, selectionRange.length);
         } else if (cursorPos < prefixLen || (!deleteFromRight && cursorPos === prefixLen)) {
           cursorPos = prefixLen;
         } else {
@@ -568,7 +306,7 @@ class InputElement extends React.Component {
             : this.getLeftEditablePos(cursorPos - 1);
 
           if (editablePos !== null) {
-            value = this.clearRange(value, editablePos, 1);
+            value = clearRange(this.maskOptions, value, editablePos, 1);
             cursorPos = editablePos;
           }
         }
@@ -615,17 +353,17 @@ class InputElement extends React.Component {
     var cursorPos = this.getCursorPos();
     var selection = this.getSelection();
     var { value } = this.state;
-    var { mask, lastEditablePos } = this;
-    var prefixLen = this.getPrefix().length;
+    var { mask, lastEditablePos } = this.maskOptions;
+    var prefixLen = getPrefix(this.maskOptions).length;
 
-    if (this.isPermanentChar(cursorPos) && mask[cursorPos] === key) {
-      value = this.insertRawSubstr(value, key, cursorPos);
+    if (isPermanentChar(this.maskOptions, cursorPos) && mask[cursorPos] === key) {
+      value = insertRawSubstr(this.maskOptions, value, key, cursorPos);
       ++cursorPos;
     } else {
       var editablePos = this.getRightEditablePos(cursorPos);
-      if (editablePos !== null && this.isAllowedChar(key, editablePos)) {
-        value = this.clearRange(value, selection.start, selection.length);
-        value = this.insertRawSubstr(value, key, editablePos);
+      if (editablePos !== null && isAllowedChar(this.maskOptions, key, editablePos)) {
+        value = clearRange(this.maskOptions, value, selection.start, selection.length);
+        value = insertRawSubstr(this.maskOptions, value, key, editablePos);
         cursorPos = editablePos + 1;
       }
     }
@@ -647,7 +385,8 @@ class InputElement extends React.Component {
   }
 
   onChange = (event) => {
-    var { pasteSelection, mask, maskChar, lastEditablePos } = this;
+    var { pasteSelection } = this;
+    var { mask, maskChar, lastEditablePos } = this.maskOptions;
     var value = this.getInputValue();
     if (!value && this.preventEmptyChange) {
       this.disableValueAccessors();
@@ -666,7 +405,7 @@ class InputElement extends React.Component {
     var maskLen = mask.length;
     var valueLen = value.length;
     var oldValueLen = oldValue.length;
-    var prefixLen = this.getPrefix().length;
+    var prefixLen = getPrefix(this.maskOptions).length;
     var clearedValue;
 
     if (valueLen > oldValueLen) {
@@ -682,36 +421,36 @@ class InputElement extends React.Component {
 
       value = value.substr(0, startPos) + value.substr(startPos + substrLen);
 
-      clearedValue = this.clearRange(value, startPos, maskLen - startPos);
-      clearedValue = this.insertRawSubstr(clearedValue, enteredSubstr, cursorPos);
+      clearedValue = clearRange(this.maskOptions, value, startPos, maskLen - startPos);
+      clearedValue = insertRawSubstr(this.maskOptions, clearedValue, enteredSubstr, cursorPos);
 
-      value = this.insertRawSubstr(oldValue, enteredSubstr, cursorPos);
+      value = insertRawSubstr(this.maskOptions, oldValue, enteredSubstr, cursorPos);
 
       if (substrLen !== 1 || (cursorPos >= prefixLen && cursorPos < lastEditablePos)) {
-        cursorPos = this.getFilledLength(clearedValue);
+        cursorPos = getFilledLength(this.maskOptions, clearedValue);
       } else if (cursorPos < lastEditablePos) {
         cursorPos++;
       }
     } else if (valueLen < oldValueLen) {
       var removedLen = maskLen - valueLen;
-      clearedValue = this.clearRange(oldValue, selection.end, removedLen);
+      clearedValue = clearRange(this.maskOptions, oldValue, selection.end, removedLen);
       var substr = value.substr(0, selection.end);
       var clearOnly = substr === oldValue.substr(0, selection.end);
 
       if (maskChar) {
-        value = this.insertRawSubstr(clearedValue, substr, 0);
+        value = insertRawSubstr(this.maskOptions, clearedValue, substr, 0);
       }
 
-      clearedValue = this.clearRange(clearedValue, selection.end, maskLen - selection.end);
-      clearedValue = this.insertRawSubstr(clearedValue, substr, 0);
+      clearedValue = clearRange(this.maskOptions, clearedValue, selection.end, maskLen - selection.end);
+      clearedValue = insertRawSubstr(this.maskOptions, clearedValue, substr, 0);
 
       if (!clearOnly) {
-        cursorPos = this.getFilledLength(clearedValue);
+        cursorPos = getFilledLength(this.maskOptions, clearedValue);
       } else if (cursorPos < prefixLen) {
         cursorPos = prefixLen;
       }
     }
-    value = this.formatValue(value);
+    value = formatValue(this.maskOptions, value);
 
     if (this.isWindowsPhoneBrowser) {
       event.persist();
@@ -762,9 +501,9 @@ class InputElement extends React.Component {
 
   onFocus = (event) => {
     if (!this.state.value) {
-      var prefix = this.getPrefix();
-      var value = this.formatValue(prefix);
-      var inputValue = this.formatValue(value);
+      var prefix = getPrefix(this.maskOptions);
+      var value = formatValue(this.maskOptions, prefix);
+      var inputValue = formatValue(this.maskOptions, value);
 
       // do not use this.getInputValue and this.setInputValue as this.input
       // can be undefined at this moment if autoFocus attribute is set
@@ -781,7 +520,7 @@ class InputElement extends React.Component {
       if (isInputValueChanged && typeof this.props.onChange === 'function') {
         this.props.onChange(event);
       }
-    } else if (this.getFilledLength() < this.mask.length) {
+    } else if (getFilledLength(this.maskOptions, this.state.value) < this.maskOptions.mask.length) {
       this.setCursorToEnd();
     }
 
@@ -791,7 +530,7 @@ class InputElement extends React.Component {
   }
 
   onBlur = (event) => {
-    if (!this.props.alwaysShowMask && this.isEmpty(this.state.value)) {
+    if (!this.props.alwaysShowMask && isEmpty(this.maskOptions, this.state.value)) {
       var inputValue = '';
       var isInputValueChanged = inputValue !== this.getInputValue();
       if (isInputValueChanged) {
@@ -833,10 +572,10 @@ class InputElement extends React.Component {
   pasteText = (value, text, selection, event) => {
     var cursorPos = selection.start;
     if (selection.length) {
-      value = this.clearRange(value, cursorPos, selection.length);
+      value = clearRange(this.maskOptions, value, cursorPos, selection.length);
     }
-    var textLen = this.getRawSubstrLength(value, text, cursorPos);
-    value = this.insertRawSubstr(value, text, cursorPos);
+    var textLen = getRawSubstrLength(this.maskOptions, value, text, cursorPos);
+    value = insertRawSubstr(this.maskOptions, value, text, cursorPos);
     cursorPos += textLen;
     cursorPos = this.getRightEditablePos(cursorPos) || cursorPos;
     if (value !== this.getInputValue()) {
@@ -854,9 +593,9 @@ class InputElement extends React.Component {
   }
 
   componentDidMount = () => {
-    this.isAndroidBrowser = this.isAndroidBrowser();
-    this.isWindowsPhoneBrowser = this.isWindowsPhoneBrowser();
-    this.isAndroidFirefox = this.isAndroidFirefox();
+    this.isAndroidBrowser = isAndroidBrowser();
+    this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
+    this.isAndroidFirefox = isAndroidFirefox();
 
     var input = this.getInputDOMNode();
 
@@ -867,14 +606,14 @@ class InputElement extends React.Component {
       this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
     }
 
-    if (this.mask && this.props.value == null) {
+    if (this.maskOptions.mask && this.props.value == null) {
       this.updateUncontrolledInput();
     }
   }
 
   render = () => {
     var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
-    if (this.mask) {
+    if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
         var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onKeyPress', 'onPaste'];
         handlersKeys.forEach((key) => {
