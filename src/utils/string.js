@@ -2,8 +2,12 @@ export function isPermanentChar(maskOptions, pos) {
   return maskOptions.permanents.indexOf(pos) !== -1;
 }
 
-export function isAllowedChar(maskOptions, character, pos, allowMaskChar = false) {
+export function isAllowedChar(maskOptions, pos, character, allowMaskChar = false) {
   var { mask, maskChar, charsRules } = maskOptions;
+
+  if (!character) {
+    return false;
+  }
 
   if (isPermanentChar(maskOptions, pos)) {
     return mask[pos] === character;
@@ -12,68 +16,55 @@ export function isAllowedChar(maskOptions, character, pos, allowMaskChar = false
   var ruleChar = mask[pos];
   var charRule = charsRules[ruleChar];
 
-  return (new RegExp(charRule)).test(character || '')
+  return (new RegExp(charRule)).test(character)
          ||
          (allowMaskChar && character === maskChar);
 }
 
 export function isEmpty(maskOptions, value) {
-  return !value.split('').some((character, i) =>
-    !isPermanentChar(maskOptions, i) && isAllowedChar(maskOptions, character, i)
-  );
-}
-
-export function getPrefix(maskOptions) {
-  var prefix = '';
-  var { mask } = maskOptions;
-  for (var i = 0; i < mask.length && isPermanentChar(maskOptions, i); ++i) {
-    prefix += mask[i];
-  }
-  return prefix;
+  return value
+    .split('')
+    .every((character, i) => {
+      return isPermanentChar(maskOptions, i)
+             ||
+             !isAllowedChar(maskOptions, i, character);
+    });
 }
 
 export function getFilledLength(maskOptions, value) {
-  var i;
-  var { maskChar } = maskOptions;
+  var { maskChar, prefix } = maskOptions;
 
   if (!maskChar) {
     return value.length;
   }
 
-  for (i = value.length - 1; i >= 0; --i) {
+  var filledLength = prefix.length;
+  for (var i = value.length; i >= prefix.length; i--) {
     var character = value[i];
-    if (!isPermanentChar(maskOptions, i) && isAllowedChar(maskOptions, character, i)) {
+    var isEnteredCharacter = !isPermanentChar(maskOptions, i)
+                             &&
+                             isAllowedChar(maskOptions, i, character);
+    if (isEnteredCharacter) {
+      filledLength = i + 1;
       break;
     }
   }
 
-  return ++i || getPrefix(maskOptions).length;
+  return filledLength;
 }
 
 export function isFilled(maskOptions, value) {
   return getFilledLength(maskOptions, value) === maskOptions.mask.length;
 }
 
-function createNullFilledArray(length) {
-  var array = [];
-  for (var i = 0; i < length; i++) {
-    array[i] = null;
-  }
-  return array;
-}
-
 export function formatValue(maskOptions, value) {
-  var { maskChar, mask } = maskOptions;
+  var { maskChar, mask, prefix } = maskOptions;
 
   if (!maskChar) {
-    var prefix = getPrefix(maskOptions);
-    var prefixLen = prefix.length;
     value = insertRawSubstr(maskOptions, '', value, 0);
-    while (value.length > prefixLen && isPermanentChar(maskOptions, value.length - 1)) {
-      value = value.slice(0, value.length - 1);
-    }
+    value = value.slice(0, getFilledLength(maskOptions, value));
 
-    if (value.length < prefixLen) {
+    if (value.length < prefix.length) {
       value = prefix;
     }
 
@@ -85,35 +76,31 @@ export function formatValue(maskOptions, value) {
     return insertRawSubstr(maskOptions, emptyValue, value, 0);
   }
 
-  return value
-    .split('')
-    .concat(createNullFilledArray(mask.length - value.length))
-    .map((character, pos) => {
-      if (isAllowedChar(maskOptions, character, pos)) {
-        return character;
-      } else if (isPermanentChar(maskOptions, pos)) {
-        return mask[pos];
-      }
-      return maskChar;
-    })
-    .join('');
+  for (var i = 0; i < mask.length; i++) {
+    if (isPermanentChar(maskOptions, i)) {
+      value += mask[i];
+    } else {
+      value += maskChar;
+    }
+  }
+
+  return value;
 }
 
 export function clearRange(maskOptions, value, start, len) {
   var end = start + len;
-  var { maskChar, mask } = maskOptions;
+  var { maskChar, mask, prefix } = maskOptions;
+  var arrayValue = value.split('');
 
   if (!maskChar) {
-    var prefixLen = getPrefix(maskOptions).length;
-    value = value.split('')
-                 .filter((character, i) => i < prefixLen || i < start || i >= end)
-                 .join('');
+    start = Math.max(prefix.length, start);
+    arrayValue.splice(start, end - start);
+    value = arrayValue.join('');
 
     return formatValue(maskOptions, value);
   }
 
-  return value
-    .split('')
+  return arrayValue
     .map((character, i) => {
       if (i < start || i >= end) {
         return character;
@@ -131,9 +118,8 @@ function replaceSubstr(value, newSubstr, pos) {
 }
 
 export function insertRawSubstr(maskOptions, value, substr, pos) {
-  var { mask, maskChar } = maskOptions;
+  var { mask, maskChar, prefix } = maskOptions;
   var isInputFilled = isFilled(maskOptions, value);
-  var prefixLen = getPrefix(maskOptions).length;
   substr = substr.split('');
 
   if (!maskChar && pos > value.length) {
@@ -144,9 +130,9 @@ export function insertRawSubstr(maskOptions, value, substr, pos) {
     var isPermanent = isPermanentChar(maskOptions, i);
     if (!isPermanent || mask[i] === substr[0]) {
       var character = substr.shift();
-      if (isAllowedChar(maskOptions, character, i, true)) {
+      if (isAllowedChar(maskOptions, i, character, true)) {
         if (i < value.length) {
-          if (maskChar || isInputFilled || i < prefixLen) {
+          if (maskChar || isInputFilled || i < prefix.length) {
             value = replaceSubstr(value, character, i);
           } else {
             value = formatValue(maskOptions, value.substr(0, i) + character + value.substr(i));
@@ -175,7 +161,7 @@ export function getRawSubstrLength(maskOptions, value, substr, pos) {
   while (i < mask.length && substr.length) {
     if (!isPermanentChar(maskOptions, i) || mask[i] === substr[0]) {
       var character = substr.shift();
-      if (isAllowedChar(maskOptions, character, i, true)) {
+      if (isAllowedChar(maskOptions, i, character, true)) {
         ++i;
       }
     } else {

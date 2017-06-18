@@ -6,7 +6,6 @@ import { isAndroidBrowser, isWindowsPhoneBrowser, isAndroidFirefox } from './uti
 import {
   clearRange,
   formatValue,
-  getPrefix,
   getFilledLength,
   isFilled,
   isEmpty,
@@ -23,7 +22,6 @@ class InputElement extends React.Component {
     super(props);
 
     this.hasValue = props.value != null;
-
     this.maskOptions = parseMask(props.mask, props.maskChar, props.formatChars);
 
     var defaultValue = props.defaultValue != null
@@ -293,7 +291,7 @@ class InputElement extends React.Component {
     switch (key) {
       case 'Backspace':
       case 'Delete':
-        var prefixLen = getPrefix(this.maskOptions).length;
+        var prefixLen = this.maskOptions.prefix.length;
         var deleteFromRight = key === 'Delete';
         var selectionRange = this.getSelection();
         if (selectionRange.length) {
@@ -354,14 +352,14 @@ class InputElement extends React.Component {
     var selection = this.getSelection();
     var { value } = this.state;
     var { mask, lastEditablePos } = this.maskOptions;
-    var prefixLen = getPrefix(this.maskOptions).length;
+    var prefixLen = this.maskOptions.prefix.length;
 
     if (isPermanentChar(this.maskOptions, cursorPos) && mask[cursorPos] === key) {
       value = insertRawSubstr(this.maskOptions, value, key, cursorPos);
       ++cursorPos;
     } else {
       var editablePos = this.getRightEditablePos(cursorPos);
-      if (editablePos !== null && isAllowedChar(this.maskOptions, key, editablePos)) {
+      if (editablePos !== null && isAllowedChar(this.maskOptions, editablePos, key)) {
         value = clearRange(this.maskOptions, value, selection.start, selection.length);
         value = insertRawSubstr(this.maskOptions, value, key, editablePos);
         cursorPos = editablePos + 1;
@@ -405,7 +403,7 @@ class InputElement extends React.Component {
     var maskLen = mask.length;
     var valueLen = value.length;
     var oldValueLen = oldValue.length;
-    var prefixLen = getPrefix(this.maskOptions).length;
+    var prefixLen = this.maskOptions.prefix.length;
     var clearedValue;
 
     if (valueLen > oldValueLen) {
@@ -501,7 +499,7 @@ class InputElement extends React.Component {
 
   onFocus = (event) => {
     if (!this.state.value) {
-      var prefix = getPrefix(this.maskOptions);
+      var prefix = this.maskOptions.prefix;
       var value = formatValue(this.maskOptions, prefix);
       var inputValue = formatValue(this.maskOptions, value);
 
