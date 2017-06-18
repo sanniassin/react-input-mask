@@ -162,7 +162,7 @@ describe('Input', () => {
       expect(input.getCursorPos()).to.equal(6);
     }));
 
-  it('onChange input without mask', createInput(
+  it('onChange input without maskChar', createInput(
     <Input mask="**** **** **** ****" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
