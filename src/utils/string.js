@@ -2,8 +2,8 @@ export function isPermanentChar(maskOptions, pos) {
   return maskOptions.permanents.indexOf(pos) !== -1;
 }
 
-export function isAllowedChar(maskOptions, pos, character, allowMaskChar = false) {
-  var { mask, maskChar, charsRules } = maskOptions;
+export function isAllowedChar(maskOptions, pos, character) {
+  var { mask, charsRules } = maskOptions;
 
   if (!character) {
     return false;
@@ -16,9 +16,7 @@ export function isAllowedChar(maskOptions, pos, character, allowMaskChar = false
   var ruleChar = mask[pos];
   var charRule = charsRules[ruleChar];
 
-  return (new RegExp(charRule)).test(character)
-         ||
-         (allowMaskChar && character === maskChar);
+  return (new RegExp(charRule)).test(character);
 }
 
 export function isEmpty(maskOptions, value) {
@@ -61,7 +59,7 @@ export function formatValue(maskOptions, value) {
   var { maskChar, mask, prefix } = maskOptions;
 
   if (!maskChar) {
-    value = insertRawSubstr(maskOptions, '', value, 0);
+    value = insertString(maskOptions, '', value, 0);
     value = value.slice(0, getFilledLength(maskOptions, value));
 
     if (value.length < prefix.length) {
@@ -73,7 +71,7 @@ export function formatValue(maskOptions, value) {
 
   if (value) {
     var emptyValue = formatValue(maskOptions, '');
-    return insertRawSubstr(maskOptions, emptyValue, value, 0);
+    return insertString(maskOptions, emptyValue, value, 0);
   }
 
   for (var i = 0; i < mask.length; i++) {
@@ -113,48 +111,74 @@ export function clearRange(maskOptions, value, start, len) {
     .join('');
 }
 
-function replaceSubstr(value, newSubstr, pos) {
-  return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
-}
-
-export function insertRawSubstr(maskOptions, value, substr, pos) {
+export function insertString(maskOptions, value, insertStr, insertPos) {
   var { mask, maskChar, prefix } = maskOptions;
+  var arrayInsertStr = insertStr.split('');
   var isInputFilled = isFilled(maskOptions, value);
-  substr = substr.split('');
 
-  if (!maskChar && pos > value.length) {
-    value += mask.slice(value.length, pos);
+  var isUsablePosition = (pos, character) => {
+    return !isPermanentChar(maskOptions, pos)
+           ||
+           character === mask[pos];
+  };
+  var isUsableCharacter = (character, pos) => {
+    return !maskChar
+           ||
+           !isPermanentChar(maskOptions, pos)
+           ||
+           character !== maskChar;
+  };
+
+  if (!maskChar && insertPos > value.length) {
+    value += mask.slice(value.length, insertPos);
   }
 
-  for (var i = pos; i < mask.length && substr.length;) {
-    var isPermanent = isPermanentChar(maskOptions, i);
-    if (!isPermanent || mask[i] === substr[0]) {
-      var character = substr.shift();
-      if (isAllowedChar(maskOptions, i, character, true)) {
-        if (i < value.length) {
-          if (maskChar || isInputFilled || i < prefix.length) {
-            value = replaceSubstr(value, character, i);
-          } else {
-            value = formatValue(maskOptions, value.substr(0, i) + character + value.substr(i));
-          }
-        } else if (!maskChar) {
-          value += character;
-        }
-        ++i;
+  arrayInsertStr.every((insertCharacter) => {
+    while (!isUsablePosition(insertPos, insertCharacter)) {
+      if (insertPos >= value.length) {
+        value += mask[insertPos];
       }
-    } else {
-      if (!maskChar && i >= value.length) {
-        value += mask[i];
-      } else if (maskChar && isPermanent && substr[0] === maskChar) {
-        substr.shift();
+
+      if (!isUsableCharacter(insertCharacter, insertPos)) {
+        return true;
       }
-      ++i;
+
+      insertPos++;
+
+      // stop iteration if maximum value length reached
+      if (insertPos >= mask.length) {
+        return false;
+      }
     }
-  }
+
+    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter)
+                    ||
+                    insertCharacter === maskChar;
+    if (!isAllowed) {
+      return true;
+    }
+
+    if (insertPos < value.length) {
+      if (maskChar || isInputFilled || insertPos < prefix.length) {
+        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos + 1);
+      } else {
+        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos);
+        value = formatValue(maskOptions, value);
+      }
+    } else if (!maskChar) {
+      value += insertCharacter;
+    }
+
+    insertPos++;
+
+    // stop iteration if maximum value length reached
+    return insertPos < mask.length;
+  });
+
   return value;
 }
 
-export function getRawSubstrLength(maskOptions, value, substr, pos) {
+export function getInsertStringLength(maskOptions, value, substr, pos) {
   var { mask } = maskOptions;
   var i = pos;
   substr = substr.split('');
