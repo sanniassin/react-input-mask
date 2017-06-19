@@ -178,19 +178,38 @@ export function insertString(maskOptions, value, insertStr, insertPos) {
   return value;
 }
 
-export function getInsertStringLength(maskOptions, value, substr, pos) {
-  var { mask } = maskOptions;
-  var i = pos;
-  substr = substr.split('');
-  while (i < mask.length && substr.length) {
-    if (!isPermanentChar(maskOptions, i) || mask[i] === substr[0]) {
-      var character = substr.shift();
-      if (isAllowedChar(maskOptions, i, character, true)) {
-        ++i;
+export function getInsertStringLength(maskOptions, value, insertStr, insertPos) {
+  var { mask, maskChar } = maskOptions;
+  var arrayInsertStr = insertStr.split('');
+  var initialInsertPos = insertPos;
+
+  var isUsablePosition = (pos, character) => {
+    return !isPermanentChar(maskOptions, pos)
+           ||
+           character === mask[pos];
+  };
+
+  arrayInsertStr.every((insertCharacter) => {
+    while (!isUsablePosition(insertPos, insertCharacter)) {
+      insertPos++;
+
+      // stop iteration if maximum value length reached
+      if (insertPos >= mask.length) {
+        return false;
       }
-    } else {
-      ++i;
     }
-  }
-  return i - pos;
+
+    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter)
+                    ||
+                    insertCharacter === maskChar;
+
+    if (isAllowed) {
+      insertPos++;
+    }
+
+    // stop iteration if maximum value length reached
+    return insertPos < mask.length;
+  });
+
+  return insertPos - initialInsertPos;
 }

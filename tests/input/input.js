@@ -403,6 +403,20 @@ describe('Input', () => {
       expect(inputNode.value).to.equal('___3-__81-2_69-17_3');
     }));
 
+  it('Paste cursor position', createInput(
+    <Input mask="9999-9999-9999-9999" defaultValue="____-____-____-6543" />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setSelection(3, 15);
+      input.pasteText(inputNode.value, '478122691', input.getSelection());
+      expect(input.getCursorPos()).to.equal(15);
+
+      input.setCursorPos(3);
+      input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
+      expect(input.getCursorPos()).to.equal(17);
+    }));
+
   it('Paste string without maskChar', createInput(
     <Input mask="9999-9999-9999-9999" defaultValue="9999-9999-9999-9999" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
