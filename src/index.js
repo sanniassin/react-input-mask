@@ -621,7 +621,14 @@ class InputElement extends React.Component {
   }
 
   onInput = (event) => {
-    if (this.isAndroidFirefox) {
+    var value = this.getInputValue();
+
+    // Switch input type to password
+    // to disable input suggestions and related bugs.
+    //
+    // Backspace may not work because of that,
+    // so don't switch on characters removal.
+    if (this.isAndroidFirefox && value.length >= this.state.value.length) {
       var input = this.getInputDOMNode();
       input.type = 'password';
 
