@@ -1,10 +1,10 @@
 {
   "name": "react-input-mask",
   "description": "Masked input component for React",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "homepage": "https://github.com/sanniassin/react-input-mask",
   "license": "MIT",
-  "author": "Nikita Lobachev <sanniassin@yandex.ru>",
+  "author": "Nikita Lobachev <sanniassin@gmail.com>",
   "keywords": [
     "react",
     "input",
@@ -42,7 +42,7 @@
     "rollup-plugin-uglify": "^2.0.1",
     "watchify": "^3.7.0"
   },
-  "main": "lib/InputElement.js",
+  "main": "lib/index.js",
   "module": "es/index.js",
   "jsnext:main": "es/index.js",
   "files": [
@@ -58,9 +58,10 @@
     "build:umd": "cross-env BABEL_ENV=es NODE_ENV=development rollup -c -i src/index.js -o dist/react-input-mask.js",
     "build:umd:min": "cross-env BABEL_ENV=es NODE_ENV=production rollup -c -i src/index.js -o dist/react-input-mask.min.js",
     "prepare": "npm test && npm run clean && npm run build",
-    "test": "npm run test:input && npm run test:server-render",
+    "test": "npm run build && npm run test:input && npm run test:server-render && npm run test:build",
     "test:input": "cross-env BABEL_ENV=commonjs karma start",
-    "test:server-render": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-core/register ./tests/server-render"
+    "test:server-render": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-core/register ./tests/server-render",
+    "test:build": "cross-env BABEL_ENV=commonjs mocha --compilers js:babel-core/register ./tests/build"
   },
   "repository": {
     "type": "git",

@@ -50,7 +50,7 @@ Defines format characters with characters as keys and corresponding RegExp strin
 Show mask even in empty input without focus.
 
 ## Example
-```js
+```jsx
 import React from 'react';
 import InputMask from 'react-input-mask';
 
