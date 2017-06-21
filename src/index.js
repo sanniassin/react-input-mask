@@ -86,7 +86,9 @@ class InputElement extends React.Component {
     }
     this.valueDescriptor = null;
     var input = this.getInputDOMNode();
-    Object.defineProperty(input, 'value', valueDescriptor);
+    if(input){
+      Object.defineProperty(input, 'value', valueDescriptor);
+    }
   }
 
   getInputValue = () => {
