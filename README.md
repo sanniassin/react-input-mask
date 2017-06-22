@@ -7,9 +7,7 @@ Yet another React component for input masking with attention to small usability 
 #### [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
 ## Install
-```
-npm install react-input-mask --save
-```
+```npm install react-input-mask --save```
 
 Also you can use it without module bundler
 ```html

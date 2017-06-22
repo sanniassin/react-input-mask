@@ -42,6 +42,88 @@ class InputElement extends React.Component {
     this.state = { value };
   }
 
+  componentDidMount = () => {
+    this.isAndroidBrowser = isAndroidBrowser();
+    this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
+    this.isAndroidFirefox = isAndroidFirefox();
+
+    var input = this.getInputDOMNode();
+
+    // workaround for Jest
+    // it doesn't mount a real node so input will be null
+    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
+      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+      this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
+    }
+
+    if (this.maskOptions.mask && this.props.value == null) {
+      this.updateUncontrolledInput();
+    }
+  }
+
+  componentWillReceiveProps = (nextProps) => {
+    var oldMaskOptions = this.maskOptions;
+
+    this.hasValue = nextProps.value != null;
+    this.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
+
+    if (!this.maskOptions.mask) {
+      this.lastCursorPos = null;
+      return;
+    }
+
+    var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
+    var showEmpty = nextProps.alwaysShowMask || this.isFocused();
+    var newValue = this.hasValue
+      ? this.getStringValue(nextProps.value)
+      : this.state.value;
+
+    if (!oldMaskOptions.mask && !this.hasValue) {
+      newValue = this.getInputDOMNode().value;
+    }
+
+    if (isMaskChanged || (this.maskOptions.mask && (newValue || showEmpty))) {
+      newValue = formatValue(this.maskOptions, newValue);
+
+      if (isMaskChanged) {
+        var pos = this.lastCursorPos;
+        var filledLen = getFilledLength(this.maskOptions, newValue);
+        if (pos === null || filledLen < pos) {
+          if (isFilled(this.maskOptions, newValue)) {
+            pos = filledLen;
+          } else {
+            pos = this.getRightEditablePos(filledLen);
+          }
+          this.setCursorPos(pos);
+        }
+      }
+    }
+
+    if (this.maskOptions.mask && isEmpty(this.maskOptions, newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
+      newValue = '';
+    }
+
+    this.value = newValue;
+
+    if (this.state.value !== newValue) {
+      this.setState({ value: newValue });
+    }
+  }
+
+  componentDidUpdate = (prevProps) => {
+    if ((this.maskOptions.mask || prevProps.mask) && this.props.value == null) {
+      this.updateUncontrolledInput();
+    }
+
+    if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
+      this.setInputValue(this.state.value);
+    }
+  }
+
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
   isDOMElement = (element) => {
     return typeof HTMLElement === 'object'
       ? element instanceof HTMLElement // DOM2
@@ -81,11 +163,12 @@ class InputElement extends React.Component {
 
   disableValueAccessors = () => {
     var { valueDescriptor } = this;
-    if (!valueDescriptor) {
+    var input = this.getInputDOMNode();
+    if (!valueDescriptor || !input) {
       return;
     }
+
     this.valueDescriptor = null;
-    var input = this.getInputDOMNode();
     Object.defineProperty(input, 'value', valueDescriptor);
   }
 
@@ -105,6 +188,10 @@ class InputElement extends React.Component {
 
   setInputValue = (value) => {
     var input = this.getInputDOMNode();
+    if (!input) {
+      return;
+    }
+
     this.value = value;
     input.value = value;
   }
@@ -205,65 +292,6 @@ class InputElement extends React.Component {
 
   getStringValue = (value) => {
     return !value && value !== 0 ? '' : value + '';
-  }
-
-  componentWillReceiveProps = (nextProps) => {
-    var oldMaskOptions = this.maskOptions;
-
-    this.hasValue = nextProps.value != null;
-    this.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
-
-    if (!this.maskOptions.mask) {
-      this.lastCursorPos = null;
-      return;
-    }
-
-    var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
-    var showEmpty = nextProps.alwaysShowMask || this.isFocused();
-    var newValue = this.hasValue
-      ? this.getStringValue(nextProps.value)
-      : this.state.value;
-
-    if (!oldMaskOptions.mask && !this.hasValue) {
-      newValue = this.getInputDOMNode().value;
-    }
-
-    if (isMaskChanged || (this.maskOptions.mask && (newValue || showEmpty))) {
-      newValue = formatValue(this.maskOptions, newValue);
-
-      if (isMaskChanged) {
-        var pos = this.lastCursorPos;
-        var filledLen = getFilledLength(this.maskOptions, newValue);
-        if (pos === null || filledLen < pos) {
-          if (isFilled(this.maskOptions, newValue)) {
-            pos = filledLen;
-          } else {
-            pos = this.getRightEditablePos(filledLen);
-          }
-          this.setCursorPos(pos);
-        }
-      }
-    }
-
-    if (this.maskOptions.mask && isEmpty(this.maskOptions, newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
-      newValue = '';
-    }
-
-    this.value = newValue;
-
-    if (this.state.value !== newValue) {
-      this.setState({ value: newValue });
-    }
-  }
-
-  componentDidUpdate = (prevProps) => {
-    if ((this.maskOptions.mask || prevProps.mask) && this.props.value == null) {
-      this.updateUncontrolledInput();
-    }
-
-    if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
-      this.setInputValue(this.state.value);
-    }
   }
 
   updateUncontrolledInput = () => {
@@ -456,6 +484,10 @@ class InputElement extends React.Component {
     if (this.isWindowsPhoneBrowser) {
       event.persist();
       setTimeout(() => {
+        if (this.unmounted) {
+          return;
+        }
+
         this.setInputValue(value);
 
         if (!this.hasValue) {
@@ -599,25 +631,6 @@ class InputElement extends React.Component {
     }
 
     this.setCursorPos(cursorPos);
-  }
-
-  componentDidMount = () => {
-    this.isAndroidBrowser = isAndroidBrowser();
-    this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
-    this.isAndroidFirefox = isAndroidFirefox();
-
-    var input = this.getInputDOMNode();
-
-    // workaround for Jest
-    // it doesn't mount a real node so input will be null
-    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
-    }
-
-    if (this.maskOptions.mask && this.props.value == null) {
-      this.updateUncontrolledInput();
-    }
   }
 
   onInput = (event) => {
