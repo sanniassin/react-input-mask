@@ -120,6 +120,10 @@ class InputElement extends React.Component {
     }
   }
 
+  componentWillUnmount() {
+    this.unmounted = true;
+  }
+
   isDOMElement = (element) => {
     return typeof HTMLElement === 'object'
       ? element instanceof HTMLElement // DOM2
@@ -159,11 +163,12 @@ class InputElement extends React.Component {
 
   disableValueAccessors = () => {
     var { valueDescriptor } = this;
-    if (!valueDescriptor) {
+    var input = this.getInputDOMNode();
+    if (!valueDescriptor || !input) {
       return;
     }
+
     this.valueDescriptor = null;
-    var input = this.getInputDOMNode();
     Object.defineProperty(input, 'value', valueDescriptor);
   }
 
@@ -183,6 +188,10 @@ class InputElement extends React.Component {
 
   setInputValue = (value) => {
     var input = this.getInputDOMNode();
+    if (!input) {
+      return;
+    }
+
     this.value = value;
     input.value = value;
   }
@@ -475,6 +484,10 @@ class InputElement extends React.Component {
     if (this.isWindowsPhoneBrowser) {
       event.persist();
       setTimeout(() => {
+        if (this.unmounted) {
+          return;
+        }
+
         this.setInputValue(value);
 
         if (!this.hasValue) {
