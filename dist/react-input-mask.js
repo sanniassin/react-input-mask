@@ -6,9 +6,304 @@
 
 React = 'default' in React ? React['default'] : React;
 
+var defaultCharsRules = {
+  '9': '[0-9]',
+  'a': '[A-Za-z]',
+  '*': '[A-Za-z0-9]'
+};
+
+var defaultMaskChar = '_';
+
+var parseMask = function (mask, maskChar, charsRules) {
+  if (maskChar === undefined) {
+    maskChar = defaultMaskChar;
+  }
+  if (charsRules == null) {
+    charsRules = defaultCharsRules;
+  }
+
+  if (!mask || typeof mask !== 'string') {
+    return {
+      maskChar: maskChar,
+      charsRules: charsRules,
+      mask: null,
+      prefix: null,
+      lastEditablePos: null,
+      permanents: []
+    };
+  }
+  var str = '';
+  var prefix = '';
+  var permanents = [];
+  var isPermanent = false;
+  var lastEditablePos = null;
+
+  mask.split('').forEach(function (character, i) {
+    if (!isPermanent && character === '\\') {
+      isPermanent = true;
+    } else {
+      if (isPermanent || !charsRules[character]) {
+        permanents.push(str.length);
+        if (prefix.length === i) {
+          prefix += character;
+        }
+      } else {
+        lastEditablePos = str.length + 1;
+      }
+      str += character;
+      isPermanent = false;
+    }
+  });
+
+  return {
+    maskChar: maskChar,
+    charsRules: charsRules,
+    prefix: prefix,
+    mask: str,
+    lastEditablePos: lastEditablePos,
+    permanents: permanents
+  };
+};
+
+function isAndroidBrowser() {
+  var windows = new RegExp('windows', 'i');
+  var firefox = new RegExp('firefox', 'i');
+  var android = new RegExp('android', 'i');
+  var ua = navigator.userAgent;
+  return !windows.test(ua) && !firefox.test(ua) && android.test(ua);
+}
+
+function isWindowsPhoneBrowser() {
+  var windows = new RegExp('windows', 'i');
+  var phone = new RegExp('phone', 'i');
+  var ua = navigator.userAgent;
+  return windows.test(ua) && phone.test(ua);
+}
+
+function isAndroidFirefox() {
+  var windows = new RegExp('windows', 'i');
+  var firefox = new RegExp('firefox', 'i');
+  var android = new RegExp('android', 'i');
+  var ua = navigator.userAgent;
+  return !windows.test(ua) && firefox.test(ua) && android.test(ua);
+}
+
+function isPermanentChar(maskOptions, pos) {
+  return maskOptions.permanents.indexOf(pos) !== -1;
+}
+
+function isAllowedChar(maskOptions, pos, character) {
+  var mask = maskOptions.mask,
+      charsRules = maskOptions.charsRules;
+
+
+  if (!character) {
+    return false;
+  }
+
+  if (isPermanentChar(maskOptions, pos)) {
+    return mask[pos] === character;
+  }
+
+  var ruleChar = mask[pos];
+  var charRule = charsRules[ruleChar];
+
+  return new RegExp(charRule).test(character);
+}
+
+function isEmpty(maskOptions, value) {
+  return value.split('').every(function (character, i) {
+    return isPermanentChar(maskOptions, i) || !isAllowedChar(maskOptions, i, character);
+  });
+}
+
+function getFilledLength(maskOptions, value) {
+  var maskChar = maskOptions.maskChar,
+      prefix = maskOptions.prefix;
+
+
+  if (!maskChar) {
+    return value.length;
+  }
+
+  var filledLength = prefix.length;
+  for (var i = value.length; i >= prefix.length; i--) {
+    var character = value[i];
+    var isEnteredCharacter = !isPermanentChar(maskOptions, i) && isAllowedChar(maskOptions, i, character);
+    if (isEnteredCharacter) {
+      filledLength = i + 1;
+      break;
+    }
+  }
+
+  return filledLength;
+}
+
+function isFilled(maskOptions, value) {
+  return getFilledLength(maskOptions, value) === maskOptions.mask.length;
+}
+
+function formatValue(maskOptions, value) {
+  var maskChar = maskOptions.maskChar,
+      mask = maskOptions.mask,
+      prefix = maskOptions.prefix;
+
+
+  if (!maskChar) {
+    value = insertString(maskOptions, '', value, 0);
+    value = value.slice(0, getFilledLength(maskOptions, value));
+
+    if (value.length < prefix.length) {
+      value = prefix;
+    }
+
+    return value;
+  }
+
+  if (value) {
+    var emptyValue = formatValue(maskOptions, '');
+    return insertString(maskOptions, emptyValue, value, 0);
+  }
+
+  for (var i = 0; i < mask.length; i++) {
+    if (isPermanentChar(maskOptions, i)) {
+      value += mask[i];
+    } else {
+      value += maskChar;
+    }
+  }
+
+  return value;
+}
+
+function clearRange(maskOptions, value, start, len) {
+  var end = start + len;
+  var maskChar = maskOptions.maskChar,
+      mask = maskOptions.mask,
+      prefix = maskOptions.prefix;
+
+  var arrayValue = value.split('');
+
+  if (!maskChar) {
+    start = Math.max(prefix.length, start);
+    arrayValue.splice(start, end - start);
+    value = arrayValue.join('');
+
+    return formatValue(maskOptions, value);
+  }
+
+  return arrayValue.map(function (character, i) {
+    if (i < start || i >= end) {
+      return character;
+    }
+    if (isPermanentChar(maskOptions, i)) {
+      return mask[i];
+    }
+    return maskChar;
+  }).join('');
+}
+
+function insertString(maskOptions, value, insertStr, insertPos) {
+  var mask = maskOptions.mask,
+      maskChar = maskOptions.maskChar,
+      prefix = maskOptions.prefix;
+
+  var arrayInsertStr = insertStr.split('');
+  var isInputFilled = isFilled(maskOptions, value);
+
+  var isUsablePosition = function isUsablePosition(pos, character) {
+    return !isPermanentChar(maskOptions, pos) || character === mask[pos];
+  };
+  var isUsableCharacter = function isUsableCharacter(character, pos) {
+    return !maskChar || !isPermanentChar(maskOptions, pos) || character !== maskChar;
+  };
+
+  if (!maskChar && insertPos > value.length) {
+    value += mask.slice(value.length, insertPos);
+  }
+
+  arrayInsertStr.every(function (insertCharacter) {
+    while (!isUsablePosition(insertPos, insertCharacter)) {
+      if (insertPos >= value.length) {
+        value += mask[insertPos];
+      }
+
+      if (!isUsableCharacter(insertCharacter, insertPos)) {
+        return true;
+      }
+
+      insertPos++;
+
+      // stop iteration if maximum value length reached
+      if (insertPos >= mask.length) {
+        return false;
+      }
+    }
+
+    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter) || insertCharacter === maskChar;
+    if (!isAllowed) {
+      return true;
+    }
+
+    if (insertPos < value.length) {
+      if (maskChar || isInputFilled || insertPos < prefix.length) {
+        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos + 1);
+      } else {
+        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos);
+        value = formatValue(maskOptions, value);
+      }
+    } else if (!maskChar) {
+      value += insertCharacter;
+    }
+
+    insertPos++;
+
+    // stop iteration if maximum value length reached
+    return insertPos < mask.length;
+  });
+
+  return value;
+}
+
+function getInsertStringLength(maskOptions, value, insertStr, insertPos) {
+  var mask = maskOptions.mask,
+      maskChar = maskOptions.maskChar;
+
+  var arrayInsertStr = insertStr.split('');
+  var initialInsertPos = insertPos;
+
+  var isUsablePosition = function isUsablePosition(pos, character) {
+    return !isPermanentChar(maskOptions, pos) || character === mask[pos];
+  };
+
+  arrayInsertStr.every(function (insertCharacter) {
+    while (!isUsablePosition(insertPos, insertCharacter)) {
+      insertPos++;
+
+      // stop iteration if maximum value length reached
+      if (insertPos >= mask.length) {
+        return false;
+      }
+    }
+
+    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter) || insertCharacter === maskChar;
+
+    if (isAllowed) {
+      insertPos++;
+    }
+
+    // stop iteration if maximum value length reached
+    return insertPos < mask.length;
+  });
+
+  return insertPos - initialInsertPos;
+}
+
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
 
@@ -19,7 +314,6 @@ function _possibleConstructorReturn(self, call) { if (!self) { throw new Referen
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 // https://github.com/sanniassin/react-input-mask
-
 var InputElement = function (_React$Component) {
   _inherits(InputElement, _React$Component);
 
@@ -30,27 +324,40 @@ var InputElement = function (_React$Component) {
 
     _initialiseProps.call(_this);
 
-    _this.hasValue = props.value != null;
-    _this.charsRules = props.formatChars != null ? props.formatChars : _this.defaultCharsRules;
+    var mask = props.mask,
+        maskChar = props.maskChar,
+        formatChars = props.formatChars,
+        defaultValue = props.defaultValue,
+        value = props.value,
+        alwaysShowMask = props.alwaysShowMask;
 
-    var mask = _this.parseMask(props.mask);
-    var defaultValue = props.defaultValue != null ? props.defaultValue : '';
-    var value = props.value != null ? props.value : defaultValue;
+
+    _this.hasValue = value != null;
+    _this.maskOptions = parseMask(mask, maskChar, formatChars);
+
+    if (defaultValue == null) {
+      defaultValue = '';
+    }
+    if (value == null) {
+      value = defaultValue;
+    }
 
     value = _this.getStringValue(value);
 
-    _this.mask = mask.mask;
-    _this.permanents = mask.permanents;
-    _this.lastEditablePos = mask.lastEditablePos;
-    _this.maskChar = 'maskChar' in props ? props.maskChar : _this.defaultMaskChar;
-
-    if (_this.mask && (props.alwaysShowMask || value)) {
-      value = _this.formatValue(value);
+    if (_this.maskOptions.mask && (alwaysShowMask || value)) {
+      value = formatValue(_this.maskOptions, value);
     }
 
     _this.state = { value: value };
     return _this;
   }
+
+  _createClass(InputElement, [{
+    key: 'componentWillUnmount',
+    value: function componentWillUnmount() {
+      this.unmounted = true;
+    }
+  }]);
 
   return InputElement;
 }(React.Component);
@@ -58,35 +365,82 @@ var InputElement = function (_React$Component) {
 var _initialiseProps = function _initialiseProps() {
   var _this2 = this;
 
-  this.defaultCharsRules = {
-    '9': '[0-9]',
-    'a': '[A-Za-z]',
-    '*': '[A-Za-z0-9]'
-  };
-  this.defaultMaskChar = '_';
   this.lastCursorPos = null;
 
-  this.isAndroidBrowser = function () {
-    var windows = new RegExp('windows', 'i');
-    var firefox = new RegExp('firefox', 'i');
-    var android = new RegExp('android', 'i');
-    var ua = navigator.userAgent;
-    return !windows.test(ua) && !firefox.test(ua) && android.test(ua);
+  this.componentDidMount = function () {
+    _this2.isAndroidBrowser = isAndroidBrowser();
+    _this2.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
+    _this2.isAndroidFirefox = isAndroidFirefox();
+
+    var input = _this2.getInputDOMNode();
+
+    // workaround for Jest
+    // it doesn't mount a real node so input will be null
+    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
+      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
+      _this2.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
+    }
+
+    if (_this2.maskOptions.mask && _this2.props.value == null) {
+      _this2.updateUncontrolledInput();
+    }
   };
 
-  this.isWindowsPhoneBrowser = function () {
-    var windows = new RegExp('windows', 'i');
-    var phone = new RegExp('phone', 'i');
-    var ua = navigator.userAgent;
-    return windows.test(ua) && phone.test(ua);
+  this.componentWillReceiveProps = function (nextProps) {
+    var oldMaskOptions = _this2.maskOptions;
+
+    _this2.hasValue = nextProps.value != null;
+    _this2.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
+
+    if (!_this2.maskOptions.mask) {
+      _this2.lastCursorPos = null;
+      return;
+    }
+
+    var isMaskChanged = _this2.maskOptions.mask && _this2.maskOptions.mask !== oldMaskOptions.mask;
+    var showEmpty = nextProps.alwaysShowMask || _this2.isFocused();
+    var newValue = _this2.hasValue ? _this2.getStringValue(nextProps.value) : _this2.state.value;
+
+    if (!oldMaskOptions.mask && !_this2.hasValue) {
+      newValue = _this2.getInputDOMNode().value;
+    }
+
+    if (isMaskChanged || _this2.maskOptions.mask && (newValue || showEmpty)) {
+      newValue = formatValue(_this2.maskOptions, newValue);
+
+      if (isMaskChanged) {
+        var pos = _this2.lastCursorPos;
+        var filledLen = getFilledLength(_this2.maskOptions, newValue);
+        if (pos === null || filledLen < pos) {
+          if (isFilled(_this2.maskOptions, newValue)) {
+            pos = filledLen;
+          } else {
+            pos = _this2.getRightEditablePos(filledLen);
+          }
+          _this2.setCursorPos(pos);
+        }
+      }
+    }
+
+    if (_this2.maskOptions.mask && isEmpty(_this2.maskOptions, newValue) && !showEmpty && (!_this2.hasValue || !nextProps.value)) {
+      newValue = '';
+    }
+
+    _this2.value = newValue;
+
+    if (_this2.state.value !== newValue) {
+      _this2.setState({ value: newValue });
+    }
   };
 
-  this.isAndroidFirefox = function () {
-    var windows = new RegExp('windows', 'i');
-    var firefox = new RegExp('firefox', 'i');
-    var android = new RegExp('android', 'i');
-    var ua = navigator.userAgent;
-    return !windows.test(ua) && firefox.test(ua) && android.test(ua);
+  this.componentDidUpdate = function (prevProps) {
+    if ((_this2.maskOptions.mask || prevProps.mask) && _this2.props.value == null) {
+      _this2.updateUncontrolledInput();
+    }
+
+    if (_this2.valueDescriptor && _this2.getInputValue() !== _this2.state.value) {
+      _this2.setInputValue(_this2.state.value);
+    }
   };
 
   this.isDOMElement = function (element) {
@@ -119,9 +473,9 @@ var _initialiseProps = function _initialiseProps() {
         get: function get() {
           return _this2.value;
         },
-        set: function set(val) {
-          _this2.value = val;
-          _this2.valueDescriptor.set.call(input, val);
+        set: function set(value) {
+          _this2.value = value;
+          _this2.valueDescriptor.set.call(input, value);
         }
       });
     }
@@ -130,11 +484,12 @@ var _initialiseProps = function _initialiseProps() {
   this.disableValueAccessors = function () {
     var valueDescriptor = _this2.valueDescriptor;
 
-    if (!valueDescriptor) {
+    var input = _this2.getInputDOMNode();
+    if (!valueDescriptor || !input) {
       return;
     }
+
     _this2.valueDescriptor = null;
-    var input = _this2.getInputDOMNode();
     Object.defineProperty(input, 'value', valueDescriptor);
   };
 
@@ -153,46 +508,19 @@ var _initialiseProps = function _initialiseProps() {
     return value;
   };
 
-  this.setInputValue = function (val) {
+  this.setInputValue = function (value) {
     var input = _this2.getInputDOMNode();
-    _this2.value = val;
-    input.value = val;
-  };
-
-  this.getPrefix = function () {
-    var prefix = '';
-    var mask = _this2.mask;
-
-    for (var i = 0; i < mask.length && _this2.isPermanentChar(i); ++i) {
-      prefix += mask[i];
-    }
-    return prefix;
-  };
-
-  this.getFilledLength = function () {
-    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _this2.state.value;
-
-    var i;
-    var maskChar = _this2.maskChar;
-
-
-    if (!maskChar) {
-      return value.length;
+    if (!input) {
+      return;
     }
 
-    for (i = value.length - 1; i >= 0; --i) {
-      var character = value[i];
-      if (!_this2.isPermanentChar(i) && _this2.isAllowedChar(character, i)) {
-        break;
-      }
-    }
-
-    return ++i || _this2.getPrefix().length;
+    _this2.value = value;
+    input.value = value;
   };
 
   this.getLeftEditablePos = function (pos) {
     for (var i = pos; i >= 0; --i) {
-      if (!_this2.isPermanentChar(i)) {
+      if (!isPermanentChar(_this2.maskOptions, i)) {
         return i;
       }
     }
@@ -200,183 +528,18 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.getRightEditablePos = function (pos) {
-    var mask = _this2.mask;
+    var mask = _this2.maskOptions.mask;
 
     for (var i = pos; i < mask.length; ++i) {
-      if (!_this2.isPermanentChar(i)) {
+      if (!isPermanentChar(_this2.maskOptions, i)) {
         return i;
       }
     }
     return null;
   };
 
-  this.isEmpty = function () {
-    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _this2.state.value;
-
-    return !value.split('').some(function (character, i) {
-      return !_this2.isPermanentChar(i) && _this2.isAllowedChar(character, i);
-    });
-  };
-
-  this.isFilled = function () {
-    var value = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : _this2.state.value;
-
-    return _this2.getFilledLength(value) === _this2.mask.length;
-  };
-
-  this.createFilledArray = function (length, val) {
-    var array = [];
-    for (var i = 0; i < length; i++) {
-      array[i] = val;
-    }
-    return array;
-  };
-
-  this.formatValue = function (value) {
-    var maskChar = _this2.maskChar,
-        mask = _this2.mask;
-
-
-    if (!maskChar) {
-      var prefix = _this2.getPrefix();
-      var prefixLen = prefix.length;
-      value = _this2.insertRawSubstr('', value, 0);
-      while (value.length > prefixLen && _this2.isPermanentChar(value.length - 1)) {
-        value = value.slice(0, value.length - 1);
-      }
-
-      if (value.length < prefixLen) {
-        value = prefix;
-      }
-
-      return value;
-    }
-
-    if (value) {
-      var emptyValue = _this2.formatValue('');
-      return _this2.insertRawSubstr(emptyValue, value, 0);
-    }
-
-    return value.split('').concat(_this2.createFilledArray(mask.length - value.length, null)).map(function (character, pos) {
-      if (_this2.isAllowedChar(character, pos)) {
-        return character;
-      } else if (_this2.isPermanentChar(pos)) {
-        return mask[pos];
-      }
-      return maskChar;
-    }).join('');
-  };
-
-  this.clearRange = function (value, start, len) {
-    var end = start + len;
-    var maskChar = _this2.maskChar,
-        mask = _this2.mask;
-
-
-    if (!maskChar) {
-      var prefixLen = _this2.getPrefix().length;
-      value = value.split('').filter(function (character, i) {
-        return i < prefixLen || i < start || i >= end;
-      }).join('');
-
-      return _this2.formatValue(value);
-    }
-
-    return value.split('').map(function (character, i) {
-      if (i < start || i >= end) {
-        return character;
-      }
-      if (_this2.isPermanentChar(i)) {
-        return mask[i];
-      }
-      return maskChar;
-    }).join('');
-  };
-
-  this.replaceSubstr = function (value, newSubstr, pos) {
-    return value.slice(0, pos) + newSubstr + value.slice(pos + newSubstr.length);
-  };
-
-  this.insertRawSubstr = function (value, substr, pos) {
-    var mask = _this2.mask,
-        maskChar = _this2.maskChar;
-
-    var isFilled = _this2.isFilled(value);
-    var prefixLen = _this2.getPrefix().length;
-    substr = substr.split('');
-
-    if (!maskChar && pos > value.length) {
-      value += mask.slice(value.length, pos);
-    }
-
-    for (var i = pos; i < mask.length && substr.length;) {
-      var isPermanent = _this2.isPermanentChar(i);
-      if (!isPermanent || mask[i] === substr[0]) {
-        var character = substr.shift();
-        if (_this2.isAllowedChar(character, i, true)) {
-          if (i < value.length) {
-            if (maskChar || isFilled || i < prefixLen) {
-              value = _this2.replaceSubstr(value, character, i);
-            } else {
-              value = _this2.formatValue(value.substr(0, i) + character + value.substr(i));
-            }
-          } else if (!maskChar) {
-            value += character;
-          }
-          ++i;
-        }
-      } else {
-        if (!maskChar && i >= value.length) {
-          value += mask[i];
-        } else if (maskChar && isPermanent && substr[0] === maskChar) {
-          substr.shift();
-        }
-        ++i;
-      }
-    }
-    return value;
-  };
-
-  this.getRawSubstrLength = function (value, substr, pos) {
-    var mask = _this2.mask;
-
-    var i = pos;
-    substr = substr.split('');
-    while (i < mask.length && substr.length) {
-      if (!_this2.isPermanentChar(i) || mask[i] === substr[0]) {
-        var character = substr.shift();
-        if (_this2.isAllowedChar(character, i, true)) {
-          ++i;
-        }
-      } else {
-        ++i;
-      }
-    }
-    return i - pos;
-  };
-
-  this.isAllowedChar = function (character, pos) {
-    var allowMaskChar = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
-    var mask = _this2.mask,
-        maskChar = _this2.maskChar;
-
-
-    if (_this2.isPermanentChar(pos)) {
-      return mask[pos] === character;
-    }
-
-    var ruleChar = mask[pos];
-    var charRule = _this2.charsRules[ruleChar];
-
-    return new RegExp(charRule).test(character || '') || allowMaskChar && character === maskChar;
-  };
-
-  this.isPermanentChar = function (pos) {
-    return _this2.permanents.indexOf(pos) !== -1;
-  };
-
   this.setCursorToEnd = function () {
-    var filledLen = _this2.getFilledLength();
+    var filledLen = getFilledLength(_this2.maskOptions, _this2.state.value);
     var pos = _this2.getRightEditablePos(filledLen);
     if (pos !== null) {
       _this2.setCursorPos(pos);
@@ -436,10 +599,10 @@ var _initialiseProps = function _initialiseProps() {
       return setTimeout(fn, 0);
     };
 
-    var setPos = _this2.setSelection.bind(_this2, pos, 0);
-
-    setPos();
-    raf(setPos);
+    _this2.setSelection(pos, 0);
+    raf(function () {
+      _this2.setSelection(pos, 0);
+    });
 
     _this2.lastCursorPos = pos;
   };
@@ -448,110 +611,8 @@ var _initialiseProps = function _initialiseProps() {
     return document.activeElement === _this2.getInputDOMNode();
   };
 
-  this.parseMask = function (mask) {
-    if (!mask || typeof mask !== 'string') {
-      return {
-        mask: null,
-        lastEditablePos: null,
-        permanents: []
-      };
-    }
-    var str = '';
-    var permanents = [];
-    var isPermanent = false;
-    var lastEditablePos = null;
-
-    mask.split('').forEach(function (character) {
-      if (!isPermanent && character === '\\') {
-        isPermanent = true;
-      } else {
-        if (isPermanent || !_this2.charsRules[character]) {
-          permanents.push(str.length);
-        } else {
-          lastEditablePos = str.length + 1;
-        }
-        str += character;
-        isPermanent = false;
-      }
-    });
-
-    return {
-      mask: str,
-      lastEditablePos: lastEditablePos,
-      permanents: permanents
-    };
-  };
-
   this.getStringValue = function (value) {
     return !value && value !== 0 ? '' : value + '';
-  };
-
-  this.componentWillMount = function () {
-    var mask = _this2.mask;
-    var value = _this2.state.value;
-
-    if (mask && value) {
-      _this2.setState({ value: value });
-    }
-  };
-
-  this.componentWillReceiveProps = function (nextProps) {
-    _this2.hasValue = nextProps.value != null;
-    _this2.charsRules = nextProps.formatChars != null ? nextProps.formatChars : _this2.defaultCharsRules;
-
-    var oldMask = _this2.mask;
-    var mask = _this2.parseMask(nextProps.mask);
-    var isMaskChanged = mask.mask && mask.mask !== _this2.mask;
-
-    _this2.mask = mask.mask;
-    _this2.permanents = mask.permanents;
-    _this2.lastEditablePos = mask.lastEditablePos;
-    _this2.maskChar = 'maskChar' in nextProps ? nextProps.maskChar : _this2.defaultMaskChar;
-
-    if (!_this2.mask) {
-      _this2.lastCursorPos = null;
-      return;
-    }
-
-    var newValue = nextProps.value != null ? _this2.getStringValue(nextProps.value) : _this2.state.value;
-
-    if (!oldMask && nextProps.value == null) {
-      newValue = _this2.getInputDOMNode().value;
-    }
-
-    var showEmpty = nextProps.alwaysShowMask || _this2.isFocused();
-    if (isMaskChanged || mask.mask && (newValue || showEmpty)) {
-      newValue = _this2.formatValue(newValue);
-
-      if (isMaskChanged) {
-        var pos = _this2.lastCursorPos;
-        var filledLen = _this2.getFilledLength(newValue);
-        if (pos === null || filledLen < pos) {
-          if (_this2.isFilled(newValue)) {
-            pos = filledLen;
-          } else {
-            pos = _this2.getRightEditablePos(filledLen);
-          }
-          _this2.setCursorPos(pos);
-        }
-      }
-    }
-    if (mask.mask && _this2.isEmpty(newValue) && !showEmpty && (!_this2.hasValue || !nextProps.value)) {
-      newValue = '';
-    }
-    _this2.value = newValue;
-    if (_this2.state.value !== newValue) {
-      _this2.setState({ value: newValue });
-    }
-  };
-
-  this.componentDidUpdate = function (prevProps) {
-    if ((_this2.mask || prevProps.mask) && _this2.props.value == null) {
-      _this2.updateUncontrolledInput();
-    }
-    if (_this2.valueDescriptor && _this2.getInputValue() !== _this2.state.value) {
-      _this2.setInputValue(_this2.state.value);
-    }
   };
 
   this.updateUncontrolledInput = function () {
@@ -561,8 +622,12 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.onKeyDown = function (event) {
+    var key = event.key,
+        ctrlKey = event.ctrlKey,
+        metaKey = event.metaKey;
+
     var hasHandler = typeof _this2.props.onKeyDown === 'function';
-    if (event.ctrlKey || event.metaKey) {
+    if (ctrlKey || metaKey) {
       if (hasHandler) {
         _this2.props.onKeyDown(event);
       }
@@ -571,23 +636,23 @@ var _initialiseProps = function _initialiseProps() {
 
     var cursorPos = _this2.getCursorPos();
     var value = _this2.state.value;
-    var key = event.key;
+    var prefix = _this2.maskOptions.prefix;
+
     var preventDefault = false;
     switch (key) {
       case 'Backspace':
       case 'Delete':
-        var prefixLen = _this2.getPrefix().length;
         var deleteFromRight = key === 'Delete';
         var selectionRange = _this2.getSelection();
         if (selectionRange.length) {
-          value = _this2.clearRange(value, selectionRange.start, selectionRange.length);
-        } else if (cursorPos < prefixLen || !deleteFromRight && cursorPos === prefixLen) {
-          cursorPos = prefixLen;
+          value = clearRange(_this2.maskOptions, value, selectionRange.start, selectionRange.length);
+        } else if (cursorPos < prefix.length || !deleteFromRight && cursorPos === prefix.length) {
+          cursorPos = prefix.length;
         } else {
           var editablePos = deleteFromRight ? _this2.getRightEditablePos(cursorPos) : _this2.getLeftEditablePos(cursorPos - 1);
 
           if (editablePos !== null) {
-            value = _this2.clearRange(value, editablePos, 1);
+            value = clearRange(_this2.maskOptions, value, editablePos, 1);
             cursorPos = editablePos;
           }
         }
@@ -602,15 +667,18 @@ var _initialiseProps = function _initialiseProps() {
     }
 
     if (value !== _this2.state.value) {
+      preventDefault = true;
+
       _this2.setInputValue(value);
       _this2.setState({
         value: _this2.hasValue ? _this2.state.value : value
       });
-      preventDefault = true;
+
       if (typeof _this2.props.onChange === 'function') {
         _this2.props.onChange(event);
       }
     }
+
     if (preventDefault) {
       event.preventDefault();
       _this2.setCursorPos(cursorPos);
@@ -618,9 +686,12 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.onKeyPress = function (event) {
-    var key = event.key;
+    var key = event.key,
+        ctrlKey = event.ctrlKey,
+        metaKey = event.metaKey;
+
     var hasHandler = typeof _this2.props.onKeyPress === 'function';
-    if (key === 'Enter' || event.ctrlKey || event.metaKey) {
+    if (key === 'Enter' || ctrlKey || metaKey) {
       if (hasHandler) {
         _this2.props.onKeyPress(event);
       }
@@ -634,19 +705,20 @@ var _initialiseProps = function _initialiseProps() {
     var cursorPos = _this2.getCursorPos();
     var selection = _this2.getSelection();
     var value = _this2.state.value;
-    var mask = _this2.mask,
-        lastEditablePos = _this2.lastEditablePos;
+    var _maskOptions = _this2.maskOptions,
+        mask = _maskOptions.mask,
+        lastEditablePos = _maskOptions.lastEditablePos,
+        prefix = _maskOptions.prefix;
 
-    var prefixLen = _this2.getPrefix().length;
 
-    if (_this2.isPermanentChar(cursorPos) && mask[cursorPos] === key) {
-      value = _this2.insertRawSubstr(value, key, cursorPos);
+    if (isPermanentChar(_this2.maskOptions, cursorPos) && mask[cursorPos] === key) {
+      value = insertString(_this2.maskOptions, value, key, cursorPos);
       ++cursorPos;
     } else {
       var editablePos = _this2.getRightEditablePos(cursorPos);
-      if (editablePos !== null && _this2.isAllowedChar(key, editablePos)) {
-        value = _this2.clearRange(value, selection.start, selection.length);
-        value = _this2.insertRawSubstr(value, key, editablePos);
+      if (editablePos !== null && isAllowedChar(_this2.maskOptions, editablePos, key)) {
+        value = clearRange(_this2.maskOptions, value, selection.start, selection.length);
+        value = insertString(_this2.maskOptions, value, key, editablePos);
         cursorPos = editablePos + 1;
       }
     }
@@ -660,18 +732,22 @@ var _initialiseProps = function _initialiseProps() {
         _this2.props.onChange(event);
       }
     }
+
     event.preventDefault();
-    if (cursorPos < lastEditablePos && cursorPos > prefixLen) {
+
+    if (cursorPos < lastEditablePos && cursorPos > prefix.length) {
       cursorPos = _this2.getRightEditablePos(cursorPos);
     }
     _this2.setCursorPos(cursorPos);
   };
 
   this.onChange = function (event) {
-    var pasteSelection = _this2.pasteSelection,
-        mask = _this2.mask,
-        maskChar = _this2.maskChar,
-        lastEditablePos = _this2.lastEditablePos;
+    var pasteSelection = _this2.pasteSelection;
+    var _maskOptions2 = _this2.maskOptions,
+        mask = _maskOptions2.mask,
+        maskChar = _maskOptions2.maskChar,
+        lastEditablePos = _maskOptions2.lastEditablePos,
+        prefix = _maskOptions2.prefix;
 
     var value = _this2.getInputValue();
     if (!value && _this2.preventEmptyChange) {
@@ -691,56 +767,62 @@ var _initialiseProps = function _initialiseProps() {
     var maskLen = mask.length;
     var valueLen = value.length;
     var oldValueLen = oldValue.length;
-    var prefixLen = _this2.getPrefix().length;
+
     var clearedValue;
+    var enteredString;
 
     if (valueLen > oldValueLen) {
-      var substrLen = valueLen - oldValueLen;
-      var startPos = selection.end - substrLen;
-      var enteredSubstr = value.substr(startPos, substrLen);
+      var enteredStringLen = valueLen - oldValueLen;
+      var startPos = selection.end - enteredStringLen;
+      enteredString = value.substr(startPos, enteredStringLen);
 
-      if (startPos < lastEditablePos && (substrLen !== 1 || enteredSubstr !== mask[startPos])) {
+      if (startPos < lastEditablePos && (enteredStringLen !== 1 || enteredString !== mask[startPos])) {
         cursorPos = _this2.getRightEditablePos(startPos);
       } else {
         cursorPos = startPos;
       }
 
-      value = value.substr(0, startPos) + value.substr(startPos + substrLen);
+      value = value.substr(0, startPos) + value.substr(startPos + enteredStringLen);
 
-      clearedValue = _this2.clearRange(value, startPos, maskLen - startPos);
-      clearedValue = _this2.insertRawSubstr(clearedValue, enteredSubstr, cursorPos);
+      clearedValue = clearRange(_this2.maskOptions, value, startPos, maskLen - startPos);
+      clearedValue = insertString(_this2.maskOptions, clearedValue, enteredString, cursorPos);
 
-      value = _this2.insertRawSubstr(oldValue, enteredSubstr, cursorPos);
+      value = insertString(_this2.maskOptions, oldValue, enteredString, cursorPos);
 
-      if (substrLen !== 1 || cursorPos >= prefixLen && cursorPos < lastEditablePos) {
-        cursorPos = _this2.getFilledLength(clearedValue);
+      if (enteredStringLen !== 1 || cursorPos >= prefix.length && cursorPos < lastEditablePos) {
+        cursorPos = getFilledLength(_this2.maskOptions, clearedValue);
       } else if (cursorPos < lastEditablePos) {
         cursorPos++;
       }
     } else if (valueLen < oldValueLen) {
       var removedLen = maskLen - valueLen;
-      clearedValue = _this2.clearRange(oldValue, selection.end, removedLen);
-      var substr = value.substr(0, selection.end);
-      var clearOnly = substr === oldValue.substr(0, selection.end);
+      enteredString = value.substr(0, selection.end);
+      var clearOnly = enteredString === oldValue.substr(0, selection.end);
+
+      clearedValue = clearRange(_this2.maskOptions, oldValue, selection.end, removedLen);
 
       if (maskChar) {
-        value = _this2.insertRawSubstr(clearedValue, substr, 0);
+        value = insertString(_this2.maskOptions, clearedValue, enteredString, 0);
       }
 
-      clearedValue = _this2.clearRange(clearedValue, selection.end, maskLen - selection.end);
-      clearedValue = _this2.insertRawSubstr(clearedValue, substr, 0);
+      clearedValue = clearRange(_this2.maskOptions, clearedValue, selection.end, maskLen - selection.end);
+      clearedValue = insertString(_this2.maskOptions, clearedValue, enteredString, 0);
 
       if (!clearOnly) {
-        cursorPos = _this2.getFilledLength(clearedValue);
-      } else if (cursorPos < prefixLen) {
-        cursorPos = prefixLen;
+        cursorPos = getFilledLength(_this2.maskOptions, clearedValue);
+      } else if (cursorPos < prefix.length) {
+        cursorPos = prefix.length;
       }
     }
-    value = _this2.formatValue(value);
+    value = formatValue(_this2.maskOptions, value);
 
     if (_this2.isWindowsPhoneBrowser) {
       event.persist();
       setTimeout(function () {
+        if (_this2.unmounted) {
+          return;
+        }
+
         _this2.setInputValue(value);
 
         if (!_this2.hasValue) {
@@ -787,9 +869,9 @@ var _initialiseProps = function _initialiseProps() {
 
   this.onFocus = function (event) {
     if (!_this2.state.value) {
-      var prefix = _this2.getPrefix();
-      var value = _this2.formatValue(prefix);
-      var inputValue = _this2.formatValue(value);
+      var prefix = _this2.maskOptions.prefix;
+      var value = formatValue(_this2.maskOptions, prefix);
+      var inputValue = formatValue(_this2.maskOptions, value);
 
       // do not use this.getInputValue and this.setInputValue as this.input
       // can be undefined at this moment if autoFocus attribute is set
@@ -806,7 +888,7 @@ var _initialiseProps = function _initialiseProps() {
       if (isInputValueChanged && typeof _this2.props.onChange === 'function') {
         _this2.props.onChange(event);
       }
-    } else if (_this2.getFilledLength() < _this2.mask.length) {
+    } else if (getFilledLength(_this2.maskOptions, _this2.state.value) < _this2.maskOptions.mask.length) {
       _this2.setCursorToEnd();
     }
 
@@ -816,15 +898,18 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.onBlur = function (event) {
-    if (!_this2.props.alwaysShowMask && _this2.isEmpty(_this2.state.value)) {
+    if (!_this2.props.alwaysShowMask && isEmpty(_this2.maskOptions, _this2.state.value)) {
       var inputValue = '';
       var isInputValueChanged = inputValue !== _this2.getInputValue();
+
       if (isInputValueChanged) {
         _this2.setInputValue(inputValue);
       }
+
       _this2.setState({
         value: _this2.hasValue ? _this2.state.value : ''
       });
+
       if (isInputValueChanged && typeof _this2.props.onChange === 'function') {
         _this2.props.onChange(event);
       }
@@ -841,6 +926,7 @@ var _initialiseProps = function _initialiseProps() {
       _this2.setInputValue('');
       return;
     }
+
     var text;
     if (window.clipboardData && window.clipboardData.getData) {
       // IE
@@ -848,23 +934,26 @@ var _initialiseProps = function _initialiseProps() {
     } else if (event.clipboardData && event.clipboardData.getData) {
       text = event.clipboardData.getData('text/plain');
     }
+
     if (text) {
       var value = _this2.state.value;
       var selection = _this2.getSelection();
       _this2.pasteText(value, text, selection, event);
     }
+
     event.preventDefault();
   };
 
   this.pasteText = function (value, text, selection, event) {
     var cursorPos = selection.start;
     if (selection.length) {
-      value = _this2.clearRange(value, cursorPos, selection.length);
+      value = clearRange(_this2.maskOptions, value, cursorPos, selection.length);
     }
-    var textLen = _this2.getRawSubstrLength(value, text, cursorPos);
-    value = _this2.insertRawSubstr(value, text, cursorPos);
+    var textLen = getInsertStringLength(_this2.maskOptions, value, text, cursorPos);
+    value = insertString(_this2.maskOptions, value, text, cursorPos);
     cursorPos += textLen;
     cursorPos = _this2.getRightEditablePos(cursorPos) || cursorPos;
+
     if (value !== _this2.getInputValue()) {
       if (event) {
         _this2.setInputValue(value);
@@ -876,26 +965,8 @@ var _initialiseProps = function _initialiseProps() {
         _this2.props.onChange(event);
       }
     }
+
     _this2.setCursorPos(cursorPos);
-  };
-
-  this.componentDidMount = function () {
-    _this2.isAndroidBrowser = _this2.isAndroidBrowser();
-    _this2.isWindowsPhoneBrowser = _this2.isWindowsPhoneBrowser();
-    _this2.isAndroidFirefox = _this2.isAndroidFirefox();
-
-    var input = _this2.getInputDOMNode();
-
-    // workaround for Jest
-    // it doesn't mount a real node so input will be null
-    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      _this2.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
-    }
-
-    if (_this2.mask && _this2.props.value == null) {
-      _this2.updateUncontrolledInput();
-    }
   };
 
   this.render = function () {
@@ -906,7 +977,7 @@ var _initialiseProps = function _initialiseProps() {
         formatChars = _props.formatChars,
         props = _objectWithoutProperties(_props, ['mask', 'alwaysShowMask', 'maskChar', 'formatChars']);
 
-    if (_this2.mask) {
+    if (_this2.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
         var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onKeyPress', 'onPaste'];
         handlersKeys.forEach(function (key) {
@@ -918,6 +989,7 @@ var _initialiseProps = function _initialiseProps() {
         props.value = _this2.state.value;
       }
     }
+
     return React.createElement('input', _extends({ ref: function ref(_ref) {
         return _this2.input = _ref;
       } }, props));
