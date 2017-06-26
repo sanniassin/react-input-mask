@@ -498,7 +498,7 @@ class InputElement extends React.Component {
       }, 0);
     } else {
       // prevent android autocomplete insertion on backspace
-      if (!this.canUseAccessors || (!this.isAndroidBrowser)) {
+      if (!this.canUseAccessors || !this.isAndroidBrowser) {
         this.setInputValue(value);
       }
 
