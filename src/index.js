@@ -14,6 +14,7 @@ import {
   getInsertStringLength,
   insertString
 } from './utils/string';
+import defer from './utils/defer';
 
 class InputElement extends React.Component {
   lastCursorPos = null
@@ -270,16 +271,9 @@ class InputElement extends React.Component {
   }
 
   setCursorPos = (pos) => {
-    var raf = window.requestAnimationFrame
-              ||
-              window.webkitRequestAnimationFrame
-              ||
-              window.mozRequestAnimationFrame
-              ||
-              ((fn) => setTimeout(fn, 0));
-
     this.setSelection(pos, 0);
-    raf(() => {
+
+    defer(() => {
       this.setSelection(pos, 0);
     });
 
