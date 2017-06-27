@@ -103,10 +103,6 @@ class InputElement extends React.Component {
     }
   }
 
-  componentWillUnmount() {
-    this.unmounted = true;
-  }
-
   isDOMElement = (element) => {
     return typeof HTMLElement === 'object'
       ? element instanceof HTMLElement // DOM2
