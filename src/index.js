@@ -48,15 +48,6 @@ class InputElement extends React.Component {
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     this.isAndroidFirefox = isAndroidFirefox();
 
-    var input = this.getInputDOMNode();
-
-    // workaround for Jest
-    // it doesn't mount a real node so input will be null
-    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
-    }
-
     if (this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
@@ -108,7 +99,7 @@ class InputElement extends React.Component {
   }
 
   componentDidUpdate = (prevProps) => {
-    if (!this.valueDescriptor && this.getInputValue() !== this.value) {
+    if (this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
   }
@@ -125,7 +116,6 @@ class InputElement extends React.Component {
 
   getInputDOMNode = () => {
     var input = this.input;
-
     if (!input) {
       return null;
     }
@@ -138,45 +128,13 @@ class InputElement extends React.Component {
     return React.findDOMNode(input);
   }
 
-  enableValueAccessors = () => {
-    if (this.canUseAccessors) {
-      var input = this.getInputDOMNode();
-      this.valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      Object.defineProperty(input, 'value', {
-        configurable: true,
-        enumerable: true,
-        get: () => this.value,
-        set: (value) => {
-          this.value = value;
-          this.valueDescriptor.set.call(input, value);
-        }
-      });
-    }
-  }
-
-  disableValueAccessors = () => {
-    var { valueDescriptor } = this;
-    var input = this.getInputDOMNode();
-    if (!valueDescriptor || !input) {
-      return;
-    }
-
-    this.valueDescriptor = null;
-    Object.defineProperty(input, 'value', valueDescriptor);
-  }
-
   getInputValue = () => {
     var input = this.getInputDOMNode();
-    var { valueDescriptor } = this;
-
-    var value;
-    if (valueDescriptor) {
-      value = valueDescriptor.get.call(input);
-    } else {
-      value = input.value;
+    if (!input) {
+      return null;
     }
 
-    return value;
+    return input.value;
   }
 
   setInputValue = (value) => {
