@@ -580,6 +580,13 @@ class InputElement extends React.Component {
   }
 
   onPaste = (event) => {
+    if (typeof this.props.onPaste === 'function') {
+      this.props.onPaste(event);
+      if (event.defaultPrevented) {
+        return;
+      }
+    }
+
     if (this.isAndroidBrowser) {
       this.pasteSelection = this.getSelection();
       this.setInputValue('');
