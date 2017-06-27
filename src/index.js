@@ -10,7 +10,6 @@ import {
   isFilled,
   isEmpty,
   isPermanentChar,
-  isAllowedChar,
   getInsertStringLength,
   insertString
 } from './utils/string';
@@ -98,7 +97,7 @@ class InputElement extends React.Component {
     this.value = newValue;
   }
 
-  componentDidUpdate = (prevProps) => {
+  componentDidUpdate = () => {
     if (this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
