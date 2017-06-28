@@ -2,7 +2,7 @@
 
 [![Build Status](https://img.shields.io/travis/sanniassin/react-input-mask/master.svg?style=flat)](https://travis-ci.org/sanniassin/react-input-mask) [![npm version](https://img.shields.io/npm/v/react-input-mask.svg?style=flat)](https://www.npmjs.com/package/react-input-mask) [![npm downloads](https://img.shields.io/npm/dm/react-input-mask.svg?style=flat)](https://www.npmjs.com/package/react-input-mask)
 
-Yet another React component for input masking. Simple and made with attention to UX.
+Yet another React component for input masking. Simple and made with attention to UX. Compatible with IE8.
 
 #### [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
