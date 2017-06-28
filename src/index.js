@@ -234,33 +234,25 @@ class InputElement extends React.Component {
   }
 
   onKeyDown = (event) => {
-    var { key, ctrlKey, metaKey } = event;
-    var hasHandler = typeof this.props.onKeyDown === 'function';
-    if (ctrlKey || metaKey) {
-      if (hasHandler) {
-        this.props.onKeyDown(event);
-      }
+    this.backspaceRemoval = null;
+
+    if (typeof this.props.onKeyDown === 'function') {
+      this.props.onKeyDown(event);
+    }
+
+    var { key, ctrlKey, metaKey, defaultPrevented } = event;
+    if (ctrlKey || metaKey || defaultPrevented) {
       return;
     }
 
-    switch (key) {
-      case 'Backspace':
-      case 'Delete':
-        this.removal = {
-          selection: this.getSelection(),
-          key: key
-        };
+    if (key === 'Backspace') {
+      this.backspaceRemoval = {
+        selection: this.getSelection()
+      };
 
-        setImmediate(() => {
-          this.removal = null;
-        });
-        break;
-      default:
-        break;
-    }
-
-    if (hasHandler) {
-      this.props.onKeyDown(event);
+      defer(() => {
+        this.backspaceRemoval = null;
+      });
     }
   }
 
@@ -286,22 +278,19 @@ class InputElement extends React.Component {
     var clearedValue;
     var enteredString;
 
-    if (this.removal) {
-      var { removal } = this;
-      var deleteFromRight = removal.key === 'Delete';
-
-      this.removal = null;
+    if (this.backspaceRemoval) {
       value = this.value;
-      cursorPos = removal.selection.start;
+      selection = this.backspaceRemoval.selection;
+      cursorPos = selection.start;
 
-      if (removal.selection.length) {
-        value = clearRange(this.maskOptions, value, removal.selection.start, removal.selection.length);
-      } else if (removal.selection.start < prefix.length || (!deleteFromRight && removal.selection.start === prefix.length)) {
+      this.backspaceRemoval = null;
+
+      if (selection.length) {
+        value = clearRange(this.maskOptions, value, selection.start, selection.length);
+      } else if (selection.start < prefix.length || selection.start === prefix.length) {
         cursorPos = prefix.length;
       } else {
-        var editablePos = deleteFromRight
-          ? this.getRightEditablePos(cursorPos)
-          : this.getLeftEditablePos(cursorPos - 1);
+        var editablePos = this.getLeftEditablePos(cursorPos - 1);
 
         if (editablePos !== null) {
           value = clearRange(this.maskOptions, value, editablePos, 1);
