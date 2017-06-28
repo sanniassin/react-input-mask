@@ -10,7 +10,6 @@ import {
   isFilled,
   isEmpty,
   isPermanentChar,
-  isAllowedChar,
   getInsertStringLength,
   insertString
 } from './utils/string';
@@ -40,7 +39,7 @@ class InputElement extends React.Component {
       value = formatValue(this.maskOptions, value);
     }
 
-    this.state = { value };
+    this.value = value;
   }
 
   componentDidMount = () => {
@@ -48,17 +47,8 @@ class InputElement extends React.Component {
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     this.isAndroidFirefox = isAndroidFirefox();
 
-    var input = this.getInputDOMNode();
-
-    // workaround for Jest
-    // it doesn't mount a real node so input will be null
-    if (input && Object.getOwnPropertyDescriptor && Object.getPrototypeOf && Object.defineProperty) {
-      var valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      this.canUseAccessors = !!(valueDescriptor && valueDescriptor.get && valueDescriptor.set);
-    }
-
-    if (this.maskOptions.mask && this.props.value == null) {
-      this.updateUncontrolledInput();
+    if (this.getInputValue() !== this.value) {
+      this.setInputValue(this.value);
     }
   }
 
@@ -77,7 +67,7 @@ class InputElement extends React.Component {
     var showEmpty = nextProps.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
       ? this.getStringValue(nextProps.value)
-      : this.state.value;
+      : this.value;
 
     if (!oldMaskOptions.mask && !this.hasValue) {
       newValue = this.getInputDOMNode().value;
@@ -105,24 +95,12 @@ class InputElement extends React.Component {
     }
 
     this.value = newValue;
-
-    if (this.state.value !== newValue) {
-      this.setState({ value: newValue });
-    }
   }
 
-  componentDidUpdate = (prevProps) => {
-    if ((this.maskOptions.mask || prevProps.mask) && this.props.value == null) {
-      this.updateUncontrolledInput();
+  componentDidUpdate = () => {
+    if (this.getInputValue() !== this.value) {
+      this.setInputValue(this.value);
     }
-
-    if (this.valueDescriptor && this.getInputValue() !== this.state.value) {
-      this.setInputValue(this.state.value);
-    }
-  }
-
-  componentWillUnmount() {
-    this.unmounted = true;
   }
 
   isDOMElement = (element) => {
@@ -133,7 +111,6 @@ class InputElement extends React.Component {
 
   getInputDOMNode = () => {
     var input = this.input;
-
     if (!input) {
       return null;
     }
@@ -146,45 +123,13 @@ class InputElement extends React.Component {
     return React.findDOMNode(input);
   }
 
-  enableValueAccessors = () => {
-    if (this.canUseAccessors) {
-      var input = this.getInputDOMNode();
-      this.valueDescriptor = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(input), 'value');
-      Object.defineProperty(input, 'value', {
-        configurable: true,
-        enumerable: true,
-        get: () => this.value,
-        set: (value) => {
-          this.value = value;
-          this.valueDescriptor.set.call(input, value);
-        }
-      });
-    }
-  }
-
-  disableValueAccessors = () => {
-    var { valueDescriptor } = this;
-    var input = this.getInputDOMNode();
-    if (!valueDescriptor || !input) {
-      return;
-    }
-
-    this.valueDescriptor = null;
-    Object.defineProperty(input, 'value', valueDescriptor);
-  }
-
   getInputValue = () => {
     var input = this.getInputDOMNode();
-    var { valueDescriptor } = this;
-
-    var value;
-    if (valueDescriptor) {
-      value = valueDescriptor.get.call(input);
-    } else {
-      value = input.value;
+    if (!input) {
+      return null;
     }
 
-    return value;
+    return input.value;
   }
 
   setInputValue = (value) => {
@@ -217,7 +162,7 @@ class InputElement extends React.Component {
   }
 
   setCursorToEnd = () => {
-    var filledLen = getFilledLength(this.maskOptions, this.state.value);
+    var filledLen = getFilledLength(this.maskOptions, this.value);
     var pos = this.getRightEditablePos(filledLen);
     if (pos !== null) {
       this.setCursorPos(pos);
@@ -288,139 +233,42 @@ class InputElement extends React.Component {
     return !value && value !== 0 ? '' : value + '';
   }
 
-  updateUncontrolledInput = () => {
-    if (this.getInputValue() !== this.state.value) {
-      this.setInputValue(this.state.value);
-    }
-  }
-
   onKeyDown = (event) => {
-    var { key, ctrlKey, metaKey } = event;
-    var hasHandler = typeof this.props.onKeyDown === 'function';
-    if (ctrlKey || metaKey) {
-      if (hasHandler) {
-        this.props.onKeyDown(event);
-      }
-      return;
-    }
+    this.backspaceRemoval = null;
 
-    var cursorPos = this.getCursorPos();
-    var value = this.state.value;
-    var { prefix } = this.maskOptions;
-    var preventDefault = false;
-    switch (key) {
-      case 'Backspace':
-      case 'Delete':
-        var deleteFromRight = key === 'Delete';
-        var selectionRange = this.getSelection();
-        if (selectionRange.length) {
-          value = clearRange(this.maskOptions, value, selectionRange.start, selectionRange.length);
-        } else if (cursorPos < prefix.length || (!deleteFromRight && cursorPos === prefix.length)) {
-          cursorPos = prefix.length;
-        } else {
-          var editablePos = deleteFromRight
-            ? this.getRightEditablePos(cursorPos)
-            : this.getLeftEditablePos(cursorPos - 1);
-
-          if (editablePos !== null) {
-            value = clearRange(this.maskOptions, value, editablePos, 1);
-            cursorPos = editablePos;
-          }
-        }
-        preventDefault = true;
-        break;
-      default:
-        break;
-    }
-
-    if (hasHandler) {
+    if (typeof this.props.onKeyDown === 'function') {
       this.props.onKeyDown(event);
     }
 
-    if (value !== this.state.value) {
-      preventDefault = true;
-
-      this.setInputValue(value);
-      this.setState({
-        value: this.hasValue ? this.state.value : value
-      });
-
-      if (typeof this.props.onChange === 'function') {
-        this.props.onChange(event);
-      }
-    }
-
-    if (preventDefault) {
-      event.preventDefault();
-      this.setCursorPos(cursorPos);
-    }
-  }
-
-  onKeyPress = (event) => {
-    var { key, ctrlKey, metaKey } = event;
-    var hasHandler = typeof this.props.onKeyPress === 'function';
-    if (key === 'Enter' || ctrlKey || metaKey) {
-      if (hasHandler) {
-        this.props.onKeyPress(event);
-      }
+    var { key, ctrlKey, metaKey, defaultPrevented } = event;
+    if (ctrlKey || metaKey || defaultPrevented) {
       return;
     }
 
-    if (this.isWindowsPhoneBrowser) {
-      return;
-    }
+    if (key === 'Backspace') {
+      this.backspaceRemoval = {
+        selection: this.getSelection()
+      };
 
-    var cursorPos = this.getCursorPos();
-    var selection = this.getSelection();
-    var { value } = this.state;
-    var { mask, lastEditablePos, prefix } = this.maskOptions;
-
-    if (isPermanentChar(this.maskOptions, cursorPos) && mask[cursorPos] === key) {
-      value = insertString(this.maskOptions, value, key, cursorPos);
-      ++cursorPos;
-    } else {
-      var editablePos = this.getRightEditablePos(cursorPos);
-      if (editablePos !== null && isAllowedChar(this.maskOptions, editablePos, key)) {
-        value = clearRange(this.maskOptions, value, selection.start, selection.length);
-        value = insertString(this.maskOptions, value, key, editablePos);
-        cursorPos = editablePos + 1;
-      }
-    }
-
-    if (value !== this.state.value) {
-      this.setInputValue(value);
-      this.setState({
-        value: this.hasValue ? this.state.value : value
+      defer(() => {
+        this.backspaceRemoval = null;
       });
-      if (typeof this.props.onChange === 'function') {
-        this.props.onChange(event);
-      }
     }
-
-    event.preventDefault();
-
-    if (cursorPos < lastEditablePos && cursorPos > prefix.length) {
-      cursorPos = this.getRightEditablePos(cursorPos);
-    }
-    this.setCursorPos(cursorPos);
   }
 
   onChange = (event) => {
-    var { pasteSelection } = this;
+    var { paste } = this;
     var { mask, maskChar, lastEditablePos, prefix } = this.maskOptions;
+
     var value = this.getInputValue();
-    if (!value && this.preventEmptyChange) {
-      this.disableValueAccessors();
-      this.preventEmptyChange = false;
-      this.setInputValue(this.state.value);
+    var oldValue = this.value;
+
+    if (paste) {
+      this.paste = null;
+      this.pasteText(paste.value, value, paste.selection, event);
       return;
     }
-    var oldValue = this.state.value;
-    if (pasteSelection) {
-      this.pasteSelection = null;
-      this.pasteText(oldValue, value, pasteSelection, event);
-      return;
-    }
+
     var selection = this.getSelection();
     var cursorPos = selection.end;
     var maskLen = mask.length;
@@ -430,7 +278,26 @@ class InputElement extends React.Component {
     var clearedValue;
     var enteredString;
 
-    if (valueLen > oldValueLen) {
+    if (this.backspaceRemoval) {
+      value = this.value;
+      selection = this.backspaceRemoval.selection;
+      cursorPos = selection.start;
+
+      this.backspaceRemoval = null;
+
+      if (selection.length) {
+        value = clearRange(this.maskOptions, value, selection.start, selection.length);
+      } else if (selection.start < prefix.length || selection.start === prefix.length) {
+        cursorPos = prefix.length;
+      } else {
+        var editablePos = this.getLeftEditablePos(cursorPos - 1);
+
+        if (editablePos !== null) {
+          value = clearRange(this.maskOptions, value, editablePos, 1);
+          cursorPos = editablePos;
+        }
+      }
+    } else if (valueLen > oldValueLen) {
       var enteredStringLen = valueLen - oldValueLen;
       var startPos = selection.end - enteredStringLen;
       enteredString = value.substr(startPos, enteredStringLen);
@@ -449,7 +316,10 @@ class InputElement extends React.Component {
       value = insertString(this.maskOptions, oldValue, enteredString, cursorPos);
 
       if (enteredStringLen !== 1 || (cursorPos >= prefix.length && cursorPos < lastEditablePos)) {
-        cursorPos = getFilledLength(this.maskOptions, clearedValue);
+        cursorPos = Math.max(getFilledLength(this.maskOptions, clearedValue), cursorPos);
+        if (cursorPos < lastEditablePos) {
+          cursorPos = this.getRightEditablePos(cursorPos);
+        }
       } else if (cursorPos < lastEditablePos) {
         cursorPos++;
       }
@@ -468,66 +338,33 @@ class InputElement extends React.Component {
       clearedValue = insertString(this.maskOptions, clearedValue, enteredString, 0);
 
       if (!clearOnly) {
-        cursorPos = getFilledLength(this.maskOptions, clearedValue);
+        cursorPos = Math.max(getFilledLength(this.maskOptions, clearedValue), cursorPos);
+        if (cursorPos < lastEditablePos) {
+          cursorPos = this.getRightEditablePos(cursorPos);
+        }
       } else if (cursorPos < prefix.length) {
         cursorPos = prefix.length;
       }
     }
     value = formatValue(this.maskOptions, value);
 
+    this.setInputValue(value);
+
+    if (typeof this.props.onChange === 'function') {
+      this.props.onChange(event);
+    }
+
     if (this.isWindowsPhoneBrowser) {
-      event.persist();
-      setTimeout(() => {
-        if (this.unmounted) {
-          return;
-        }
-
-        this.setInputValue(value);
-
-        if (!this.hasValue) {
-          this.setState({
-            value: value
-          });
-        }
-
-        if (typeof this.props.onChange === 'function') {
-          this.props.onChange(event);
-        }
-
-        this.setCursorPos(cursorPos);
-      }, 0);
-    } else {
-      // prevent android autocomplete insertion on backspace
-      if (!this.canUseAccessors || !this.isAndroidBrowser) {
-        this.setInputValue(value);
-      }
-
-      if (this.canUseAccessors && ((this.isAndroidFirefox && value && !this.getInputValue()) || this.isAndroidBrowser)) {
-        this.value = value;
-        this.enableValueAccessors();
-        if (this.isAndroidFirefox) {
-          this.preventEmptyChange = true;
-        }
-        setTimeout(() => {
-          this.preventEmptyChange = false;
-          this.disableValueAccessors();
-        }, 0);
-      }
-
-      this.setState({
-        value: this.hasValue ? this.state.value : value
+      defer(() => {
+        this.setSelection(cursorPos, 0);
       });
-
-      if (typeof this.props.onChange === 'function') {
-        this.props.onChange(event);
-      }
-
+    } else {
       this.setCursorPos(cursorPos);
     }
   }
 
   onFocus = (event) => {
-    if (!this.state.value) {
+    if (!this.value) {
       var prefix = this.maskOptions.prefix;
       var value = formatValue(this.maskOptions, prefix);
       var inputValue = formatValue(this.maskOptions, value);
@@ -540,14 +377,14 @@ class InputElement extends React.Component {
         event.target.value = inputValue;
       }
 
-      this.setState({
-        value: this.hasValue ? this.state.value : inputValue
-      }, this.setCursorToEnd);
+      this.value = inputValue;
 
       if (isInputValueChanged && typeof this.props.onChange === 'function') {
         this.props.onChange(event);
       }
-    } else if (getFilledLength(this.maskOptions, this.state.value) < this.maskOptions.mask.length) {
+
+      this.setCursorToEnd();
+    } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
       this.setCursorToEnd();
     }
 
@@ -557,17 +394,13 @@ class InputElement extends React.Component {
   }
 
   onBlur = (event) => {
-    if (!this.props.alwaysShowMask && isEmpty(this.maskOptions, this.state.value)) {
+    if (!this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
       var inputValue = '';
       var isInputValueChanged = inputValue !== this.getInputValue();
 
       if (isInputValueChanged) {
         this.setInputValue(inputValue);
       }
-
-      this.setState({
-        value: this.hasValue ? this.state.value : ''
-      });
 
       if (isInputValueChanged && typeof this.props.onChange === 'function') {
         this.props.onChange(event);
@@ -580,26 +413,17 @@ class InputElement extends React.Component {
   }
 
   onPaste = (event) => {
-    if (this.isAndroidBrowser) {
-      this.pasteSelection = this.getSelection();
+    if (typeof this.props.onPaste === 'function') {
+      this.props.onPaste(event);
+    }
+
+    if (this.isAndroidBrowser && !event.defaultPrevented) {
+      this.paste = {
+        value: this.getInputValue(),
+        selection: this.getSelection()
+      };
       this.setInputValue('');
-      return;
     }
-
-    var text;
-    if (window.clipboardData && window.clipboardData.getData) { // IE
-      text = window.clipboardData.getData('Text');
-    } else if (event.clipboardData && event.clipboardData.getData) {
-      text = event.clipboardData.getData('text/plain');
-    }
-
-    if (text) {
-      var value = this.state.value;
-      var selection = this.getSelection();
-      this.pasteText(value, text, selection, event);
-    }
-
-    event.preventDefault();
   }
 
   pasteText = (value, text, selection, event) => {
@@ -613,12 +437,7 @@ class InputElement extends React.Component {
     cursorPos = this.getRightEditablePos(cursorPos) || cursorPos;
 
     if (value !== this.getInputValue()) {
-      if (event) {
-        this.setInputValue(value);
-      }
-      this.setState({
-        value: this.hasValue ? this.state.value : value
-      });
+      this.setInputValue(value);
       if (event && typeof this.props.onChange === 'function') {
         this.props.onChange(event);
       }
@@ -632,14 +451,10 @@ class InputElement extends React.Component {
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onKeyPress', 'onPaste'];
+        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onPaste'];
         handlersKeys.forEach((key) => {
           props[key] = this[key];
         });
-      }
-
-      if (props.value != null) {
-        props.value = this.state.value;
       }
     }
 

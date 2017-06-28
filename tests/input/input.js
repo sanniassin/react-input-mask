@@ -34,6 +34,21 @@ function setInputProps(input, props) {
   ReactDOM.render(React.createElement(Input, { ...input.props, ...props }), container);
 }
 
+function insertStringIntoInput(input, str) {
+  var inputNode = ReactDOM.findDOMNode(input);
+  var selection = input.getSelection();
+  var { value } = inputNode;
+
+  inputNode.value = value.slice(0, selection.start) + str + value.slice(selection.end);
+
+  input.setCursorPos(selection.start + str.length);
+
+  TestUtils.Simulate.change(inputNode);
+}
+
+const simulateInputKeyPress = insertStringIntoInput;
+const simulateInputPaste = insertStringIntoInput;
+
 describe('Input', () => {
   it('Init format', createInput(
     <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input, inputNode) => {
@@ -199,21 +214,21 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setCursorPos(0);
-      TestUtils.Simulate.keyPress(inputNode, { key: '+' });
+      simulateInputKeyPress(input, '+');
       expect(inputNode.value).to.equal('+7 (___) ___ __ __');
 
       input.setCursorPos(0);
-      TestUtils.Simulate.keyPress(inputNode, { key: '7' });
+      simulateInputKeyPress(input, '7');
       expect(inputNode.value).to.equal('+7 (7__) ___ __ __');
 
       input.setCursorPos(0);
-      TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
+      simulateInputKeyPress(input, 'E');
       expect(inputNode.value).to.equal('+7 (E__) ___ __ __');
 
-      TestUtils.Simulate.keyPress(inputNode, { key: '6' });
+      simulateInputKeyPress(input, '6');
       expect(inputNode.value).to.equal('+7 (E__) ___ __ __');
 
-      TestUtils.Simulate.keyPress(inputNode, { key: 'x' });
+      simulateInputKeyPress(input, 'x');
       expect(inputNode.value).to.equal('+7 (Ex_) ___ __ __');
     }));
 
@@ -223,25 +238,25 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setCursorPos(4);
-      TestUtils.Simulate.keyPress(inputNode, { key: 'E' });
+      simulateInputKeyPress(input, 'E');
       expect(inputNode.value).to.equal('+7 (111) 123 45 6');
 
       input.setSelection(4, 3);
-      TestUtils.Simulate.keyPress(inputNode, { key: '0' });
+      simulateInputKeyPress(input, '0');
       expect(inputNode.value).to.equal('+7 (012) 345 6');
 
       input.setCursorPos(14);
-      TestUtils.Simulate.keyPress(inputNode, { key: '7' });
-      TestUtils.Simulate.keyPress(inputNode, { key: '8' });
-      TestUtils.Simulate.keyPress(inputNode, { key: '9' });
-      TestUtils.Simulate.keyPress(inputNode, { key: '4' });
+      simulateInputKeyPress(input, '7');
+      simulateInputKeyPress(input, '8');
+      simulateInputKeyPress(input, '9');
+      simulateInputKeyPress(input, '4');
       expect(inputNode.value).to.equal('+7 (012) 345 67 89');
 
       inputNode.value = '+7 (';
       input.setCursorPos(4);
       TestUtils.Simulate.change(inputNode);
       input.setCursorPos(0);
-      TestUtils.Simulate.keyPress(inputNode, { key: '+' });
+      simulateInputKeyPress(input, '+');
       expect(inputNode.value).to.equal('+7 (');
     }));
 
@@ -251,9 +266,18 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setCursorPos(3);
-      TestUtils.Simulate.keyPress(inputNode, { key: '1' });
-      expect(inputNode.value).to.equal('(111)');
+      simulateInputKeyPress(input, 'x');
+      expect(input.getCursorPos()).to.equal(3);
+
+      simulateInputKeyPress(input, '1');
       expect(input.getCursorPos()).to.equal(4);
+
+      input.setSelection(0, 4);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      input.setCursorPos(2);
+      simulateInputKeyPress(input, 'x');
+      expect(input.getCursorPos()).to.equal(2);
     }));
 
   it('Backspace single character', createInput(
@@ -263,9 +287,11 @@ describe('Input', () => {
 
       input.setCursorPos(10);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (495) _15 64 54');
 
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (49_) _15 64 54');
     }));
 
@@ -276,6 +302,7 @@ describe('Input', () => {
 
       input.setCursorPos(10);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (495) 156 45 4');
 
       inputNode.value = '+7 (';
@@ -296,13 +323,16 @@ describe('Input', () => {
 
       input.setCursorPos(10);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(9);
 
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(6);
 
       input.setCursorPos(4);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(4);
     }));
 
@@ -313,6 +343,7 @@ describe('Input', () => {
 
       input.setSelection(1, 9);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (___) _15 64 54');
     }));
 
@@ -323,6 +354,7 @@ describe('Input', () => {
 
       input.setSelection(1, 9);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(1);
     }));
 
@@ -333,14 +365,17 @@ describe('Input', () => {
 
       input.setCursorPos(0);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (495) 315 64 54');
 
       input.setCursorPos(7);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (495) _15 64 54');
 
       input.setCursorPos(11);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (495) _1_ 64 54');
     }));
 
@@ -351,14 +386,17 @@ describe('Input', () => {
 
       input.setCursorPos(0);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(4);
 
       input.setCursorPos(7);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(9);
 
       input.setCursorPos(11);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(11);
     }));
 
@@ -369,6 +407,7 @@ describe('Input', () => {
 
       input.setSelection(1, 9);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (___) _15 64 54');
     }));
 
@@ -395,11 +434,11 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setSelection(3, 15);
-      input.pasteText(inputNode.value, '34781226917', input.getSelection());
+      simulateInputPaste(input, '34781226917');
       expect(inputNode.value).to.equal('___3-4781-2269-17_3');
 
       input.setCursorPos(3);
-      input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
+      simulateInputPaste(input, '3-__81-2_6917');
       expect(inputNode.value).to.equal('___3-__81-2_69-17_3');
     }));
 
@@ -409,11 +448,11 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setSelection(3, 15);
-      input.pasteText(inputNode.value, '478122691', input.getSelection());
+      simulateInputPaste(input, '478122691');
       expect(input.getCursorPos()).to.equal(15);
 
       input.setCursorPos(3);
-      input.pasteText(inputNode.value, '3-__81-2_6917', input.getSelection());
+      simulateInputPaste(input, '3-__81-2_6917');
       expect(input.getCursorPos()).to.equal(17);
     }));
 
@@ -423,15 +462,15 @@ describe('Input', () => {
       TestUtils.Simulate.focus(inputNode);
 
       input.setSelection(0, 19);
-      input.pasteText(inputNode.value, '34781226917', input.getSelection());
+      simulateInputPaste(input, '34781226917');
       expect(inputNode.value).to.equal('3478-1226-917');
 
       input.setCursorPos(1);
-      input.pasteText(inputNode.value, '12345', input.getSelection());
+      simulateInputPaste(input, '12345');
       expect(inputNode.value).to.equal('3123-4547-8122-6917');
 
       input.setCursorPos(1);
-      input.pasteText(inputNode.value, '4321', input.getSelection());
+      simulateInputPaste(input, '4321');
       expect(inputNode.value).to.equal('3432-1547-8122-6917');
     }));
 
@@ -440,7 +479,7 @@ describe('Input', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.pasteText(inputNode.value, '1111 1111 1111', input.getSelection());
+      simulateInputPaste(input, '1111 1111 1111');
       expect(inputNode.value).to.equal('1111-1111-1111');
     }));
 
