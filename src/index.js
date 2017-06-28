@@ -234,7 +234,7 @@ class InputElement extends React.Component {
   }
 
   onKeyDown = (event) => {
-    this.backspaceRemoval = null;
+    this.backspaceOrDeleteRemoval = null;
 
     if (typeof this.props.onKeyDown === 'function') {
       this.props.onKeyDown(event);
@@ -245,13 +245,14 @@ class InputElement extends React.Component {
       return;
     }
 
-    if (key === 'Backspace') {
-      this.backspaceRemoval = {
+    if (key === 'Backspace' || key === 'Delete') {
+      this.backspaceOrDeleteRemoval = {
+        key: key,
         selection: this.getSelection()
       };
 
       defer(() => {
-        this.backspaceRemoval = null;
+        this.backspaceOrDeleteRemoval = null;
       });
     }
   }
@@ -278,19 +279,22 @@ class InputElement extends React.Component {
     var clearedValue;
     var enteredString;
 
-    if (this.backspaceRemoval) {
+    if (this.backspaceOrDeleteRemoval) {
+      var deleteFromRight = this.backspaceOrDeleteRemoval.key === 'Delete';
       value = this.value;
-      selection = this.backspaceRemoval.selection;
+      selection = this.backspaceOrDeleteRemoval.selection;
       cursorPos = selection.start;
 
-      this.backspaceRemoval = null;
+      this.backspaceOrDeleteRemoval = null;
 
       if (selection.length) {
         value = clearRange(this.maskOptions, value, selection.start, selection.length);
-      } else if (selection.start < prefix.length || selection.start === prefix.length) {
+      } else if (selection.start < prefix.length || (!deleteFromRight && selection.start === prefix.length)) {
         cursorPos = prefix.length;
       } else {
-        var editablePos = this.getLeftEditablePos(cursorPos - 1);
+        var editablePos = deleteFromRight
+          ? this.getRightEditablePos(cursorPos)
+          : this.getLeftEditablePos(cursorPos - 1);
 
         if (editablePos !== null) {
           value = clearRange(this.maskOptions, value, editablePos, 1);
