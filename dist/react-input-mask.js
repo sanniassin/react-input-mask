@@ -38,13 +38,13 @@ var parseMask = function (mask, maskChar, charsRules) {
   var isPermanent = false;
   var lastEditablePos = null;
 
-  mask.split('').forEach(function (character, i) {
+  mask.split('').forEach(function (character) {
     if (!isPermanent && character === '\\') {
       isPermanent = true;
     } else {
       if (isPermanent || !charsRules[character]) {
         permanents.push(str.length);
-        if (prefix.length === i) {
+        if (str.length === permanents.length - 1) {
           prefix += character;
         }
       } else {
@@ -123,6 +123,9 @@ function getFilledLength(maskOptions, value) {
 
 
   if (!maskChar) {
+    while (value.length > prefix.length && isPermanentChar(maskOptions, value.length - 1)) {
+      value = value.slice(0, value.length - 1);
+    }
     return value.length;
   }
 
