@@ -25,13 +25,13 @@ export default function(mask, maskChar, charsRules) {
   var lastEditablePos = null;
 
   mask.split('')
-      .forEach((character, i) => {
+      .forEach((character) => {
         if (!isPermanent && character === '\\') {
           isPermanent = true;
         } else {
           if (isPermanent || !charsRules[character]) {
             permanents.push(str.length);
-            if (prefix.length === i) {
+            if (str.length === permanents.length - 1) {
               prefix += character;
             }
           } else {

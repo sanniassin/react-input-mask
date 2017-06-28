@@ -33,6 +33,9 @@ export function getFilledLength(maskOptions, value) {
   var { maskChar, prefix } = maskOptions;
 
   if (!maskChar) {
+    while (value.length > prefix.length && isPermanentChar(maskOptions, value.length - 1)) {
+      value = value.slice(0, value.length - 1);
+    }
     return value.length;
   }
 
