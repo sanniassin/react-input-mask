@@ -1,3 +1,5 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
 import InputMask from '../src';
 
 class Input extends React.Component {

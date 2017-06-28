@@ -24,7 +24,8 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [['es2015', { modules: false }], 'react', 'stage-2']
+            presets: [['es2015'], 'react', 'stage-2'],
+            plugins: ['transform-es3-member-expression-literals', 'transform-es3-property-literals']
           }
         },
         exclude: /node_modules/
