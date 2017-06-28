@@ -796,6 +796,10 @@ var _initialiseProps = function _initialiseProps() {
           props[key] = _this2[key];
         });
       }
+
+      if (props.value != null) {
+        props.value = _this2.value;
+      }
     }
 
     return React.createElement('input', _extends({ ref: function ref(_ref) {
