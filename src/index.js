@@ -460,6 +460,10 @@ class InputElement extends React.Component {
           props[key] = this[key];
         });
       }
+
+      if (props.value != null) {
+        props.value = this.value;
+      }
     }
 
     return <input ref={ref => this.input = ref} {...props} />;

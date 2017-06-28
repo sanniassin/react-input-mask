@@ -438,6 +438,29 @@ describe('Input', () => {
       expect(inputNode.value).to.equal('0123');
     }));
 
+  it('Mask change with value prop', createInput(
+    <Input mask="9999-9999-9999-9999" value="38781226917" />, (input, inputNode) => {
+      setInputProps(input, {
+        onChange: () => {
+          setInputProps(input, {
+            mask: '9999-999999-99999',
+            value: '3478-1226-917_-____'
+          });
+        }
+      });
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(inputNode.value).to.equal('3878-1226-917_-____');
+
+      input.setCursorPos(1);
+      simulateInputKeyPress(input, '4');
+      TestUtils.Simulate.change(inputNode);
+
+      expect(inputNode.value).to.equal('3478-122691-7____');
+    }));
+
   it('Paste string', createInput(
     <Input mask="9999-9999-9999-9999" defaultValue="____-____-____-6543" />, (input, inputNode) => {
       inputNode.focus();
