@@ -5,12 +5,13 @@ import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import Input from '../../src';
+import defer from '../../src/utils/defer';
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');
 
 function createInput(component, cb) {
-  return (done) => {
+  return () => {
     var input;
 
     ReactDOM.unmountComponentAtNode(container);
@@ -18,13 +19,22 @@ function createInput(component, cb) {
     component = React.cloneElement(component, {
       ref: (ref) => input = ref
     });
-    ReactDOM.render(component, container, () => {
-      // IE can fail if executed synchronously
-      setImmediate(() => {
-        var inputNode = ReactDOM.findDOMNode(input);
-        cb(input, inputNode);
-        ReactDOM.unmountComponentAtNode(container);
-        done();
+
+    return new Promise((resolve, reject) => {
+      ReactDOM.render(component, container, () => {
+        // IE can fail if executed synchronously
+        setImmediate(() => {
+          var inputNode = ReactDOM.findDOMNode(input);
+          Promise.resolve(cb(input, inputNode))
+            .then(() => {
+              ReactDOM.unmountComponentAtNode(container);
+              resolve();
+            })
+            .catch((err) => {
+              ReactDOM.unmountComponentAtNode(container);
+              reject(err);
+            });
+        });
       });
     });
   };
