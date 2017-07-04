@@ -565,4 +565,14 @@ describe('Input', () => {
       setInputProps(input, { value: '+7 (___) ___ __ __' });
       expect(inputNode.value).to.equal('+7 (___) ___ __ __');
     }));
+
+  it('Does not affect value if mask is empty', createInput(
+    <Input value="12345" />, (input, inputNode) => {
+      expect(inputNode.value).to.equal('12345');
+
+      setInputProps(input, {
+        value: '54321'
+      });
+      expect(inputNode.value).to.equal('54321');
+    }));
 });
