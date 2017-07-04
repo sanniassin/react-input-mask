@@ -374,7 +374,7 @@ var _initialiseProps = function _initialiseProps() {
     _this2.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     _this2.isAndroidFirefox = isAndroidFirefox();
 
-    if (_this2.getInputValue() !== _this2.value) {
+    if (_this2.maskOptions.mask && _this2.getInputValue() !== _this2.value) {
       _this2.setInputValue(_this2.value);
     }
   };
@@ -423,7 +423,7 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.componentDidUpdate = function () {
-    if (_this2.getInputValue() !== _this2.value) {
+    if (_this2.maskOptions.mask && _this2.getInputValue() !== _this2.value) {
       _this2.setInputValue(_this2.value);
     }
   };
