@@ -47,7 +47,7 @@ class InputElement extends React.Component {
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     this.isAndroidFirefox = isAndroidFirefox();
 
-    if (this.getInputValue() !== this.value) {
+    if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
   }
@@ -98,7 +98,7 @@ class InputElement extends React.Component {
   }
 
   componentDidUpdate = () => {
-    if (this.getInputValue() !== this.value) {
+    if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
   }
