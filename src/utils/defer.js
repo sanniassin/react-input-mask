@@ -5,7 +5,7 @@ export default function(fn) {
               ||
               window.mozRequestAnimationFrame
               ||
-              ((fn) => setTimeout(fn, 0));
+              (() => setTimeout(fn, 0));
 
   return defer(fn);
 }
