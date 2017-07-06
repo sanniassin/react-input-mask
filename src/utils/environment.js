@@ -28,3 +28,10 @@ export function isAndroidFirefox() {
          &&
          android.test(ua);
 }
+
+export function isIOS() {
+  var windows = new RegExp('windows', 'i');
+  var ios = new RegExp('(ipod|iphone|ipad)', 'i');
+  var ua = navigator.userAgent;
+  return !windows.test(ua) && ios.test(ua);
+}

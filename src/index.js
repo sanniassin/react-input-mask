@@ -2,7 +2,7 @@
 import React from 'react';
 
 import parseMask from './utils/parseMask';
-import { isAndroidBrowser, isWindowsPhoneBrowser, isAndroidFirefox } from './utils/environment';
+import { isAndroidBrowser, isWindowsPhoneBrowser, isAndroidFirefox, isIOS } from './utils/environment';
 import {
   clearRange,
   formatValue,
@@ -47,6 +47,7 @@ class InputElement extends React.Component {
     this.isAndroidBrowser = isAndroidBrowser();
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     this.isAndroidFirefox = isAndroidFirefox();
+    this.isIOS = isIOS();
 
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
@@ -251,6 +252,13 @@ class InputElement extends React.Component {
         key: key,
         selection: this.getSelection()
       };
+
+      // iOS hack to fire change event
+      // before call to requestAnimationFrame
+      // callback inside defer
+      if (this.isIOS) {
+        this.getInputDOMNode().parentElement();
+      }
 
       defer(() => {
         this.backspaceOrDeleteRemoval = null;
