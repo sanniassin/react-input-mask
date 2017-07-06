@@ -368,6 +368,7 @@ var _initialiseProps = function _initialiseProps() {
   var _this2 = this;
 
   this.lastCursorPos = null;
+  this.focused = false;
 
   this.componentDidMount = function () {
     _this2.isAndroidBrowser = isAndroidBrowser();
@@ -553,7 +554,7 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.isFocused = function () {
-    return document.activeElement === _this2.getInputDOMNode();
+    return _this2.focused;
   };
 
   this.getStringValue = function (value) {
@@ -702,28 +703,32 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.onFocus = function (event) {
-    if (!_this2.value) {
-      var prefix = _this2.maskOptions.prefix;
-      var value = formatValue(_this2.maskOptions, prefix);
-      var inputValue = formatValue(_this2.maskOptions, value);
+    _this2.focused = true;
 
-      // do not use this.getInputValue and this.setInputValue as this.input
-      // can be undefined at this moment if autoFocus attribute is set
-      var isInputValueChanged = inputValue !== event.target.value;
+    if (_this2.maskOptions.mask) {
+      if (!_this2.value) {
+        var prefix = _this2.maskOptions.prefix;
+        var value = formatValue(_this2.maskOptions, prefix);
+        var inputValue = formatValue(_this2.maskOptions, value);
 
-      if (isInputValueChanged) {
-        event.target.value = inputValue;
+        // do not use this.getInputValue and this.setInputValue as this.input
+        // can be undefined at this moment if autoFocus attribute is set
+        var isInputValueChanged = inputValue !== event.target.value;
+
+        if (isInputValueChanged) {
+          event.target.value = inputValue;
+        }
+
+        _this2.value = inputValue;
+
+        if (isInputValueChanged && typeof _this2.props.onChange === 'function') {
+          _this2.props.onChange(event);
+        }
+
+        _this2.setCursorToEnd();
+      } else if (getFilledLength(_this2.maskOptions, _this2.value) < _this2.maskOptions.mask.length) {
+        _this2.setCursorToEnd();
       }
-
-      _this2.value = inputValue;
-
-      if (isInputValueChanged && typeof _this2.props.onChange === 'function') {
-        _this2.props.onChange(event);
-      }
-
-      _this2.setCursorToEnd();
-    } else if (getFilledLength(_this2.maskOptions, _this2.value) < _this2.maskOptions.mask.length) {
-      _this2.setCursorToEnd();
     }
 
     if (typeof _this2.props.onFocus === 'function') {
@@ -732,7 +737,9 @@ var _initialiseProps = function _initialiseProps() {
   };
 
   this.onBlur = function (event) {
-    if (!_this2.props.alwaysShowMask && isEmpty(_this2.maskOptions, _this2.value)) {
+    _this2.focused = false;
+
+    if (_this2.maskOptions.mask && !_this2.props.alwaysShowMask && isEmpty(_this2.maskOptions, _this2.value)) {
       var inputValue = '';
       var isInputValueChanged = inputValue !== _this2.getInputValue();
 
@@ -794,7 +801,7 @@ var _initialiseProps = function _initialiseProps() {
 
     if (_this2.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onPaste'];
+        var handlersKeys = ['onChange', 'onKeyDown', 'onPaste'];
         handlersKeys.forEach(function (key) {
           props[key] = _this2[key];
         });
@@ -807,7 +814,7 @@ var _initialiseProps = function _initialiseProps() {
 
     return React.createElement('input', _extends({ ref: function ref(_ref) {
         return _this2.input = _ref;
-      } }, props));
+      } }, props, { onFocus: _this2.onFocus, onBlur: _this2.onBlur }));
   };
 };
 
