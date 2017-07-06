@@ -17,6 +17,7 @@ import defer from './utils/defer';
 
 class InputElement extends React.Component {
   lastCursorPos = null
+  focused = false
 
   constructor(props) {
     super(props);
@@ -226,7 +227,7 @@ class InputElement extends React.Component {
   }
 
   isFocused = () => {
-    return document.activeElement === this.getInputDOMNode();
+    return this.focused;
   }
 
   getStringValue = (value) => {
@@ -368,28 +369,32 @@ class InputElement extends React.Component {
   }
 
   onFocus = (event) => {
-    if (!this.value) {
-      var prefix = this.maskOptions.prefix;
-      var value = formatValue(this.maskOptions, prefix);
-      var inputValue = formatValue(this.maskOptions, value);
+    this.focused = true;
 
-      // do not use this.getInputValue and this.setInputValue as this.input
-      // can be undefined at this moment if autoFocus attribute is set
-      var isInputValueChanged = inputValue !== event.target.value;
+    if (this.maskOptions.mask) {
+      if (!this.value) {
+        var prefix = this.maskOptions.prefix;
+        var value = formatValue(this.maskOptions, prefix);
+        var inputValue = formatValue(this.maskOptions, value);
 
-      if (isInputValueChanged) {
-        event.target.value = inputValue;
+        // do not use this.getInputValue and this.setInputValue as this.input
+        // can be undefined at this moment if autoFocus attribute is set
+        var isInputValueChanged = inputValue !== event.target.value;
+
+        if (isInputValueChanged) {
+          event.target.value = inputValue;
+        }
+
+        this.value = inputValue;
+
+        if (isInputValueChanged && typeof this.props.onChange === 'function') {
+          this.props.onChange(event);
+        }
+
+        this.setCursorToEnd();
+      } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
+        this.setCursorToEnd();
       }
-
-      this.value = inputValue;
-
-      if (isInputValueChanged && typeof this.props.onChange === 'function') {
-        this.props.onChange(event);
-      }
-
-      this.setCursorToEnd();
-    } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
-      this.setCursorToEnd();
     }
 
     if (typeof this.props.onFocus === 'function') {
@@ -398,7 +403,9 @@ class InputElement extends React.Component {
   }
 
   onBlur = (event) => {
-    if (!this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
+    this.focused = false;
+
+    if (this.maskOptions.mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
       var inputValue = '';
       var isInputValueChanged = inputValue !== this.getInputValue();
 
@@ -455,7 +462,7 @@ class InputElement extends React.Component {
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onFocus', 'onBlur', 'onChange', 'onKeyDown', 'onPaste'];
+        var handlersKeys = ['onChange', 'onKeyDown', 'onPaste'];
         handlersKeys.forEach((key) => {
           props[key] = this[key];
         });
@@ -466,7 +473,7 @@ class InputElement extends React.Component {
       }
     }
 
-    return <input ref={ref => this.input = ref} {...props} />;
+    return <input ref={ref => this.input = ref} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
   }
 }
 
