@@ -11,13 +11,13 @@ layout: master
 <pre><code>&lt;InputMask mask="+4\9 99 999 99" maskChar={null} /&gt;</code></pre>
 <div id="phone1"></div>
 <script>
-  ReactDOM.render(React.createElement(ReactInputMask, { mask: '+4\\9 99 999 99', maskChar: null }), document.getElementById('phone1'));
+  ReactDOM.render(React.createElement(ReactInputMask, { type: 'tel', mask: '+4\\9 99 999 99', maskChar: null }), document.getElementById('phone1'));
 </script>
 
 <pre><code>&lt;InputMask mask="+7 (999) 999-99-99" /&gt;</code></pre>
 <div id="phone2"></div>
 <script>
-  ReactDOM.render(React.createElement(ReactInputMask, { mask: '+7 (999) 999-99-99' }), document.getElementById('phone2'));
+  ReactDOM.render(React.createElement(ReactInputMask, { type: 'tel', mask: '+7 (999) 999-99-99' }), document.getElementById('phone2'));
 </script>
 
 <h2>Dates</h2>
@@ -31,14 +31,14 @@ layout: master
   var date1 = document.getElementById('date1');
   var date1code = document.getElementById('date1-code');
   date1code.innerHTML = date1code.innerHTML.replace('01-01-2015', defaultValue);
-  ReactDOM.render(React.createElement(ReactInputMask, { mask: '99-99-9999', defaultValue: defaultValue }), date1);
+  ReactDOM.render(React.createElement(ReactInputMask, { type: 'tel', mask: '99-99-9999', defaultValue: defaultValue }), date1);
 </script>
 
 <pre><code id="date2-code">&lt;InputMask mask="99/99/9999" placeholder="Enter birthdate" /&gt;</code></pre>
 <div id="date2"></div>
 <script>
   var date2 = document.getElementById('date2');
-  ReactDOM.render(React.createElement(ReactInputMask, { mask: '99/99/9999', placeholder: 'Enter birthdate' }), date2);
+  ReactDOM.render(React.createElement(ReactInputMask, { type: 'tel', mask: '99/99/9999', placeholder: 'Enter birthdate' }), date2);
 </script>
 
 <h2>Credit card <small>(autochange to Amex format if starts with 34 or 37)</small></h2>
@@ -76,11 +76,11 @@ render: function() {
     }
     cardValue = val;
 
-    var cardElement = React.createElement(ReactInputMask, { mask: cardMask, onChange: onCardChange, value: cardValue });
+    var cardElement = React.createElement(ReactInputMask, { type: 'tel', mask: cardMask, onChange: onCardChange, value: cardValue });
     ReactDOM.render(cardElement, card1);
   };
   var card1 = document.getElementById('card1');
-  var cardElement = React.createElement(ReactInputMask, { mask: cardMask, onChange: onCardChange, value: cardValue });
+  var cardElement = React.createElement(ReactInputMask, { type: 'tel', mask: cardMask, onChange: onCardChange, value: cardValue });
   ReactDOM.render(cardElement, card1);
 </script>
 
