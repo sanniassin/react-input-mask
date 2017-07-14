@@ -4,7 +4,7 @@
 	(global.ReactInputMask = factory(global.React));
 }(this, (function (React) { 'use strict';
 
-React = 'default' in React ? React['default'] : React;
+React = React && React.hasOwnProperty('default') ? React['default'] : React;
 
 var defaultCharsRules = {
   '9': '[0-9]',
@@ -86,13 +86,6 @@ function isAndroidFirefox() {
   var android = new RegExp('android', 'i');
   var ua = navigator.userAgent;
   return !windows.test(ua) && firefox.test(ua) && android.test(ua);
-}
-
-function isIOS() {
-  var windows = new RegExp('windows', 'i');
-  var ios = new RegExp('(ipod|iphone|ipad)', 'i');
-  var ua = navigator.userAgent;
-  return !windows.test(ua) && ios.test(ua);
 }
 
 function isPermanentChar(maskOptions, pos) {
@@ -310,7 +303,7 @@ function getInsertStringLength(maskOptions, value, insertStr, insertPos) {
 }
 
 var defer = function (fn) {
-            var defer = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function (fn) {
+            var defer = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || function () {
                         return setTimeout(fn, 0);
             };
 
@@ -381,7 +374,6 @@ var _initialiseProps = function _initialiseProps() {
     _this2.isAndroidBrowser = isAndroidBrowser();
     _this2.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     _this2.isAndroidFirefox = isAndroidFirefox();
-    _this2.isIOS = isIOS();
 
     if (_this2.maskOptions.mask && _this2.getInputValue() !== _this2.value) {
       _this2.setInputValue(_this2.value);
@@ -395,6 +387,7 @@ var _initialiseProps = function _initialiseProps() {
     _this2.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
 
     if (!_this2.maskOptions.mask) {
+      _this2.backspaceOrDeleteRemoval = null;
       _this2.lastCursorPos = null;
       return;
     }
@@ -586,21 +579,17 @@ var _initialiseProps = function _initialiseProps() {
     }
 
     if (key === 'Backspace' || key === 'Delete') {
+      var selection = _this2.getSelection();
+      var canRemove = key === 'Backspace' && selection.end > 0 || key === 'Delete' && _this2.value.length > selection.start;
+
+      if (!canRemove) {
+        return;
+      }
+
       _this2.backspaceOrDeleteRemoval = {
         key: key,
         selection: _this2.getSelection()
       };
-
-      // iOS hack to fire change event
-      // before call to requestAnimationFrame
-      // callback inside defer
-      if (_this2.isIOS) {
-        _this2.getInputDOMNode().parentElement();
-      }
-
-      defer(function () {
-        _this2.backspaceOrDeleteRemoval = null;
-      });
     }
   };
 
