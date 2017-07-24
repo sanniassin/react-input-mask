@@ -10,7 +10,7 @@ var rootDir = path.resolve(__dirname, '../..');
 
 describe('CommonJS build', () => {
   var libPath = path.resolve(rootDir, pjson.main);
-  var InputElement = require(libPath).default;
+  var InputElement = require(libPath);
 
   it('should return a string', () => {
     var result = ReactDOMServer.renderToString(<InputElement value="some" mask="799" />);
