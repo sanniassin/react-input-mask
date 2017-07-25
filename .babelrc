@@ -6,6 +6,9 @@
     },
     "es": {
       "presets": [["es2015", { "modules": false }], "react", "stage-2"]
+    },
+    "tests": {
+      "presets": ["es2015", "react", "stage-2"]
     }
   }
 }
