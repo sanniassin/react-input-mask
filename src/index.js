@@ -43,7 +43,7 @@ class InputElement extends React.Component {
     this.value = value;
   }
 
-  componentDidMount = () => {
+  componentDidMount() {
     this.isAndroidBrowser = isAndroidBrowser();
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
     this.isAndroidFirefox = isAndroidFirefox();
@@ -53,7 +53,7 @@ class InputElement extends React.Component {
     }
   }
 
-  componentWillReceiveProps = (nextProps) => {
+  componentWillReceiveProps(nextProps) {
     var oldMaskOptions = this.maskOptions;
 
     this.hasValue = nextProps.value != null;
@@ -99,7 +99,7 @@ class InputElement extends React.Component {
     this.value = newValue;
   }
 
-  componentDidUpdate = () => {
+  componentDidUpdate() {
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
@@ -463,7 +463,7 @@ class InputElement extends React.Component {
     this.setCursorPos(cursorPos);
   }
 
-  render = () => {
+  render() {
     var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
 
     if (this.maskOptions.mask) {
