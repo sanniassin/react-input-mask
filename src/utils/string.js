@@ -143,6 +143,9 @@ export function insertString(maskOptions, value, insertStr, insertPos) {
       }
 
       if (!isUsableCharacter(insertCharacter, insertPos)) {
+        if (insertCharacter === maskChar) {
+            insertPos++;
+        }
         return true;
       }
 
