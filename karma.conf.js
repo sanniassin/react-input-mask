@@ -5,7 +5,7 @@ try {
   bsCredentials = require(__dirname + '/browserStack.json');
   canUseBS = true;
 } catch (e) {
-  console.warn("Can't load credentials from browserStack.json, fallback to PhantomJS");
+  console.warn("Can't load credentials from browserStack.json, fallback to Puppeteer");
 }
 
 module.exports = function (config) {
@@ -111,7 +111,7 @@ module.exports = function (config) {
       'bs_ios8',
       //'bs_ios6',
       'bs_android44'
-    ] : ['PhantomJS'],
+    ] : ['ChromeHeadless'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: './',
