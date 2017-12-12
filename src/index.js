@@ -429,6 +429,41 @@ class InputElement extends React.Component {
     }
   }
 
+  onMouseDown = (event) => {
+    // tiny unintentional mouse movements can break cursor
+    // position on focus, so we have to restore it in that case
+    //
+    // https://github.com/sanniassin/react-input-mask/issues/108
+    if (!this.focused) {
+      this.mouseDownX = event.clientX;
+      this.mouseDownY = event.clientY;
+      this.mouseDownTime = (new Date()).getTime();
+
+      var mouseUpHandler = (mouseUpEvent) => {
+        document.removeEventListener('mouseup', mouseUpHandler);
+
+        if (!this.focused) {
+          return;
+        }
+
+        var deltaX = Math.abs(mouseUpEvent.clientX - this.mouseDownX);
+        var deltaY = Math.abs(mouseUpEvent.clientY - this.mouseDownY);
+        var axisDelta = Math.max(deltaX, deltaY);
+        var timeDelta = (new Date()).getTime() - this.mouseDownTime;
+
+        if ((axisDelta <= 10 && timeDelta <= 200) || (axisDelta <= 5 && timeDelta <= 300)) {
+          this.setCursorToEnd();
+        }
+      };
+
+      document.addEventListener('mouseup', mouseUpHandler);
+    }
+
+    if (typeof this.props.onMouseDown === 'function') {
+      this.props.onMouseDown(event);
+    }
+  }
+
   onPaste = (event) => {
     if (typeof this.props.onPaste === 'function') {
       this.props.onPaste(event);
@@ -468,7 +503,7 @@ class InputElement extends React.Component {
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onChange', 'onKeyDown', 'onPaste'];
+        var handlersKeys = ['onChange', 'onKeyDown', 'onPaste', 'onMouseDown'];
         handlersKeys.forEach((key) => {
           props[key] = this[key];
         });
