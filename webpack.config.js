@@ -24,18 +24,23 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [['es2015'], 'react', 'stage-2'],
-            plugins: ['transform-es3-member-expression-literals', 'transform-es3-property-literals']
+            presets: [['es2015', { loose: true }], 'react', 'stage-2']
           }
-        },
-        exclude: /node_modules/
+        }
+      },
+      {
+        test: /\.js$/,
+        enforce: 'post',
+        loader: 'es3ify-loader'
       }
     ]
   },
   devServer: {
     host: '0.0.0.0',
     port: 9000,
-    disableHostCheck: true
+    disableHostCheck: true,
+    hot: false,
+    inline: false
   },
   plugins: [
     new webpack.optimize.CommonsChunkPlugin({
