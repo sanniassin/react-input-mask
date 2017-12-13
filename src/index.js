@@ -434,7 +434,7 @@ class InputElement extends React.Component {
     // position on focus, so we have to restore it in that case
     //
     // https://github.com/sanniassin/react-input-mask/issues/108
-    if (!this.focused) {
+    if (!this.focused && document.addEventListener) {
       this.mouseDownX = event.clientX;
       this.mouseDownY = event.clientY;
       this.mouseDownTime = (new Date()).getTime();
