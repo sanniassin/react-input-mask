@@ -24,9 +24,10 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: [['es2015', { loose: true }], 'react', 'stage-2']
+            presets: [['@babel/preset-es2015', { loose: true }], '@babel/preset-react', '@babel/preset-stage-2']
           }
-        }
+        },
+        exclude: /node_modules/
       },
       {
         test: /\.js$/,

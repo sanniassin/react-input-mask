@@ -118,13 +118,12 @@ module.exports = function (config) {
 
     // frameworks to use
     // available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-    frameworks: ['mocha', 'browserify'],
+    frameworks: ['mocha'],
 
     // list of files / patterns to load in the browser
     files: [
-      'node_modules/babel-polyfill/dist/polyfill.min.js',
+      'node_modules/@babel/polyfill/dist/polyfill.min.js',
       'node_modules/console-polyfill/index.js',
-      'node_modules/react/dist/react.min.js',
       'tests/input/*.js'
     ],
 
@@ -136,7 +135,7 @@ module.exports = function (config) {
     // preprocess matching files before serving them to the browser
     // available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
     preprocessors: {
-      'tests/input/*.js': ['browserify']
+      'tests/input/*.js': ['webpack']
     },
 
     // test results reporter to use
@@ -161,8 +160,18 @@ module.exports = function (config) {
     // if true, Karma captures browsers, runs the tests and exits
     singleRun: true,
 
-    browserify: {
-      transform: [['babelify']]
+    webpack: {
+      devtool: false,
+      performance: {
+        hints: false
+      },
+      output: {
+        filename: '[name].js'
+      },
+      resolve: {
+        modules: ['node_modules', '.']
+      },
+      module: require('./webpack.config').module
     }
   });
 };

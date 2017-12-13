@@ -1,14 +1,14 @@
 {
   "env": {
     "commonjs": {
-      "presets": ["es2015", "react", "stage-2"],
+      "presets": ["@babel/preset-es2015", "@babel/preset-react", "@babel/preset-stage-2"],
       "plugins": ["add-module-exports"]
     },
     "es": {
-      "presets": [["es2015", { "modules": false }], "react", "stage-2"]
+      "presets": [["@babel/preset-es2015", { "modules": false }], "@babel/preset-react", "@babel/preset-stage-2"]
     },
     "tests": {
-      "presets": ["es2015", "react", "stage-2"]
+      "presets": ["@babel/preset-es2015", "@babel/preset-react", "@babel/preset-stage-2"]
     }
   }
 }

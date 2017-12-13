@@ -22,9 +22,9 @@ var config = {
       babelrc: false,
       exclude: 'node_modules/**',
       presets: [
-        ['es2015', { modules: false }],
-        'react',
-        'stage-2'
+        ['@babel/preset-es2015', { modules: false }],
+        '@babel/preset-react',
+        '@babel/preset-stage-2'
       ]
     }),
     replace({
