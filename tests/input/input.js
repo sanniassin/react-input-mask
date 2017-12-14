@@ -10,7 +10,7 @@ import defer from '../../src/utils/defer';
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');
 
-function createInput(component, cb) {
+const createInput = (component, cb) => {
   return () => {
     var input;
 
@@ -38,13 +38,13 @@ function createInput(component, cb) {
       });
     });
   };
-}
+};
 
-function setInputProps(input, props) {
+const setInputProps = (input, props) => {
   ReactDOM.render(React.createElement(Input, { ...input.props, ...props }), container);
-}
+};
 
-function insertStringIntoInput(input, str) {
+const insertStringIntoInput = (input, str) => {
   var inputNode = ReactDOM.findDOMNode(input);
   var selection = input.getSelection();
   var { value } = inputNode;
@@ -54,10 +54,16 @@ function insertStringIntoInput(input, str) {
   input.setCursorPos(selection.start + str.length);
 
   TestUtils.Simulate.change(inputNode);
-}
+};
 
 const simulateInputKeyPress = insertStringIntoInput;
-const simulateInputPaste = insertStringIntoInput;
+const simulateInputPaste = (input, str) => {
+  var inputNode = ReactDOM.findDOMNode(input);
+
+  TestUtils.Simulate.paste(inputNode);
+
+  insertStringIntoInput(input, str);
+};
 
 describe('Input', () => {
   it('Init format', createInput(
@@ -500,6 +506,10 @@ describe('Input', () => {
       input.setCursorPos(3);
       simulateInputPaste(input, '3-__81-2_6917');
       expect(inputNode.value).to.equal('___3-__81-2_69-17_3');
+
+      input.setSelection(0, 3);
+      simulateInputPaste(input, ' 333');
+      expect(inputNode.value).to.equal('3333-__81-2_69-17_3');
     }));
 
   it('Paste cursor position', createInput(
@@ -532,6 +542,18 @@ describe('Input', () => {
       input.setCursorPos(1);
       simulateInputPaste(input, '4321');
       expect(inputNode.value).to.equal('3432-1547-8122-6917');
+
+      setInputProps(input, {
+        value: '',
+        onChange: (event) => {
+          setInputProps(input, {
+            value: event.target.value
+          });
+        }
+      });
+
+      simulateInputPaste(input, '123');
+      expect(inputNode.value).to.equal('123');
     }));
 
   it('Paste string with maskChar at place of permanent char', createInput(

@@ -265,15 +265,15 @@ class InputElement extends React.Component {
   }
 
   onChange = (event) => {
-    var { paste } = this;
+    var { beforePasteState } = this;
     var { mask, maskChar, lastEditablePos, prefix } = this.maskOptions;
 
     var value = this.getInputValue();
     var oldValue = this.value;
 
-    if (paste) {
-      this.paste = null;
-      this.pasteText(paste.value, value, paste.selection, event);
+    if (beforePasteState) {
+      this.beforePasteState = null;
+      this.pasteText(beforePasteState.value, value, beforePasteState.selection, event);
       return;
     }
 
@@ -469,8 +469,11 @@ class InputElement extends React.Component {
       this.props.onPaste(event);
     }
 
-    if (this.isAndroidBrowser && !event.defaultPrevented) {
-      this.paste = {
+    // we need raw pasted text, but event.clipboardData
+    // may not work in Android browser, so we clean input
+    // to get raw text in onChange handler
+    if (!event.defaultPrevented) {
+      this.beforePasteState = {
         value: this.getInputValue(),
         selection: this.getSelection()
       };
@@ -488,11 +491,9 @@ class InputElement extends React.Component {
     cursorPos += textLen;
     cursorPos = this.getRightEditablePos(cursorPos) || cursorPos;
 
-    if (value !== this.getInputValue()) {
-      this.setInputValue(value);
-      if (event && typeof this.props.onChange === 'function') {
-        this.props.onChange(event);
-      }
+    this.setInputValue(value);
+    if (event && typeof this.props.onChange === 'function') {
+      this.props.onChange(event);
     }
 
     this.setCursorPos(cursorPos);
