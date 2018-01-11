@@ -270,6 +270,12 @@ class InputElement extends React.Component {
 
     var value = this.getInputValue();
     var oldValue = this.value;
+    // check to be sure this.value is still accurate. when using browser AutoFill, the
+    // input's "old" value may have changed without this.value reflecting that change.
+    // if it is no longer releveant, discard it.
+    if (!this.backspaceOrDeleteRemoval && event.currentTarget.value.indexOf(this.value) !== 0) {
+      oldValue = "";
+    }
 
     if (beforePasteState) {
       this.beforePasteState = null;
