@@ -767,14 +767,22 @@ var _initialiseProps = function _initialiseProps() {
 
       var value = _this3.getInputValue();
 
-      var oldValue = _this3.value;
-
       if (beforePasteState) {
         _this3.beforePasteState = null;
 
         _this3.pasteText(beforePasteState.value, value, beforePasteState.selection, event);
 
         return;
+      }
+
+      var oldValue = _this3.value;
+
+      var input = _this3.getInputDOMNode(); // autofill replaces whole value, ignore old one
+      // https://github.com/sanniassin/react-input-mask/issues/113
+
+
+      if (typeof input.matches === 'function' && input.matches(':-webkit-autofill')) {
+        oldValue = '';
       }
 
       var selection = _this3.getSelection();
