@@ -8,12 +8,12 @@ var env = process.env.NODE_ENV;
 var config = {
   output: {
     name: 'ReactInputMask',
-    format: 'umd'
+    format: 'umd',
+    globals: {
+      react: 'React'
+    }
   },
   external: ['react'],
-  globals: {
-    react: 'React'
-  },
   plugins: [
     nodeResolve({
       jsnext: true
