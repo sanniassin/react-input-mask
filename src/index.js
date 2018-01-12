@@ -267,14 +267,21 @@ class InputElement extends React.Component {
   onChange = (event) => {
     var { beforePasteState } = this;
     var { mask, maskChar, lastEditablePos, prefix } = this.maskOptions;
-
     var value = this.getInputValue();
-    var oldValue = this.value;
 
     if (beforePasteState) {
       this.beforePasteState = null;
       this.pasteText(beforePasteState.value, value, beforePasteState.selection, event);
       return;
+    }
+
+    var oldValue = this.value;
+    var input = this.getInputDOMNode();
+
+    // autofill replaces whole value, ignore old one
+    // https://github.com/sanniassin/react-input-mask/issues/113
+    if (typeof input.matches === 'function' && input.matches(':-webkit-autofill')) {
+      oldValue = '';
     }
 
     var selection = this.getSelection();
