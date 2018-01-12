@@ -93,6 +93,13 @@ module.exports = function (config) {
         device: 'Samsung Galaxy S5',
         os: 'android',
         os_version: '4.4'
+      },
+
+      ChromeHeadless: {
+        flags: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox'
+        ]
       }
     },
 
