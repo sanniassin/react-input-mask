@@ -280,9 +280,13 @@ class InputElement extends React.Component {
 
     // autofill replaces whole value, ignore old one
     // https://github.com/sanniassin/react-input-mask/issues/113
-    if (typeof input.matches === 'function' && input.matches(':-webkit-autofill')) {
-      oldValue = '';
-    }
+    //
+    // input.matches throws exception if selector isn't supported
+    try {
+      if (typeof input.matches === 'function' && input.matches(':-webkit-autofill')) {
+        oldValue = '';
+      }
+    } catch (e) {}
 
     var selection = this.getSelection();
     var cursorPos = selection.end;
