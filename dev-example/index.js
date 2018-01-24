@@ -18,7 +18,47 @@ class Input extends React.Component {
   }
 }
 
-ReactDOM.render(<Input />, document.getElementById('root'));
+class CustomInput extends React.Component {
+  getInputElement() {
+    return this.inputEl;
+  }
+  render() {
+    const { className, placeholder, ...props } = this.props;
+    return (
+      <label htmlFor="custom-input" className={className}>
+        <input id="custom-input" type="text" {...props} ref={(el) => this.inputEl = el} />
+        <span>{placeholder}</span>
+      </label>
+    );
+  }
+}
+
+class CustomInputMask extends React.Component {
+  state = {
+    value: ''
+  }
+
+  onChange = (event) => {
+    this.setState({
+      value: event.target.value
+    });
+  }
+
+  render() {
+    return <InputMask Component={CustomInput} mask="**99-9999-9999" value={this.state.value} onChange={this.onChange} placeholder="Custom Input" />;
+  }
+}
+
+ReactDOM.render((
+  <div>
+    <div style={{ marginBottom: '16px' }}>
+      <Input />
+    </div>
+    <div>
+      <CustomInputMask />
+    </div>
+  </div>
+), document.getElementById('root'));
 
 function escapeHtml(unsafe) {
   return unsafe
