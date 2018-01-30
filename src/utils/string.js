@@ -63,10 +63,13 @@ export function formatValue(maskOptions, value) {
 
   if (!maskChar) {
     value = insertString(maskOptions, '', value, 0);
-    value = value.slice(0, getFilledLength(maskOptions, value));
 
     if (value.length < prefix.length) {
       value = prefix;
+    }
+
+    while (value.length < mask.length && isPermanentChar(maskOptions, value.length)) {
+      value += mask[value.length];
     }
 
     return value;
@@ -94,6 +97,13 @@ export function clearRange(maskOptions, value, start, len) {
   var arrayValue = value.split('');
 
   if (!maskChar) {
+    // remove any permanent chars after clear range, they will be added back by foramtValue
+    for (var i = end; i < arrayValue.length; i++) {
+      if (isPermanentChar(maskOptions, i)) {
+        arrayValue[i] = '';
+      }
+    }
+
     start = Math.max(prefix.length, start);
     arrayValue.splice(start, end - start);
     value = arrayValue.join('');
