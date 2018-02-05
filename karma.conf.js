@@ -95,10 +95,10 @@ module.exports = function (config) {
         os_version: '4.4'
       },
 
-      ChromeHeadless: {
+      ChromeHeadlessNoSandbox: {
+        base: 'ChromeHeadless',
         flags: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox'
+          '--no-sandbox'
         ]
       }
     },
@@ -118,7 +118,7 @@ module.exports = function (config) {
       'bs_ios8',
       //'bs_ios6',
       'bs_android44'
-    ] : ['ChromeHeadless'],
+    ] : ['ChromeHeadlessNoSandbox'],
 
     // base path that will be used to resolve all patterns (eg. files, exclude)
     basePath: './',
