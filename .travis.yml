@@ -3,3 +3,5 @@ node_js:
   - "node"
 install:
   - npm install
+env:
+  - DISABLE_CHROMIUM_SANDBOX=true
