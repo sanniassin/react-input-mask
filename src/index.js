@@ -315,6 +315,9 @@ class InputElement extends React.Component {
           : this.getLeftEditablePos(cursorPos - 1);
 
         if (editablePos !== null) {
+          if (!maskChar) {
+            value = value.substr(0, getFilledLength(this.maskOptions, value));
+          }
           value = clearRange(this.maskOptions, value, editablePos, 1);
           cursorPos = editablePos;
         }

@@ -110,16 +110,11 @@ describe('Input', () => {
     <Input mask="+4\9 99 9\99 99" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
-      expect(inputNode.value).to.equal('+49 ');
+      
 
-      inputNode.value = '+49 12 394';
-      input.setCursorPos(10);
+      inputNode.value = '+49 12 3';
       TestUtils.Simulate.change(inputNode);
-
-      input.setCursorPos(10);
-      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
-      TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('+49 12 3');
+      expect(inputNode.value).to.equal('+49 12 39');
     }));
 
   it('alwaysShowMask', createInput(
@@ -213,13 +208,14 @@ describe('Input', () => {
     <Input mask="**** **** **** ****" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
+      expect(inputNode.value).to.equal('');
 
       input.setCursorPos(0);
-      inputNode.value = 'aaaa';
-      input.setCursorPos(4);
+      inputNode.value = 'aaa';
+      input.setCursorPos(3);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa');
-      expect(input.getCursorPos()).to.equal(4);
+      expect(inputNode.value).to.equal('aaa');
+      expect(input.getCursorPos()).to.equal(3);
 
       inputNode.value = 'aaaaa';
       input.setCursorPos(5);
@@ -369,14 +365,14 @@ describe('Input', () => {
     }));
 
   it('Backspace single character cursor position without maskChar', createInput(
-    <Input mask="+7 (999) 999 99 99" defaultValue="7495315645" maskChar={null} />, (input, inputNode) => {
+    <Input mask="+7 (999) 999 99 99" defaultValue="749531564" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(17);
+      input.setCursorPos(16);
       TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
       TestUtils.Simulate.change(inputNode);
-      expect(input.getCursorPos()).to.equal(15);
+      expect(input.getCursorPos()).to.equal(14);
     }));
 
   it('Backspace range', createInput(
@@ -400,6 +396,92 @@ describe('Input', () => {
       TestUtils.Simulate.change(inputNode);
       expect(input.getCursorPos()).to.equal(1);
     }));
+
+  it('Backspace single character with escaped characters without maskChar', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setCursorPos(10);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 12 39');
+
+      input.setCursorPos(9);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 12 ');
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      inputNode.value = '+49 12 39';
+      TestUtils.Simulate.change(inputNode);
+      input.setCursorPos(6);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 13 ');
+    }));
+
+  it('Backspace single character with escaped characters without maskChar cursor position', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setCursorPos(10);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(9);
+
+      input.setCursorPos(9);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(7);
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      inputNode.value = '+49 12 39';
+      TestUtils.Simulate.change(inputNode);
+      input.setCursorPos(6);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(5);
+    }));
+
+  it('Backspace range with escaped characters without maskChar', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 34 ');
+
+      inputNode.value = '+49 12 394 5';
+      TestUtils.Simulate.change(inputNode);
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 34 59');
+    }));
+
+    it('Backspace range with escaped characters without maskChar cursor position', createInput(
+      <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+  
+        input.setSelection(4, 2);
+        TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+        TestUtils.Simulate.change(inputNode);
+        expect(input.getCursorPos()).to.equal(4);
+  
+        inputNode.value = '+49 12 394 5';
+        TestUtils.Simulate.change(inputNode);
+        input.setSelection(4, 2);
+        TestUtils.Simulate.keyDown(inputNode, { key: 'Backspace' });
+        TestUtils.Simulate.change(inputNode);
+        expect(input.getCursorPos()).to.equal(4);
+      }));
 
   it('Delete single character', createInput(
     <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input, inputNode) => {
@@ -452,6 +534,92 @@ describe('Input', () => {
       TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (___) _15 64 54');
+    }));
+
+  it('Delete single character with escaped characters without maskChar', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setCursorPos(9);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 12 39');
+
+      input.setCursorPos(7);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 12 ');
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      inputNode.value = '+49 12 39';
+      TestUtils.Simulate.change(inputNode);
+      input.setCursorPos(5);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 13 ');
+    }));
+
+  it('Delete single character with escaped characters without maskChar cursor position', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setCursorPos(9);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(9);
+
+      input.setCursorPos(7);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(7);
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      inputNode.value = '+49 12 39';
+      TestUtils.Simulate.change(inputNode);
+      input.setCursorPos(5);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(5);
+    }));
+
+  it('Delete range with escaped characters without maskChar', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 34 ');
+
+      inputNode.value = '+49 12 394 5';
+      TestUtils.Simulate.change(inputNode);
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+49 34 59');
+    }));
+
+  it('Delete range with escaped characters without maskChar cursor position', createInput(
+    <Input mask="+4\9 99 9\99 99" defaultValue="+49 12 394" maskChar={null} />, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(4);
+
+      inputNode.value = '+49 12 394 5';
+      TestUtils.Simulate.change(inputNode);
+      input.setSelection(4, 2);
+      TestUtils.Simulate.keyDown(inputNode, { key: 'Delete' });
+      TestUtils.Simulate.change(inputNode);
+      expect(input.getCursorPos()).to.equal(4);
     }));
 
   it('Mask change', createInput(
@@ -596,5 +764,20 @@ describe('Input', () => {
         value: '54321'
       });
       expect(inputNode.value).to.equal('54321');
+    }));
+
+  it('Should show next permanent char when maskChar is null', createInput(
+    <Input mask="99/99/9999" value="01" maskChar={null} />, (input, inputNode) => {
+      expect(inputNode.value).to.equal('01/');
+    }));
+
+  it('Should show all next consecutive permanent char when maskChar is null', createInput(
+    <Input mask="99---99" value="01" maskChar={null} />, (input, inputNode) => {
+      expect(inputNode.value).to.equal('01---');
+    }));
+
+  it('Should show trailing permanent char when maskChar is null', createInput(
+    <Input mask="99%" value="10" maskChar={null} />, (input, inputNode) => {
+      expect(inputNode.value).to.equal('10%');
     }));
 });
