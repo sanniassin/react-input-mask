@@ -514,7 +514,15 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, userRef, ...props } = this.props;
+
+    var assignRef = ref => {
+      if (typeof userRef === 'function') {
+        userRef(ref);
+      }
+
+      this.input = ref;
+    }
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
@@ -529,7 +537,7 @@ class InputElement extends React.Component {
       }
     }
 
-    return <input ref={ref => this.input = ref} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
+    return <input ref={assignRef} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
   }
 }
 

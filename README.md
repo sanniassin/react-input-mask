@@ -59,5 +59,14 @@ class PhoneInput extends React.Component {
 }
 ```
 
+### `userRef` : `function`
+
+Attaches a `ref` handler to the `<input>` tag. In case you need to save a reference to manage focus, etc.
+
+## Example
+```jsx
+<InputMask userRef={ref => (this.input = ref)} />
+```
+
 ## Thanks
 Thanks to [BrowserStack](https://www.browserstack.com/) for the help with testing on real devices
