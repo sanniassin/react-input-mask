@@ -117,6 +117,10 @@ class InputElement extends React.Component {
       return null;
     }
 
+    if (input.getInputElement) {
+      input = input.getInputElement();
+    }
+
     if (this.isDOMElement(input)) {
       return input;
     }
@@ -514,7 +518,7 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, Component, ...props } = this.props;
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
@@ -529,7 +533,8 @@ class InputElement extends React.Component {
       }
     }
 
-    return <input ref={ref => this.input = ref} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
+    var InputComponent = Component || 'input';
+    return <InputComponent ref={ref => this.input = ref} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
   }
 }
 
