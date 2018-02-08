@@ -72,7 +72,7 @@ class InputElement extends React.Component {
       : this.value;
 
     if (!oldMaskOptions.mask && !this.hasValue) {
-      newValue = this.getInputDOMNode().value;
+      newValue = this.getInputValue();
     }
 
     if (isMaskChanged || (this.maskOptions.mask && (newValue || showEmpty))) {
