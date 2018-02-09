@@ -512,9 +512,7 @@ function (_React$Component) {
     }
 
     return React.createElement("input", _extends({
-      ref: function ref(_ref) {
-        return _this2.input = _ref;
-      }
+      ref: this.handleRef
     }, props, {
       onFocus: this.onFocus,
       onBlur: this.onBlur
@@ -1053,6 +1051,18 @@ var _initialiseProps = function _initialiseProps() {
       }
 
       _this3.setCursorPos(cursorPos);
+    }
+  });
+  Object.defineProperty(this, "handleRef", {
+    configurable: true,
+    enumerable: true,
+    writable: true,
+    value: function value(ref) {
+      _this3.input = ref;
+
+      if (typeof _this3.props.inputRef === 'function') {
+        _this3.props.inputRef(ref);
+      }
     }
   });
 };
