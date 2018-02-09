@@ -47,6 +47,10 @@ Defines format characters with characters as a keys and corresponding RegExp str
 
 Show mask when input is empty and has no focus.
 
+### `inputRef` : `function`
+
+Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
+
 ## Example
 ```jsx
 import React from 'react';

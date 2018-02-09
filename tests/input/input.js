@@ -780,4 +780,12 @@ describe('Input', () => {
     <Input mask="99%" value="10" maskChar={null} />, (input, inputNode) => {
       expect(inputNode.value).to.equal('10%');
     }));
+
+  it('Should pass input DOM node to inputRef function', () => {
+    var inputRef;
+    return createInput(
+      <Input inputRef={ref => inputRef = ref} />, (input, inputNode) => {
+        expect(inputRef).to.equal(inputNode);
+      })();
+  });
 });

@@ -513,6 +513,14 @@ class InputElement extends React.Component {
     this.setCursorPos(cursorPos);
   }
 
+  handleRef = (ref) => {
+    this.input = ref;
+
+    if (typeof this.props.inputRef === 'function') {
+      this.props.inputRef(ref);
+    }
+  }
+
   render() {
     var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
 
@@ -529,7 +537,7 @@ class InputElement extends React.Component {
       }
     }
 
-    return <input ref={ref => this.input = ref} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
+    return <input ref={this.handleRef} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
   }
 }
 
