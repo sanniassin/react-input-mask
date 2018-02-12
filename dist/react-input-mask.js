@@ -496,7 +496,8 @@ function (_React$Component) {
         alwaysShowMask = _props.alwaysShowMask,
         maskChar = _props.maskChar,
         formatChars = _props.formatChars,
-        props = _objectWithoutProperties(_props, ["mask", "alwaysShowMask", "maskChar", "formatChars"]);
+        inputRef = _props.inputRef,
+        props = _objectWithoutProperties(_props, ["mask", "alwaysShowMask", "maskChar", "formatChars", "inputRef"]);
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
