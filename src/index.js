@@ -522,7 +522,7 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, ...props } = this.props;
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
