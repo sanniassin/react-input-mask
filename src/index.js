@@ -53,11 +53,11 @@ class InputElement extends React.Component {
     }
   }
 
-  componentWillReceiveProps(nextProps) {
+  componentDidUpdate() {
     var oldMaskOptions = this.maskOptions;
 
-    this.hasValue = nextProps.value != null;
-    this.maskOptions = parseMask(nextProps.mask, nextProps.maskChar, nextProps.formatChars);
+    this.hasValue = this.props.value != null;
+    this.maskOptions = parseMask(this.props.mask, this.props.maskChar, this.props.formatChars);
 
     if (!this.maskOptions.mask) {
       this.backspaceOrDeleteRemoval = null;
@@ -66,9 +66,9 @@ class InputElement extends React.Component {
     }
 
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
-    var showEmpty = nextProps.alwaysShowMask || this.isFocused();
+    var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
-      ? this.getStringValue(nextProps.value)
+      ? this.getStringValue(this.props.value)
       : this.value;
 
     if (!oldMaskOptions.mask && !this.hasValue) {
@@ -92,16 +92,15 @@ class InputElement extends React.Component {
       }
     }
 
-    if (this.maskOptions.mask && isEmpty(this.maskOptions, newValue) && !showEmpty && (!this.hasValue || !nextProps.value)) {
+    if (this.maskOptions.mask && isEmpty(this.maskOptions, newValue) && !showEmpty && (!this.hasValue || !this.props.value)) {
       newValue = '';
     }
 
     this.value = newValue;
-  }
 
-  componentDidUpdate() {
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
+      this.forceUpdate();
     }
   }
 
