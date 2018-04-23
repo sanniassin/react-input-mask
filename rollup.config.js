@@ -24,7 +24,7 @@ var config = {
       presets: [
         ['@babel/preset-es2015', { modules: false, loose: true }],
         '@babel/preset-react',
-        '@babel/preset-stage-2'
+        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
       ]
     }),
     replace({

@@ -1,14 +1,26 @@
 {
   "env": {
     "commonjs": {
-      "presets": [["@babel/preset-es2015", { "loose": true }], "@babel/preset-react", "@babel/preset-stage-2"],
+      "presets": [
+        ["@babel/preset-es2015", { "loose": true }],
+        "@babel/preset-react",
+        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
+      ],
       "plugins": ["add-module-exports"]
     },
     "es": {
-      "presets": [["@babel/preset-es2015", { "modules": false, "loose": true }], "@babel/preset-react", "@babel/preset-stage-2"]
+      "presets": [
+        ["@babel/preset-es2015", { "modules": false, "loose": true }],
+        "@babel/preset-react",
+        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
+      ]
     },
     "tests": {
-      "presets": [["@babel/preset-es2015", { "loose": true }], "@babel/preset-react", "@babel/preset-stage-2"]
+      "presets": [
+        ["@babel/preset-es2015", { "loose": true }],
+        "@babel/preset-react",
+        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
+      ]
     }
   }
 }
