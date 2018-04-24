@@ -18,16 +18,6 @@ describe('CommonJS build', () => {
   });
 });
 
-describe('ES2015 build', () => {
-  var libPath = path.resolve(rootDir, pjson.module);
-  var InputElement = require(libPath).default;
-
-  it('should return a string', () => {
-    var result = ReactDOMServer.renderToString(<InputElement value="some" mask="799" />);
-    expect(typeof result).to.equal('string');
-  });
-});
-
 describe('UMD build', () => {
   var libPath = path.resolve(rootDir, 'dist/react-input-mask.js');
   var InputElement = require(libPath);

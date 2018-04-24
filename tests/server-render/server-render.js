@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { expect } from 'chai';
-import InputElement from '../../src';
+import InputElement from '../../lib';
 
 describe('Test prerender', () => {
   it('should return a string', () => {

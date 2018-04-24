@@ -8,7 +8,6 @@ var env = process.env.NODE_ENV;
 var config = {
   output: {
     name: 'ReactInputMask',
-    format: 'umd',
     globals: {
       react: 'React'
     }
@@ -18,15 +17,7 @@ var config = {
     nodeResolve({
       jsnext: true
     }),
-    babel({
-      babelrc: false,
-      exclude: 'node_modules/**',
-      presets: [
-        ['@babel/preset-es2015', { modules: false, loose: true }],
-        '@babel/preset-react',
-        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
-      ]
-    }),
+    babel(),
     replace({
       'process.env.NODE_ENV': JSON.stringify(env)
     })

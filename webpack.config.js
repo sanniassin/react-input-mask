@@ -22,16 +22,7 @@ module.exports = {
       {
         test: /\.js$/,
         use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-es2015', { loose: true }],
-              '@babel/preset-react',
-              ['@babel/preset-stage-2', {
-                decoratorsLegacy: true
-              }]
-            ]
-          }
+          loader: 'babel-loader'
         },
         exclude: /node_modules/
       },
