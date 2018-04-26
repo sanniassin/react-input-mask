@@ -97,7 +97,7 @@ export function clearRange(maskOptions, value, start, len) {
   var arrayValue = value.split('');
 
   if (!maskChar) {
-    // remove any permanent chars after clear range, they will be added back by foramtValue
+    // remove any permanent chars after clear range, they will be added back by formatValue
     for (var i = end; i < arrayValue.length; i++) {
       if (isPermanentChar(maskOptions, i)) {
         arrayValue[i] = '';
