@@ -3,7 +3,7 @@ export function isPermanentChar(maskOptions, pos) {
 }
 
 export function isAllowedChar(maskOptions, pos, character) {
-  var { mask, charsRules } = maskOptions;
+  var { mask, formatChars } = maskOptions;
 
   if (!character) {
     return false;
@@ -14,7 +14,7 @@ export function isAllowedChar(maskOptions, pos, character) {
   }
 
   var ruleChar = mask[pos];
-  var charRule = charsRules[ruleChar];
+  var charRule = formatChars[ruleChar];
 
   return (new RegExp(charRule)).test(character);
 }

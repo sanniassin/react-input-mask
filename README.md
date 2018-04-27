@@ -51,6 +51,34 @@ Show mask when input is empty and has no focus.
 
 Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
 
+### `beforeChange` : `function`
+
+In case you need to implement more complex masking behavior, you can provide `beforeChange` function to change masked value and cursor position before it will be applied to the input. `beforeChange` receives following arguments:
+1. **value** (string): New masked value.
+2. **cursorPosition** (number): New cursor position. `null` if change was triggered by the `blur` event.
+3. **userInput** (string): Raw entered or pasted string. `null` if user didn't enter anything (e.g. triggered by deletion or rerender due to props change).
+4. **maskOptions** (object): Mask options. Example:
+```js
+{
+  mask: '99/99/9999',
+  maskChar: '_',
+  alwaysShowMask: false,
+  formatChars: {
+    '9': '[0-9]',
+    'a': '[A-Za-z]',
+    '*': '[A-Za-z0-9]'
+  },
+  permanents: [2, 5] // permanents is an array of indexes of the non-editable characters in the mask
+}
+```
+
+`beforeChange` must return an object with the following fields:
+1. **value** (string): New value.
+2. **cursorPosition** (number): New cursor position.
+
+Please note that `beforeChange` executes more often than `onChange`, so it's recommended to make it pure.
+
+
 ## Example
 ```jsx
 import React from 'react';
@@ -59,6 +87,43 @@ import InputMask from 'react-input-mask';
 class PhoneInput extends React.Component {
   render() {
     return <InputMask {...this.props} mask="+4\9 99 999 99" maskChar=" " />;
+  }
+}
+```
+
+Mask for ZIP Code. Uses beforeChange to omit trailing minus if it wasn't entered by user:
+```jsx
+import React from 'react';
+import InputMask from 'react-input-mask';
+
+class Input extends React.Component {
+  state = {
+    value: ''
+  }
+
+  onChange = (event) => {
+    this.setState({
+      value: event.target.value
+    });
+  }
+
+  beforeChange = (value, cursorPosition, enteredString) => {
+    // keep minus if entered by user
+    if (value.endsWith('-') && enteredString !== '-' && !this.state.value.endsWith('-')) {
+      if (cursorPosition === value.length) {
+        cursorPosition--;
+      }
+      value = value.slice(0, -1);
+    }
+
+    return {
+      value: value,
+      cursorPosition: cursorPosition
+    };
+  }
+
+  render() {
+    return <InputMask mask="99999-9999" maskChar={null} value={this.state.value} onChange={this.onChange} beforeChange={this.beforeChange} />;
   }
 }
 ```

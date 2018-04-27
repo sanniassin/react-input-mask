@@ -788,4 +788,37 @@ describe('Input', () => {
         expect(inputRef).to.equal(inputNode);
       })();
   });
+
+  it('Should modify value with beforeChange', createInput(
+    <Input mask="99999-9999" maskChar={null} value="" />, (input, inputNode) => {
+      setInputProps(input, {
+        onChange: (event) => {
+          setInputProps(input, {
+            value: event.target.value
+          });
+        },
+        beforeChange: (value, cursorPosition, userInput) => {
+          if (value.endsWith('-') && userInput !== '-' && !input.props.value.endsWith('-')) {
+            if (cursorPosition === value.length) {
+              cursorPosition--;
+            }
+            value = value.slice(0, -1);
+          }
+
+          return {
+            value,
+            cursorPosition
+          };
+        }
+      });
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      setInputProps(input, { value: '12345' });
+      expect(inputNode.value).to.equal('12345');
+
+      insertStringIntoInput(input, '-');
+      expect(inputNode.value).to.equal('12345-');
+    }));
 });

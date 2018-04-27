@@ -1,17 +1,17 @@
-import { defaultCharsRules, defaultMaskChar } from '../constants';
+import { defaultFormatChars, defaultMaskChar } from '../constants';
 
-export default function(mask, maskChar, charsRules) {
+export default function(mask, maskChar, formatChars) {
   if (maskChar === undefined) {
     maskChar = defaultMaskChar;
   }
-  if (charsRules == null) {
-    charsRules = defaultCharsRules;
+  if (formatChars == null) {
+    formatChars = defaultFormatChars;
   }
 
   if (!mask || typeof mask !== 'string') {
     return {
       maskChar,
-      charsRules,
+      formatChars,
       mask: null,
       prefix: null,
       lastEditablePos: null,
@@ -29,7 +29,7 @@ export default function(mask, maskChar, charsRules) {
         if (!isPermanent && character === '\\') {
           isPermanent = true;
         } else {
-          if (isPermanent || !charsRules[character]) {
+          if (isPermanent || !formatChars[character]) {
             permanents.push(str.length);
             if (str.length === permanents.length - 1) {
               prefix += character;
@@ -44,7 +44,7 @@ export default function(mask, maskChar, charsRules) {
 
   return {
     maskChar,
-    charsRules,
+    formatChars,
     prefix,
     mask: str,
     lastEditablePos: lastEditablePos,

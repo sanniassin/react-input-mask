@@ -54,6 +54,7 @@ class InputElement extends React.Component {
   }
 
   componentDidUpdate() {
+    var { beforeChange } = this.props;
     var oldMaskOptions = this.maskOptions;
 
     this.hasValue = this.props.value != null;
@@ -65,6 +66,7 @@ class InputElement extends React.Component {
       return;
     }
 
+    var cursorPos = this.lastCursorPos;
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
     var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
@@ -79,15 +81,13 @@ class InputElement extends React.Component {
       newValue = formatValue(this.maskOptions, newValue);
 
       if (isMaskChanged) {
-        var pos = this.lastCursorPos;
         var filledLen = getFilledLength(this.maskOptions, newValue);
-        if (pos === null || filledLen < pos) {
+        if (cursorPos === null || filledLen < cursorPos) {
           if (isFilled(this.maskOptions, newValue)) {
-            pos = filledLen;
+            cursorPos = filledLen;
           } else {
-            pos = this.getRightEditablePos(filledLen);
+            cursorPos = this.getRightEditablePos(filledLen);
           }
-          this.setCursorPos(pos);
         }
       }
     }
@@ -96,7 +96,16 @@ class InputElement extends React.Component {
       newValue = '';
     }
 
+    if (typeof beforeChange === 'function') {
+      var modifiedValue = beforeChange(newValue, cursorPos, null, this.getModifyMaskedValueConfig());
+      newValue = modifiedValue.value;
+      cursorPos = modifiedValue.cursorPosition;
+    }
+
     this.value = newValue;
+    if (cursorPos !== this.lastCursorPos) {
+      this.setCursorPos(cursorPos);
+    }
 
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
@@ -234,6 +243,19 @@ class InputElement extends React.Component {
     return !value && value !== 0 ? '' : value + '';
   }
 
+  getModifyMaskedValueConfig = () => {
+    var { mask, maskChar, permanents, formatChars } = this.maskOptions;
+    var { alwaysShowMask } = this.props;
+
+    return {
+      mask,
+      maskChar,
+      permanents,
+      alwaysShowMask: !!alwaysShowMask,
+      formatChars
+    };
+  }
+
   onKeyDown = (event) => {
     this.backspaceOrDeleteRemoval = null;
 
@@ -265,6 +287,7 @@ class InputElement extends React.Component {
 
   onChange = (event) => {
     var { beforePasteState } = this;
+    var { beforeChange } = this.props;
     var { mask, maskChar, lastEditablePos, prefix } = this.maskOptions;
     var value = this.getInputValue();
 
@@ -372,6 +395,16 @@ class InputElement extends React.Component {
     }
     value = formatValue(this.maskOptions, value);
 
+    if (!enteredString) {
+      enteredString = null;
+    }
+
+    if (typeof beforeChange === 'function') {
+      var modifiedValue = beforeChange(value, cursorPos, enteredString, this.getModifyMaskedValueConfig());
+      value = modifiedValue.value;
+      cursorPos = modifiedValue.cursorPosition;
+    }
+
     this.setInputValue(value);
 
     if (typeof this.props.onChange === 'function') {
@@ -388,13 +421,22 @@ class InputElement extends React.Component {
   }
 
   onFocus = (event) => {
+    var { beforeChange } = this.props;
+    var { mask, prefix } = this.maskOptions;
     this.focused = true;
 
-    if (this.maskOptions.mask) {
+    if (mask) {
       if (!this.value) {
-        var prefix = this.maskOptions.prefix;
         var value = formatValue(this.maskOptions, prefix);
         var inputValue = formatValue(this.maskOptions, value);
+        var filledLen = getFilledLength(this.maskOptions, inputValue);
+        var cursorPos = this.getRightEditablePos(filledLen);
+
+        if (typeof beforeChange === 'function') {
+          var modifiedValue = beforeChange(inputValue, cursorPos, null, this.getModifyMaskedValueConfig());
+          inputValue = modifiedValue.value;
+          cursorPos = modifiedValue.cursorPosition;
+        }
 
         // do not use this.getInputValue and this.setInputValue as this.input
         // can be undefined at this moment if autoFocus attribute is set
@@ -410,7 +452,7 @@ class InputElement extends React.Component {
           this.props.onChange(event);
         }
 
-        this.setCursorToEnd();
+        this.setCursorPos(cursorPos);
       } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
         this.setCursorToEnd();
       }
@@ -422,10 +464,18 @@ class InputElement extends React.Component {
   }
 
   onBlur = (event) => {
+    var { beforeChange } = this.props;
+    var { mask } = this.maskOptions;
     this.focused = false;
 
-    if (this.maskOptions.mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
+    if (mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
       var inputValue = '';
+
+      if (typeof beforeChange === 'function') {
+        var modifiedValue = beforeChange(inputValue, null, null, this.getModifyMaskedValueConfig());
+        inputValue = modifiedValue.value;
+      }
+
       var isInputValueChanged = inputValue !== this.getInputValue();
 
       if (isInputValueChanged) {
@@ -495,6 +545,7 @@ class InputElement extends React.Component {
   }
 
   pasteText = (value, text, selection, event) => {
+    var { beforeChange } = this.props;
     var cursorPos = selection.start;
     if (selection.length) {
       value = clearRange(this.maskOptions, value, cursorPos, selection.length);
@@ -503,6 +554,12 @@ class InputElement extends React.Component {
     value = insertString(this.maskOptions, value, text, cursorPos);
     cursorPos += textLen;
     cursorPos = this.getRightEditablePos(cursorPos) || cursorPos;
+
+    if (typeof beforeChange === 'function') {
+      var modifiedValue = beforeChange(value, cursorPos, text, this.getModifyMaskedValueConfig());
+      value = modifiedValue.value;
+      cursorPos = modifiedValue.cursorPosition;
+    }
 
     this.setInputValue(value);
     if (event && typeof this.props.onChange === 'function') {
@@ -521,7 +578,7 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeChange, ...props } = this.props;
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
