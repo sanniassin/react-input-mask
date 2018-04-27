@@ -51,6 +51,10 @@ class InputElement extends React.Component {
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
+
+    if (this.props.maxLength && this.maskOptions.mask && typeof console === 'object' && console.error) {
+      console.error('react-input-mask: You shouldn\'t pass maxLength property to the masked input. It breaks masking and unnecessary because length is limited by the mask length.');
+    }
   }
 
   componentDidUpdate() {
