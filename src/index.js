@@ -2,7 +2,7 @@
 import React from 'react';
 
 import parseMask from './utils/parseMask';
-import { isAndroidBrowser, isWindowsPhoneBrowser, isAndroidFirefox } from './utils/environment';
+import { isWindowsPhoneBrowser } from './utils/environment';
 import {
   clearRange,
   formatValue,
@@ -44,9 +44,7 @@ class InputElement extends React.Component {
   }
 
   componentDidMount() {
-    this.isAndroidBrowser = isAndroidBrowser();
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
-    this.isAndroidFirefox = isAndroidFirefox();
 
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
