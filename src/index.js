@@ -1,4 +1,3 @@
-// https://github.com/sanniassin/react-input-mask
 import React from 'react';
 
 import parseMask from './utils/parseMask';
