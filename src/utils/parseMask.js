@@ -1,4 +1,4 @@
-import { defaultFormatChars, defaultMaskChar } from '../constants';
+import { defaultFormatChars, defaultMaskChar } from '../constants/index.js';
 
 export default function(mask, maskChar, formatChars) {
   if (maskChar === undefined) {
