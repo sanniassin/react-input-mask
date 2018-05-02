@@ -1,12 +1,12 @@
 {
   "dist/react-input-mask.js": {
-    "bundled": 31943,
-    "minified": 12411,
-    "gzipped": 4260
+    "bundled": 31203,
+    "minified": 11998,
+    "gzipped": 4144
   },
   "lib/index.js": {
-    "bundled": 30149,
-    "minified": 13823,
-    "gzipped": 4336
+    "bundled": 29447,
+    "minified": 13354,
+    "gzipped": 4215
   }
 }

@@ -1,18 +1,13 @@
 {
+  "presets": [
+    ["@babel/preset-env", { "modules": false, "loose": true }],
+    "@babel/preset-react",
+    ['@babel/preset-stage-3']
+  ],
   "env": {
-    "rollup": {
-      "exclude": "node_modules/**",
-      "presets": [
-        ["@babel/preset-es2015", { "modules": false, "loose": true }],
-        "@babel/preset-react",
-        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
-      ]
-    },
-    "tests": {
-      "presets": [
-        ["@babel/preset-es2015", { "loose": true }],
-        "@babel/preset-react",
-        ['@babel/preset-stage-2', { decoratorsLegacy: true }]
+    "test": {
+      "plugins": [
+        "@babel/transform-modules-commonjs"
       ]
     }
   }
