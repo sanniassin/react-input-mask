@@ -46,8 +46,7 @@
     "react-dom": "^16.3.2",
     "rollup": "^0.58.2",
     "rollup-plugin-babel": "^4.0.0-beta.4",
-    "rollup-plugin-node-resolve": "^3.3.0",
-    "rollup-plugin-replace": "^2.0.0",
+    "rollup-plugin-size-snapshot": "^0.4.0",
     "rollup-plugin-uglify": "^3.0.0",
     "webpack": "^3.11.0",
     "webpack-dev-server": "^2.11.2"
@@ -59,10 +58,7 @@
   ],
   "scripts": {
     "clean": "rimraf lib dist",
-    "build": "npm run build:commonjs && npm run build:umd && npm run build:umd:min",
-    "build:commonjs": "cross-env BABEL_ENV=rollup NODE_ENV=development rollup -c -i src/index.js -o lib/index.js --format cjs",
-    "build:umd": "cross-env BABEL_ENV=rollup NODE_ENV=development rollup -c -i src/index.js -o dist/react-input-mask.js --format umd",
-    "build:umd:min": "cross-env BABEL_ENV=rollup NODE_ENV=production rollup -c -i src/index.js -o dist/react-input-mask.min.js --format umd",
+    "build": "cross-env BABEL_ENV=rollup rollup -c",
     "dev": "cross-env BABEL_ENV=tests NODE_ENV=development webpack-dev-server",
     "dev-ie8": "cross-env BABEL_ENV=tests NODE_ENV=development webpack-dev-server --inline=false",
     "prepare": "npm test && npm run clean && npm run build",
