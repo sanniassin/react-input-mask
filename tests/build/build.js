@@ -19,7 +19,7 @@ describe('CommonJS build', () => {
 });
 
 describe('UMD build', () => {
-  var libPath = path.resolve(rootDir, 'dist/react-input-mask.js');
+  var libPath = path.resolve(rootDir, 'dist/react-input-mask.umd.js');
   var InputElement = require(libPath);
 
   it('should return a string', () => {
