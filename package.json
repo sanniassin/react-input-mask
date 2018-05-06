@@ -18,10 +18,11 @@
   "devDependencies": {
     "@babel/cli": "^7.0.0-beta.46",
     "@babel/core": "^7.0.0-beta.46",
+    "@babel/plugin-transform-modules-commonjs": "^7.0.0-beta.46",
     "@babel/polyfill": "^7.0.0-beta.46",
-    "@babel/preset-es2015": "^7.0.0-beta.46",
+    "@babel/preset-env": "^7.0.0-beta.46",
     "@babel/preset-react": "^7.0.0-beta.46",
-    "@babel/preset-stage-2": "^7.0.0-beta.46",
+    "@babel/preset-stage-3": "^7.0.0-beta.46",
     "@babel/register": "^7.0.0-beta.46",
     "babel-eslint": "^7.2.3",
     "babel-loader": "^8.0.0-beta.2",
@@ -58,14 +59,14 @@
   ],
   "scripts": {
     "clean": "rimraf lib dist",
-    "build": "cross-env BABEL_ENV=rollup rollup -c",
-    "dev": "cross-env BABEL_ENV=tests NODE_ENV=development webpack-dev-server",
-    "dev-ie8": "cross-env BABEL_ENV=tests NODE_ENV=development webpack-dev-server --inline=false",
+    "build": "rollup -c",
+    "dev": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server",
+    "dev-ie8": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server --inline=false",
     "prepare": "npm test && npm run clean && npm run build",
     "test": "npm run build && npm run test:input && npm run test:server-render && npm run test:build",
-    "test:input": "cross-env BABEL_ENV=tests karma start",
-    "test:server-render": "cross-env BABEL_ENV=tests mocha --require @babel/register ./tests/server-render",
-    "test:build": "cross-env BABEL_ENV=tests mocha --require @babel/register ./tests/build"
+    "test:input": "cross-env BABEL_ENV=test karma start",
+    "test:server-render": "cross-env BABEL_ENV=test mocha --require @babel/register ./tests/server-render",
+    "test:build": "cross-env BABEL_ENV=test mocha --require @babel/register ./tests/build"
   },
   "repository": {
     "type": "git",
