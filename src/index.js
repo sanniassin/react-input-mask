@@ -56,8 +56,6 @@ class InputElement extends React.Component {
     if (this.props.maxLength && this.maskOptions.mask && typeof console === 'object' && console.error) {
       console.error('react-input-mask: You shouldn\'t pass maxLength property to the masked input. It breaks masking and unnecessary because length is limited by the mask length.');
     }
-
-    this.saveSelectionLoop();
   }
 
   componentDidUpdate() {
@@ -129,12 +127,16 @@ class InputElement extends React.Component {
   }
 
   saveSelectionLoop = () => {
-    if (!this.mounted || !this.maskOptions.mask) {
+    if (!this.mounted || !this.maskOptions.mask || !this.focused || this.saveSelectionLoopRunning) {
       return;
     }
 
+    this.saveSelectionLoopRunning = true;
     this.previousSelection = this.getSelection();
-    defer(this.saveSelectionLoop, 1000 / 60);
+    defer(() => {
+      this.saveSelectionLoopRunning = false;
+      this.saveSelectionLoop();
+    }, 1000 / 60);
   }
 
   isDOMElement = (element) => {
@@ -433,6 +435,8 @@ class InputElement extends React.Component {
         this.setCursorToEnd();
       }
     }
+
+    this.saveSelectionLoop();
 
     if (typeof this.props.onFocus === 'function') {
       this.props.onFocus(event);
