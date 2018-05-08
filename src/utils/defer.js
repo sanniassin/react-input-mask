@@ -1,11 +1,11 @@
-export default function(fn) {
+export default function(fn, timeoutDelay = 0) {
   var defer = window.requestAnimationFrame
               ||
               window.webkitRequestAnimationFrame
               ||
               window.mozRequestAnimationFrame
               ||
-              (() => setTimeout(fn, 0));
+              (() => setTimeout(fn, timeoutDelay));
 
   return defer(fn);
 }
