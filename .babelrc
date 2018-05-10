@@ -4,9 +4,13 @@
     "@babel/preset-react",
     ['@babel/preset-stage-3']
   ],
+  "plugins": [
+    "@babel/plugin-transform-proto-to-assign"
+  ],
   "env": {
     "test": {
       "plugins": [
+        "@babel/plugin-transform-proto-to-assign",
         "@babel/transform-modules-commonjs"
       ]
     }
