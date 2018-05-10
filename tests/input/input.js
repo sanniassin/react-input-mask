@@ -208,6 +208,29 @@ describe('react-input-mask', () => {
       expect(input.getCursorPos()).to.equal(2);
     }));
 
+  it('should adjust cursor position on focus on input with autoFocus', createInput(
+    <Input mask="+7 (999) 999 99 99" value="+7" autoFocus />, (input, inputNode) => {
+      expect(input.getCursorPos()).to.equal(4);
+
+      inputNode.blur();
+      TestUtils.Simulate.blur(inputNode);
+
+      setInputProps(input, { value: '+7 (___) ___ _1 __' });
+      setInputSelection(inputNode, 2, 0);
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      expect(input.getCursorPos()).to.equal(16);
+
+      inputNode.blur();
+      TestUtils.Simulate.blur(inputNode);
+
+      setInputProps(input, { value: '+7 (___) ___ _1 _1' });
+      setInputSelection(inputNode, 2, 0);
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+      expect(input.getCursorPos()).to.equal(2);
+    }));
+
   it('should format value in onChange (with maskChar)', createInput(
     <Input mask="**** **** **** ****" />, (input, inputNode) => {
       inputNode.focus();

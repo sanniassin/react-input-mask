@@ -378,6 +378,10 @@ class InputElement extends React.Component {
     var { mask, prefix } = this.maskOptions;
     this.focused = true;
 
+    if (!this.input) {
+      this.input = event.target;
+    }
+
     if (mask) {
       if (!this.value) {
         var emptyValue = formatValue(this.maskOptions, prefix);
