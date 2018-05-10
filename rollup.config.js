@@ -1,5 +1,6 @@
 import babel from 'rollup-plugin-babel';
 import uglify from 'rollup-plugin-uglify';
+import protoToAssign from './rollup.proto-to-assign.plugin';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
 import pkg from './package.json';
 
@@ -19,7 +20,7 @@ export default [
       globals: { react: 'React' }
     },
     external: ['react'],
-    plugins: [babel(), sizeSnapshot()]
+    plugins: [babel(), protoToAssign(), sizeSnapshot()]
   },
 
   {
@@ -33,6 +34,7 @@ export default [
     external: ['react'],
     plugins: [
       babel(),
+      protoToAssign(),
       uglify({
         compress: { warnings: false, ie8: true },
         mangle: { ie8: true },
@@ -45,6 +47,6 @@ export default [
     input,
     output: { file: pkg.main, format: 'cjs' },
     external: isExternal,
-    plugins: [babel(), sizeSnapshot()]
+    plugins: [babel(), protoToAssign(), sizeSnapshot()]
   }
 ];
