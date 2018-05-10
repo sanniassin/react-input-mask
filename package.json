@@ -52,13 +52,13 @@
     "webpack": "^3.11.0",
     "webpack-dev-server": "^2.11.2"
   },
-  "main": "lib/index.js",
+  "main": "dist/react-input-mask.cjs.js",
+  "module": "dist/react-input-mask.esm.js",
   "files": [
-    "lib",
     "dist"
   ],
   "scripts": {
-    "clean": "rimraf lib dist",
+    "clean": "rimraf dist",
     "build": "rollup -c",
     "dev": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server",
     "dev-ie8": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server --inline=false",
