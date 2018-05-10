@@ -54,8 +54,8 @@ Use `inputRef` instead of `ref` if you need input node to manage focus, selectio
 ### `beforeMaskedValueChange` : `function`
 
 In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
-1. **value** (string): New masked value.
-2. **cursorPosition** (number): New cursor position. `null` if change was triggered by the `blur` event.
+1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur.  Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`
+2. **oldState** (object): Input state before change. Contains `value` and `selection` fields. `selection` is null on input focus.
 3. **userInput** (string): Raw entered or pasted string. `null` if user didn't enter anything (e.g. triggered by deletion or rerender due to props change).
 4. **maskOptions** (object): Mask options. Example:
 ```js
@@ -72,11 +72,11 @@ In case you need to implement more complex masking behavior, you can provide `be
 }
 ```
 
-`beforeMaskedValueChange` must return an object with the following fields:
+`beforeMaskedValueChange` must return an object with following fields:
 1. **value** (string): New value.
-2. **cursorPosition** (number): New cursor position.
+2. **selection** (object): New selection. If `selection` in `newState` argument is null, it must be null too.
 
-Please note that `beforeMaskedValueChange` executes more often than `onChange`, so it's recommended to make it pure.
+Please note that `beforeMaskedValueChange` executes more often than `onChange` and must be pure.
 
 
 ## Example
