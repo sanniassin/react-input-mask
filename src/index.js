@@ -8,10 +8,13 @@ import {
   getFilledLength,
   isFilled,
   isEmpty,
-  isPermanentChar,
   getInsertStringLength,
-  insertString
+  insertString,
+  getLeftEditablePos,
+  getRightEditablePos,
+  getStringValue
 } from './utils/string';
+import { isDOMElement, isFunction } from './utils/helpers';
 import defer from './utils/defer';
 
 class InputElement extends React.Component {
@@ -35,7 +38,7 @@ class InputElement extends React.Component {
       value = defaultValue;
     }
 
-    value = this.getStringValue(value);
+    value = getStringValue(value);
 
     if (this.maskOptions.mask && (alwaysShowMask || value)) {
       value = formatValue(this.maskOptions, value);
@@ -75,7 +78,7 @@ class InputElement extends React.Component {
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
     var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
-      ? this.getStringValue(this.props.value)
+      ? getStringValue(this.props.value)
       : this.value;
 
     if (!oldMaskOptions.mask && !this.hasValue) {
@@ -91,7 +94,7 @@ class InputElement extends React.Component {
           if (isFilled(this.maskOptions, newValue)) {
             cursorPos = filledLen;
           } else {
-            cursorPos = this.getRightEditablePos(filledLen);
+            cursorPos = getRightEditablePos(this.maskOptions, filledLen);
           }
         }
 
@@ -105,7 +108,7 @@ class InputElement extends React.Component {
       newValue = '';
     }
 
-    if (typeof beforeChange === 'function') {
+    if (isFunction(beforeChange)) {
       var modifiedValue = beforeChange(newValue, cursorPos, null, this.getModifyMaskedValueConfig());
       newValue = modifiedValue.value;
       cursorPos = modifiedValue.cursorPosition;
@@ -139,19 +142,13 @@ class InputElement extends React.Component {
     }, 1000 / 60);
   }
 
-  isDOMElement = (element) => {
-    return typeof HTMLElement === 'object'
-      ? element instanceof HTMLElement // DOM2
-      : element.nodeType === 1 && typeof element.nodeName === 'string';
-  }
-
   getInputDOMNode = () => {
     var input = this.input;
     if (!input) {
       return null;
     }
 
-    if (this.isDOMElement(input)) {
+    if (isDOMElement(input)) {
       return input;
     }
 
@@ -178,28 +175,9 @@ class InputElement extends React.Component {
     input.value = value;
   }
 
-  getLeftEditablePos = (pos) => {
-    for (var i = pos; i >= 0; --i) {
-      if (!isPermanentChar(this.maskOptions, i)) {
-        return i;
-      }
-    }
-    return null;
-  }
-
-  getRightEditablePos = (pos) => {
-    var { mask } = this.maskOptions;
-    for (var i = pos; i < mask.length; ++i) {
-      if (!isPermanentChar(this.maskOptions, i)) {
-        return i;
-      }
-    }
-    return null;
-  }
-
   setCursorToEnd = () => {
     var filledLen = getFilledLength(this.maskOptions, this.value);
-    var pos = this.getRightEditablePos(filledLen);
+    var pos = getRightEditablePos(this.maskOptions, filledLen);
     if (pos !== null) {
       this.setCursorPos(pos);
     }
@@ -271,10 +249,6 @@ class InputElement extends React.Component {
     return this.focused;
   }
 
-  getStringValue = (value) => {
-    return !value && value !== 0 ? '' : value + '';
-  }
-
   getModifyMaskedValueConfig = () => {
     var { mask, maskChar, permanents, formatChars } = this.maskOptions;
     var { alwaysShowMask } = this.props;
@@ -294,7 +268,7 @@ class InputElement extends React.Component {
 
     // input.matches throws an exception if selector isn't supported
     try {
-      if (typeof input.matches === 'function' && input.matches(':-webkit-autofill')) {
+      if (isFunction(input.matches) && input.matches(':-webkit-autofill')) {
         isAutofilled = true;
       }
     } catch (e) {}
@@ -354,8 +328,8 @@ class InputElement extends React.Component {
       if (removedLen === 1 && !previousSelection.length) {
         var deleteFromRight = previousSelection.start === selection.start;
         cursorPos = deleteFromRight
-          ? this.getRightEditablePos(selection.start)
-          : this.getLeftEditablePos(selection.start);
+          ? getRightEditablePos(this.maskOptions, selection.start)
+          : getLeftEditablePos(this.maskOptions, selection.start);
       }
       value = clearRange(this.maskOptions, value, cursorPos, removedLen);
     }
@@ -368,7 +342,7 @@ class InputElement extends React.Component {
     } else if (cursorPos < prefix.length && !formattedEnteredStringLen) {
       cursorPos = prefix.length;
     } else if (cursorPos >= prefix.length && cursorPos < lastEditablePos && formattedEnteredStringLen) {
-      cursorPos = this.getRightEditablePos(cursorPos);
+      cursorPos = getRightEditablePos(this.maskOptions, cursorPos);
     }
 
     value = formatValue(this.maskOptions, value);
@@ -377,7 +351,7 @@ class InputElement extends React.Component {
       enteredString = null;
     }
 
-    if (typeof beforeChange === 'function') {
+    if (isFunction(beforeChange)) {
       var modifiedValue = beforeChange(value, cursorPos, enteredString, this.getModifyMaskedValueConfig());
       value = modifiedValue.value;
       cursorPos = modifiedValue.cursorPosition;
@@ -385,7 +359,7 @@ class InputElement extends React.Component {
 
     this.setInputValue(value);
 
-    if (typeof this.props.onChange === 'function') {
+    if (isFunction(this.props.onChange)) {
       this.props.onChange(event);
     }
 
@@ -408,9 +382,9 @@ class InputElement extends React.Component {
         var value = formatValue(this.maskOptions, prefix);
         var inputValue = formatValue(this.maskOptions, value);
         var filledLen = getFilledLength(this.maskOptions, inputValue);
-        var cursorPos = this.getRightEditablePos(filledLen);
+        var cursorPos = getRightEditablePos(this.maskOptions, filledLen);
 
-        if (typeof beforeChange === 'function') {
+        if (isFunction(beforeChange)) {
           var modifiedValue = beforeChange(inputValue, cursorPos, null, this.getModifyMaskedValueConfig());
           inputValue = modifiedValue.value;
           cursorPos = modifiedValue.cursorPosition;
@@ -426,7 +400,7 @@ class InputElement extends React.Component {
 
         this.value = inputValue;
 
-        if (isInputValueChanged && typeof this.props.onChange === 'function') {
+        if (isInputValueChanged && isFunction(this.props.onChange)) {
           this.props.onChange(event);
         }
 
@@ -438,7 +412,7 @@ class InputElement extends React.Component {
 
     this.saveSelectionLoop();
 
-    if (typeof this.props.onFocus === 'function') {
+    if (isFunction(this.props.onFocus)) {
       this.props.onFocus(event);
     }
   }
@@ -451,7 +425,7 @@ class InputElement extends React.Component {
     if (mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
       var inputValue = '';
 
-      if (typeof beforeChange === 'function') {
+      if (isFunction(beforeChange)) {
         var modifiedValue = beforeChange(inputValue, null, null, this.getModifyMaskedValueConfig());
         inputValue = modifiedValue.value;
       }
@@ -462,12 +436,12 @@ class InputElement extends React.Component {
         this.setInputValue(inputValue);
       }
 
-      if (isInputValueChanged && typeof this.props.onChange === 'function') {
+      if (isInputValueChanged && isFunction(this.props.onChange)) {
         this.props.onChange(event);
       }
     }
 
-    if (typeof this.props.onBlur === 'function') {
+    if (isFunction(this.props.onBlur)) {
       this.props.onBlur(event);
     }
   }
@@ -502,13 +476,13 @@ class InputElement extends React.Component {
       document.addEventListener('mouseup', mouseUpHandler);
     }
 
-    if (typeof this.props.onMouseDown === 'function') {
+    if (isFunction(this.props.onMouseDown)) {
       this.props.onMouseDown(event);
     }
   }
 
   onPaste = (event) => {
-    if (typeof this.props.onPaste === 'function') {
+    if (isFunction(this.props.onPaste)) {
       this.props.onPaste(event);
     }
 
@@ -526,7 +500,7 @@ class InputElement extends React.Component {
   handleRef = (ref) => {
     this.input = ref;
 
-    if (typeof this.props.inputRef === 'function') {
+    if (isFunction(this.props.inputRef)) {
       this.props.inputRef(ref);
     }
   }

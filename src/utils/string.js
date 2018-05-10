@@ -226,3 +226,26 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPos) 
 
   return insertPos - initialInsertPos;
 }
+
+export function getLeftEditablePos(maskOptions, pos) {
+  for (var i = pos; i >= 0; --i) {
+    if (!isPermanentChar(maskOptions, i)) {
+      return i;
+    }
+  }
+  return null;
+}
+
+export function getRightEditablePos(maskOptions, pos) {
+  var { mask } = maskOptions;
+  for (var i = pos; i < mask.length; ++i) {
+    if (!isPermanentChar(maskOptions, i)) {
+      return i;
+    }
+  }
+  return null;
+}
+
+export function getStringValue(value) {
+  return !value && value !== 0 ? '' : value + '';
+}
