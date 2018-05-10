@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { setInputSelection, getInputSelection } from './utils/selection';
 import parseMask from './utils/parseMask';
 import { isWindowsPhoneBrowser } from './utils/environment';
 import {
@@ -18,7 +19,6 @@ import { isDOMElement, isFunction } from './utils/helpers';
 import defer from './utils/defer';
 
 class InputElement extends React.Component {
-  lastCursorPos = null
   focused = false
   mounted = false
   previousSelection = null
@@ -62,7 +62,8 @@ class InputElement extends React.Component {
   }
 
   componentDidUpdate() {
-    var { beforeChange } = this.props;
+    var { previousSelection } = this;
+    var { beforeMaskedValueChange } = this.props;
     var oldMaskOptions = this.maskOptions;
 
     this.hasValue = this.props.value != null;
@@ -70,11 +71,11 @@ class InputElement extends React.Component {
 
     if (!this.maskOptions.mask) {
       this.backspaceOrDeleteRemoval = null;
-      this.lastCursorPos = null;
+      this.previousSelection = null;
       return;
     }
 
-    var cursorPos = this.lastCursorPos;
+    var cursorPos = previousSelection ? previousSelection.start : null;
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
     var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
@@ -108,20 +109,33 @@ class InputElement extends React.Component {
       newValue = '';
     }
 
-    if (isFunction(beforeChange)) {
-      var modifiedValue = beforeChange(newValue, cursorPos, null, this.getModifyMaskedValueConfig());
+    var newSelection = { start: cursorPos, end: cursorPos };
+
+    if (isFunction(beforeMaskedValueChange)) {
+      var modifiedValue = beforeMaskedValueChange(
+        { value: newValue, selection: newSelection },
+        { value: this.value, selection: this.previousSelection },
+        null,
+        this.getModifyMaskedValueConfig()
+      );
       newValue = modifiedValue.value;
-      cursorPos = modifiedValue.cursorPosition;
+      newSelection = modifiedValue.selection;
     }
 
     this.value = newValue;
-    if (cursorPos !== this.lastCursorPos) {
-      this.setCursorPos(cursorPos);
-    }
 
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
       this.forceUpdate();
+    }
+
+    var isSelectionChanged = !previousSelection
+                             ||
+                             previousSelection.start !== newSelection.start
+                             ||
+                             previousSelection.end !== newSelection.end;
+    if (isSelectionChanged) {
+      this.setSelection(newSelection.start, newSelection.end);
     }
   }
 
@@ -183,52 +197,28 @@ class InputElement extends React.Component {
     }
   }
 
-  setSelection = (start, length = 0) => {
+  setSelection = (start, end) => {
     var input = this.getInputDOMNode();
     if (!input) {
       return;
     }
 
-    var end = start + length;
-    if ('selectionStart' in input && 'selectionEnd' in input) {
-      input.selectionStart = start;
-      input.selectionEnd = end;
-    } else {
-      var range = input.createTextRange();
-      range.collapse(true);
-      range.moveStart('character', start);
-      range.moveEnd('character', end - start);
-      range.select();
-    }
+    setInputSelection(input, start, end);
+    defer(() => {
+      setInputSelection(input, start, end);
+    });
 
     this.previousSelection = {
       start,
       end,
-      length
+      length: Math.abs(end - start)
     };
   }
 
   getSelection = () => {
     var input = this.getInputDOMNode();
-    var start = 0;
-    var end = 0;
 
-    if ('selectionStart' in input && 'selectionEnd' in input) {
-      start = input.selectionStart;
-      end = input.selectionEnd;
-    } else {
-      var range = document.selection.createRange();
-      if (range.parentElement() === input) {
-        start = -range.moveStart('character', -input.value.length);
-        end = -range.moveEnd('character', -input.value.length);
-      }
-    }
-
-    return {
-      start,
-      end,
-      length: end - start
-    };
+    return getInputSelection(input);
   }
 
   getCursorPos = () => {
@@ -236,13 +226,7 @@ class InputElement extends React.Component {
   }
 
   setCursorPos = (pos) => {
-    this.setSelection(pos, 0);
-
-    defer(() => {
-      this.setSelection(pos, 0);
-    });
-
-    this.lastCursorPos = pos;
+    this.setSelection(pos, pos);
   }
 
   isFocused = () => {
@@ -278,15 +262,16 @@ class InputElement extends React.Component {
 
   onChange = (event) => {
     var { beforePasteState, previousSelection } = this;
-    var { beforeChange } = this.props;
+    var { beforeMaskedValueChange } = this.props;
     var { mask, prefix, lastEditablePos } = this.maskOptions;
     var value = this.getInputValue();
-    var oldValue = this.value;
+    var newValue = value;
+    var previousValue = this.value;
 
     // autofill replaces entire value, ignore old one
     // https://github.com/sanniassin/react-input-mask/issues/113
     if (this.isInputAutofilled()) {
-      oldValue = formatValue(this.maskOptions, '');
+      previousValue = formatValue(this.maskOptions, '');
       previousSelection = { start: 0, end: 0, length: 0 };
     }
 
@@ -300,10 +285,10 @@ class InputElement extends React.Component {
     // cleared input in onPaste handler
     if (beforePasteState) {
       previousSelection = beforePasteState.selection;
-      oldValue = beforePasteState.value;
-      cursorPos = previousSelection.start + value.length;
+      previousValue = beforePasteState.value;
+      cursorPos = previousSelection.start + newValue.length;
       selection = { start: cursorPos, end: cursorPos, length: 0 };
-      value = oldValue.slice(0, previousSelection.start) + value + oldValue.slice(previousSelection.end);
+      newValue = previousValue.slice(0, previousSelection.start) + newValue + previousValue.slice(previousSelection.end);
       this.beforePasteState = null;
     }
 
@@ -313,16 +298,16 @@ class InputElement extends React.Component {
     cursorPos = Math.min(previousSelection.start, selection.start);
 
     if (selection.end > previousSelection.start) {
-      enteredString = value.slice(previousSelection.start, selection.end);
-      formattedEnteredStringLen = getInsertStringLength(this.maskOptions, oldValue, enteredString, cursorPos);
+      enteredString = newValue.slice(previousSelection.start, selection.end);
+      formattedEnteredStringLen = getInsertStringLength(this.maskOptions, previousValue, enteredString, cursorPos);
       if (!formattedEnteredStringLen) {
         removedLen = 0;
       }
-    } else if (value.length < oldValue.length) {
-      removedLen = oldValue.length - value.length;
+    } else if (newValue.length < previousValue.length) {
+      removedLen = previousValue.length - newValue.length;
     }
 
-    value = oldValue;
+    newValue = previousValue;
 
     if (removedLen) {
       if (removedLen === 1 && !previousSelection.length) {
@@ -331,10 +316,10 @@ class InputElement extends React.Component {
           ? getRightEditablePos(this.maskOptions, selection.start)
           : getLeftEditablePos(this.maskOptions, selection.start);
       }
-      value = clearRange(this.maskOptions, value, cursorPos, removedLen);
+      newValue = clearRange(this.maskOptions, newValue, cursorPos, removedLen);
     }
 
-    value = insertString(this.maskOptions, value, enteredString, cursorPos);
+    newValue = insertString(this.maskOptions, newValue, enteredString, cursorPos);
 
     cursorPos = cursorPos + formattedEnteredStringLen;
     if (cursorPos >= mask.length) {
@@ -345,19 +330,26 @@ class InputElement extends React.Component {
       cursorPos = getRightEditablePos(this.maskOptions, cursorPos);
     }
 
-    value = formatValue(this.maskOptions, value);
+    newValue = formatValue(this.maskOptions, newValue);
 
     if (!enteredString) {
       enteredString = null;
     }
 
-    if (isFunction(beforeChange)) {
-      var modifiedValue = beforeChange(value, cursorPos, enteredString, this.getModifyMaskedValueConfig());
-      value = modifiedValue.value;
-      cursorPos = modifiedValue.cursorPosition;
+    var newSelection = { start: cursorPos, end: cursorPos };
+
+    if (isFunction(beforeMaskedValueChange)) {
+      var modifiedValue = beforeMaskedValueChange(
+        { value: newValue, selection: newSelection },
+        { value: previousValue, selection: previousSelection },
+        enteredString,
+        this.getModifyMaskedValueConfig()
+      );
+      newValue = modifiedValue.value;
+      newSelection = modifiedValue.selection;
     }
 
-    this.setInputValue(value);
+    this.setInputValue(newValue);
 
     if (isFunction(this.props.onChange)) {
       this.props.onChange(event);
@@ -365,46 +357,61 @@ class InputElement extends React.Component {
 
     if (this.isWindowsPhoneBrowser) {
       defer(() => {
-        this.setSelection(cursorPos, 0);
+        if (!this.mounted || !this.isFocused()) {
+          return;
+        }
+
+        var input = this.getInputDOMNode();
+        setInputSelection(input, newSelection.start, newSelection.end);
+        this.previousSelection = {
+          ...newSelection,
+          length: newSelection.end - newSelection.start
+        };
       });
     } else {
-      this.setCursorPos(cursorPos);
+      this.setSelection(newSelection.start, newSelection.end);
     }
   }
 
   onFocus = (event) => {
-    var { beforeChange } = this.props;
+    var { beforeMaskedValueChange } = this.props;
     var { mask, prefix } = this.maskOptions;
     this.focused = true;
 
     if (mask) {
       if (!this.value) {
-        var value = formatValue(this.maskOptions, prefix);
-        var inputValue = formatValue(this.maskOptions, value);
-        var filledLen = getFilledLength(this.maskOptions, inputValue);
+        var emptyValue = formatValue(this.maskOptions, prefix);
+        var newValue = formatValue(this.maskOptions, emptyValue);
+        var filledLen = getFilledLength(this.maskOptions, newValue);
         var cursorPos = getRightEditablePos(this.maskOptions, filledLen);
+        var newSelection = { start: cursorPos, end: cursorPos };
 
-        if (isFunction(beforeChange)) {
-          var modifiedValue = beforeChange(inputValue, cursorPos, null, this.getModifyMaskedValueConfig());
-          inputValue = modifiedValue.value;
-          cursorPos = modifiedValue.cursorPosition;
+        if (isFunction(beforeMaskedValueChange)) {
+          var modifiedValue = beforeMaskedValueChange(
+            { value: newValue, selection: newSelection },
+            { value: this.value, selection: null },
+            null,
+            this.getModifyMaskedValueConfig()
+          );
+          newValue = modifiedValue.value;
+          newSelection = modifiedValue.selection;
         }
 
         // do not use this.getInputValue and this.setInputValue as this.input
         // will be undefined if it's an initial mount of input with autoFocus attribute
-        var isInputValueChanged = inputValue !== event.target.value;
+        var isInputValueChanged = newValue !== event.target.value;
 
         if (isInputValueChanged) {
-          event.target.value = inputValue;
+          event.target.value = newValue;
         }
 
-        this.value = inputValue;
+        this.value = newValue;
 
         if (isInputValueChanged && isFunction(this.props.onChange)) {
           this.props.onChange(event);
         }
 
-        this.setCursorPos(cursorPos);
+        this.setSelection(newSelection.start, newSelection.end);
       } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
         this.setCursorToEnd();
       }
@@ -418,22 +425,28 @@ class InputElement extends React.Component {
   }
 
   onBlur = (event) => {
-    var { beforeChange } = this.props;
+    var { beforeMaskedValueChange } = this.props;
     var { mask } = this.maskOptions;
+    this.previousSelection = null;
     this.focused = false;
 
     if (mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {
-      var inputValue = '';
+      var newValue = '';
 
-      if (isFunction(beforeChange)) {
-        var modifiedValue = beforeChange(inputValue, null, null, this.getModifyMaskedValueConfig());
-        inputValue = modifiedValue.value;
+      if (isFunction(beforeMaskedValueChange)) {
+        var modifiedValue = beforeMaskedValueChange(
+          { value: newValue, selection: null },
+          { value: this.value, selection: this.previousSelection },
+          null,
+          this.getModifyMaskedValueConfig()
+        );
+        newValue = modifiedValue.value;
       }
 
-      var isInputValueChanged = inputValue !== this.getInputValue();
+      var isInputValueChanged = newValue !== this.getInputValue();
 
       if (isInputValueChanged) {
-        this.setInputValue(inputValue);
+        this.setInputValue(newValue);
       }
 
       if (isInputValueChanged && isFunction(this.props.onChange)) {
@@ -506,7 +519,7 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeChange, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, ...props } = this.props;
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {

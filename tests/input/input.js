@@ -5,7 +5,6 @@ import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import Input from '../../src';
-import defer from '../../src/utils/defer';
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');
@@ -234,19 +233,19 @@ describe('react-input-mask', () => {
       expect(inputNode.value).to.equal('aaaa a___ ____ ____');
       expect(input.getCursorPos()).to.equal(6);
 
-      input.setSelection(4, 0);
+      input.setCursorPos(4);
       inputNode.value = 'aaa a___ ____ ____';
       setInputSelection(inputNode, 3, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaa_ a___ ____ ____');
 
-      input.setSelection(3, 3);
+      input.setSelection(3, 6);
       inputNode.value = 'aaaaaa___ ____ ____';
       setInputSelection(inputNode, 6, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa aa__ ____ ____');
 
-      input.setSelection(3, 3);
+      input.setSelection(3, 6);
       inputNode.value = 'aaaaxa__ ____ ____';
       setInputSelection(inputNode, 5, 0);
       TestUtils.Simulate.change(inputNode);
@@ -323,7 +322,7 @@ describe('react-input-mask', () => {
       simulateInputKeyPress(input, 'E');
       expect(inputNode.value).to.equal('+7 (111) 123 45 6');
 
-      input.setSelection(4, 3);
+      input.setSelection(4, 7);
       simulateInputKeyPress(input, '0');
       expect(inputNode.value).to.equal('+7 (012) 345 6');
 
@@ -366,7 +365,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(10, 0);
+      input.setCursorPos(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (495) _15 64 54');
 
@@ -379,7 +378,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(10, 0);
+      input.setCursorPos(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (495) 156 45 4');
 
@@ -399,14 +398,14 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(10, 0);
+      input.setCursorPos(10);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(9);
 
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(6);
 
-      input.setSelection(4, 0);
+      input.setCursorPos(4);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(4);
     }));
@@ -416,7 +415,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(16, 0);
+      input.setCursorPos(16);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(14);
     }));
@@ -426,7 +425,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(1, 9);
+      input.setSelection(1, 10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (___) _15 64 54');
     }));
@@ -436,7 +435,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(1, 9);
+      input.setSelection(1, 10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (156) 454 ');
     }));
@@ -446,7 +445,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(1, 9);
+      input.setSelection(1, 10);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(4);
     }));
@@ -456,11 +455,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(10, 0);
+      input.setCursorPos(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 12 39');
 
-      input.setSelection(9, 0);
+      input.setCursorPos(9);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 12 ');
 
@@ -468,7 +467,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(6, 0);
+      input.setCursorPos(6);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 13 ');
     }));
@@ -478,11 +477,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(10, 0);
+      input.setCursorPos(10);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(9);
 
-      input.setSelection(9, 0);
+      input.setCursorPos(9);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(7);
 
@@ -490,7 +489,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(6, 0);
+      input.setCursorPos(6);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(5);
     }));
@@ -500,13 +499,13 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 34 ');
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 34 59');
     }));
@@ -516,13 +515,13 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(4);
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputBackspacePress(input);
       expect(input.getCursorPos()).to.equal(4);
     }));
@@ -532,15 +531,15 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(0, 0);
+      input.setCursorPos(0);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) 315 64 54');
 
-      input.setSelection(7, 0);
+      input.setCursorPos(7);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) _15 64 54');
 
-      input.setSelection(11, 0);
+      input.setCursorPos(11);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) _1_ 64 54');
     }));
@@ -550,15 +549,15 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(0, 0);
+      input.setCursorPos(0);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(4);
 
-      input.setSelection(7, 0);
+      input.setCursorPos(7);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(9);
 
-      input.setSelection(11, 0);
+      input.setCursorPos(11);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(11);
     }));
@@ -568,7 +567,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(1, 9);
+      input.setSelection(1, 10);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (___) _15 64 54');
     }));
@@ -578,11 +577,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(9, 0);
+      input.setCursorPos(9);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 12 39');
 
-      input.setSelection(7, 0);
+      input.setCursorPos(7);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 12 ');
 
@@ -590,7 +589,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(5, 0);
+      input.setCursorPos(5);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 13 ');
     }));
@@ -600,11 +599,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(9, 0);
+      input.setCursorPos(9);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(9);
 
-      input.setSelection(7, 0);
+      input.setCursorPos(7);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(7);
 
@@ -612,7 +611,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(5, 0);
+      input.setCursorPos(5);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(5);
     }));
@@ -622,13 +621,13 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 34 ');
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 34 59');
     }));
@@ -638,13 +637,13 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(4);
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
-      input.setSelection(4, 2);
+      input.setSelection(4, 6);
       simulateInputDeletePress(input);
       expect(input.getCursorPos()).to.equal(4);
     }));
@@ -816,7 +815,7 @@ describe('react-input-mask', () => {
       })();
   });
 
-  it('should allow to modify value with beforeChange', createInput(
+  it('should allow to modify value with beforeMaskedValueChange', createInput(
     <Input mask="99999-9999" maskChar={null} value="" />, (input, inputNode) => {
       setInputProps(input, {
         onChange: (event) => {
@@ -824,17 +823,21 @@ describe('react-input-mask', () => {
             value: event.target.value
           });
         },
-        beforeChange: (value, cursorPosition, userInput) => {
+        beforeMaskedValueChange: (newState, oldState, userInput) => {
+          var { value } = newState;
+          var selection = newState.selection;
+          var cursorPosition = selection ? selection.start : null;
           if (value.endsWith('-') && userInput !== '-' && !input.props.value.endsWith('-')) {
             if (cursorPosition === value.length) {
               cursorPosition--;
+              selection = { start: cursorPosition, end: cursorPosition };
             }
             value = value.slice(0, -1);
           }
 
           return {
             value,
-            cursorPosition
+            selection
           };
         }
       });
@@ -856,7 +859,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setSelection(0, 0);
+      input.setCursorPos(0);
       simulateInputKeyPress(input, 'a');
 
       expect(inputNode.value).to.equal('1234');
@@ -867,7 +870,7 @@ describe('react-input-mask', () => {
 
       expect(inputNode.value).to.equal('1234');
 
-      input.setSelection(1, 3);
+      input.setSelection(1, 4);
       simulateInputKeyPress(input, 'a');
 
       expect(inputNode.value).to.equal('1234');

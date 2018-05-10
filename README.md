@@ -51,9 +51,9 @@ Show mask when input is empty and has no focus.
 
 Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
 
-### `beforeChange` : `function`
+### `beforeMaskedValueChange` : `function`
 
-In case you need to implement more complex masking behavior, you can provide `beforeChange` function to change masked value and cursor position before it will be applied to the input. `beforeChange` receives following arguments:
+In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
 1. **value** (string): New masked value.
 2. **cursorPosition** (number): New cursor position. `null` if change was triggered by the `blur` event.
 3. **userInput** (string): Raw entered or pasted string. `null` if user didn't enter anything (e.g. triggered by deletion or rerender due to props change).
@@ -72,11 +72,11 @@ In case you need to implement more complex masking behavior, you can provide `be
 }
 ```
 
-`beforeChange` must return an object with the following fields:
+`beforeMaskedValueChange` must return an object with the following fields:
 1. **value** (string): New value.
 2. **cursorPosition** (number): New cursor position.
 
-Please note that `beforeChange` executes more often than `onChange`, so it's recommended to make it pure.
+Please note that `beforeMaskedValueChange` executes more often than `onChange`, so it's recommended to make it pure.
 
 
 ## Example
@@ -91,7 +91,7 @@ class PhoneInput extends React.Component {
 }
 ```
 
-Mask for ZIP Code. Uses beforeChange to omit trailing minus if it wasn't entered by user:
+Mask for ZIP Code. Uses beforeMaskedValueChange to omit trailing minus if it wasn't entered by user:
 ```jsx
 import React from 'react';
 import InputMask from 'react-input-mask';
@@ -107,23 +107,28 @@ class Input extends React.Component {
     });
   }
 
-  beforeChange = (value, cursorPosition, enteredString) => {
+  beforeMaskedValueChange = (newState, oldState, userInput) => {
+    var { value } = newState;
+    var selection = newState.selection;
+    var cursorPosition = selection ? selection.start : null;
+
     // keep minus if entered by user
-    if (value.endsWith('-') && enteredString !== '-' && !this.state.value.endsWith('-')) {
+    if (value.endsWith('-') && userInput !== '-' && !this.state.value.endsWith('-')) {
       if (cursorPosition === value.length) {
         cursorPosition--;
+        selection = { start: cursorPosition, end: cursorPosition };
       }
       value = value.slice(0, -1);
     }
 
     return {
-      value: value,
-      cursorPosition: cursorPosition
+      value,
+      selection
     };
   }
 
   render() {
-    return <InputMask mask="99999-9999" maskChar={null} value={this.state.value} onChange={this.onChange} beforeChange={this.beforeChange} />;
+    return <InputMask mask="99999-9999" maskChar={null} value={this.state.value} onChange={this.onChange} beforeMaskedValueChange={this.beforeMaskedValueChange} />;
   }
 }
 ```
