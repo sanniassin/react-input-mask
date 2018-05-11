@@ -21,8 +21,9 @@ import { defer, cancelDefer } from './utils/defer';
 class InputElement extends React.Component {
   focused = false
   mounted = false
-  previousSelection = { start: 0, end: 0, length: 0 }
+  previousSelection = null
   selectionDeferId = null
+  saveSelectionLoopDeferId = null
 
   constructor(props) {
     super(props);
@@ -71,9 +72,11 @@ class InputElement extends React.Component {
     this.maskOptions = parseMask(this.props.mask, this.props.maskChar, this.props.formatChars);
 
     if (!this.maskOptions.mask) {
-      this.backspaceOrDeleteRemoval = null;
+      this.stopSaveSelectionLoop();
       this.previousSelection = null;
       return;
+    } else if (!oldMaskOptions.mask && this.isFocused()) {
+      this.runSaveSelectionLoop();
     }
 
     var cursorPos = previousSelection ? previousSelection.start : null;
@@ -89,19 +92,15 @@ class InputElement extends React.Component {
 
     if (isMaskChanged || (this.maskOptions.mask && (newValue || showEmpty))) {
       newValue = formatValue(this.maskOptions, newValue);
+    }
 
-      if (isMaskChanged) {
-        var filledLen = getFilledLength(this.maskOptions, newValue);
-        if (cursorPos === null || filledLen < cursorPos) {
-          if (isFilled(this.maskOptions, newValue)) {
-            cursorPos = filledLen;
-          } else {
-            cursorPos = getRightEditablePos(this.maskOptions, filledLen);
-          }
-        }
-
-        if (!oldMaskOptions.mask) {
-          this.saveSelectionLoop();
+    if (isMaskChanged) {
+      var filledLen = getFilledLength(this.maskOptions, newValue);
+      if (cursorPos === null || filledLen < cursorPos) {
+        if (isFilled(this.maskOptions, newValue)) {
+          cursorPos = filledLen;
+        } else {
+          cursorPos = getRightEditablePos(this.maskOptions, filledLen);
         }
       }
     }
@@ -146,22 +145,28 @@ class InputElement extends React.Component {
 
   componentWillUnmount() {
     this.mounted = false;
-    if (this.selectionDeferId) {
+    if (this.selectionDeferId !== null) {
       cancelDefer(this.selectionDeferId);
     }
+    this.stopSaveSelectionLoop();
   }
 
   saveSelectionLoop = () => {
-    if (!this.mounted || !this.maskOptions.mask || !this.focused || this.saveSelectionLoopRunning) {
-      return;
-    }
-
-    this.saveSelectionLoopRunning = true;
     this.previousSelection = this.getSelection();
-    defer(() => {
-      this.saveSelectionLoopRunning = false;
+    this.saveSelectionLoopDeferId = defer(this.saveSelectionLoop);
+  }
+
+  runSaveSelectionLoop = () => {
+    if (this.saveSelectionLoopDeferId === null) {
       this.saveSelectionLoop();
-    }, 1000 / 60);
+    }
+  }
+
+  stopSaveSelectionLoop = () => {
+    if (this.saveSelectionLoopDeferId !== null) {
+      cancelDefer(this.saveSelectionLoopDeferId);
+      this.saveSelectionLoopDeferId = null;
+    }
   }
 
   getInputDOMNode = () => {
@@ -221,10 +226,8 @@ class InputElement extends React.Component {
       cancelDefer(this.selectionDeferId);
     }
 
-    // deferred selection update is required
-    // for pre-Lollipop Android browser,
-    // but for consistent behavior we
-    // do it for all browsers
+    // deferred selection update is required for pre-Lollipop Android browser,
+    // but for consistent behavior we do it for all browsers
     this.selectionDeferId = defer(() => {
       this.selectionDeferId = null;
       setInputSelection(input, start, end);
@@ -389,8 +392,7 @@ class InputElement extends React.Component {
     var { mask, prefix } = this.maskOptions;
     this.focused = true;
 
-    // if autoFocus is set onFocus
-    // triggers before componentDidMount
+    // if autoFocus is set, onFocus triggers before componentDidMount
     this.input = event.target;
     this.mounted = true;
 
@@ -433,7 +435,7 @@ class InputElement extends React.Component {
       }
     }
 
-    this.saveSelectionLoop();
+    this.runSaveSelectionLoop();
 
     if (isFunction(this.props.onFocus)) {
       this.props.onFocus(event);
@@ -443,6 +445,8 @@ class InputElement extends React.Component {
   onBlur = (event) => {
     var { beforeMaskedValueChange } = this.props;
     var { mask } = this.maskOptions;
+
+    this.stopSaveSelectionLoop();
     this.previousSelection = null;
     this.focused = false;
 

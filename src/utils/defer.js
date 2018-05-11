@@ -16,14 +16,14 @@ function getCancelAnimationFrame() {
          window.mozCancelAnimationFrame;
 }
 
-export function defer(fn, timeoutDelay = 0) {
+export function defer(fn) {
   var deferFn;
 
   var hasCancelAnimationFrame = !!getCancelAnimationFrame();
   if (hasCancelAnimationFrame) {
     deferFn = getRequestAnimationFrame();
   } else {
-    deferFn = (() => setTimeout(fn, timeoutDelay));
+    deferFn = (() => setTimeout(fn, 1000 / 60));
   }
 
   return deferFn(fn);
