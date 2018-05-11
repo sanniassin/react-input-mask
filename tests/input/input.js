@@ -188,7 +188,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
       inputNode.blur();
       TestUtils.Simulate.blur(inputNode);
@@ -197,7 +197,7 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 2, 0);
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
-      expect(input.getCursorPos()).to.equal(16);
+      expect(input.getCursorPosition()).to.equal(16);
 
       inputNode.blur();
       TestUtils.Simulate.blur(inputNode);
@@ -206,12 +206,12 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 2, 0);
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
-      expect(input.getCursorPos()).to.equal(2);
+      expect(input.getCursorPosition()).to.equal(2);
     }));
 
   it('should adjust cursor position on focus on input with autoFocus', createInput(
     <Input mask="+7 (999) 999 99 99" value="+7" autoFocus />, (input, inputNode) => {
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
       inputNode.blur();
       TestUtils.Simulate.blur(inputNode);
@@ -220,7 +220,7 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 2, 0);
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
-      expect(input.getCursorPos()).to.equal(16);
+      expect(input.getCursorPosition()).to.equal(16);
 
       inputNode.blur();
       TestUtils.Simulate.blur(inputNode);
@@ -229,7 +229,7 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 2, 0);
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
-      expect(input.getCursorPos()).to.equal(2);
+      expect(input.getCursorPosition()).to.equal(2);
     }));
 
   it('should handle changes on input with autoFocus', createInput(
@@ -258,22 +258,22 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 1, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('a___ ____ ____ ____');
-      expect(input.getCursorPos()).to.equal(1);
+      expect(input.getCursorPosition()).to.equal(1);
 
       setInputSelection(inputNode, 0, 19);
       inputNode.value = 'a';
       setInputSelection(inputNode, 1, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('a___ ____ ____ ____');
-      expect(input.getCursorPos()).to.equal(1);
+      expect(input.getCursorPosition()).to.equal(1);
 
       inputNode.value = 'aaaaa___ ____ ____ ____';
       setInputSelection(inputNode, 1, 4);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa a___ ____ ____');
-      expect(input.getCursorPos()).to.equal(6);
+      expect(input.getCursorPosition()).to.equal(6);
 
-      input.setCursorPos(4);
+      input.setCursorPosition(4);
       inputNode.value = 'aaa a___ ____ ____';
       setInputSelection(inputNode, 3, 0);
       TestUtils.Simulate.change(inputNode);
@@ -290,7 +290,7 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 5, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa xa__ ____ ____');
-      expect(input.getCursorPos()).to.equal(6);
+      expect(input.getCursorPosition()).to.equal(6);
     }));
 
   it('should format value in onChange (without maskChar)', createInput(
@@ -304,25 +304,25 @@ describe('react-input-mask', () => {
       setInputSelection(inputNode, 3, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaa');
-      expect(input.getCursorPos()).to.equal(3);
+      expect(input.getCursorPosition()).to.equal(3);
 
       inputNode.value = 'aaaaa';
       setInputSelection(inputNode, 5, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa a');
-      expect(input.getCursorPos()).to.equal(6);
+      expect(input.getCursorPosition()).to.equal(6);
 
       inputNode.value = 'aaaa afgh ijkl mnop';
       setInputSelection(inputNode, 19, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
-      expect(input.getCursorPos()).to.equal(19);
+      expect(input.getCursorPosition()).to.equal(19);
 
       inputNode.value = 'aaaa afgh ijkl mnopq';
       setInputSelection(inputNode, 20, 0);
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
-      expect(input.getCursorPos()).to.equal(19);
+      expect(input.getCursorPosition()).to.equal(19);
     }));
 
   it('should handle entered characters (with maskChar)', createInput(
@@ -330,19 +330,19 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputKeyPress(input, '+');
       expect(inputNode.value).to.equal('+7 (___) ___ __ __');
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputKeyPress(input, '7');
       expect(inputNode.value).to.equal('+7 (___) ___ __ __');
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputKeyPress(input, '8');
       expect(inputNode.value).to.equal('+7 (8__) ___ __ __');
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputKeyPress(input, 'E');
       expect(inputNode.value).to.equal('+7 (E__) ___ __ __');
 
@@ -388,16 +388,16 @@ describe('react-input-mask', () => {
 
       setInputSelection(inputNode, 3, 0);
       simulateInputKeyPress(input, 'x');
-      expect(input.getCursorPos()).to.equal(3);
+      expect(input.getCursorPosition()).to.equal(3);
 
       simulateInputKeyPress(input, '1');
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
       setInputSelection(inputNode, 0, 4);
       simulateInputBackspacePress(input);
       setInputSelection(inputNode, 2, 0);
       simulateInputKeyPress(input, 'x');
-      expect(input.getCursorPos()).to.equal(2);
+      expect(input.getCursorPosition()).to.equal(2);
     }));
 
   it('should handle single character removal with Backspace (with maskChar)', createInput(
@@ -405,7 +405,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(10);
+      input.setCursorPosition(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (495) _15 64 54');
 
@@ -418,7 +418,7 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(10);
+      input.setCursorPosition(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+7 (495) 156 45 4');
 
@@ -438,16 +438,16 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(10);
+      input.setCursorPosition(10);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(9);
+      expect(input.getCursorPosition()).to.equal(9);
 
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(6);
+      expect(input.getCursorPosition()).to.equal(6);
 
-      input.setCursorPos(4);
+      input.setCursorPosition(4);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
     }));
 
   it('should adjust cursor position on single character removal with Backspace (without maskChar)', createInput(
@@ -455,9 +455,9 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(16);
+      input.setCursorPosition(16);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(14);
+      expect(input.getCursorPosition()).to.equal(14);
     }));
 
   it('should handle multiple characters removal with Backspace (with maskChar)', createInput(
@@ -487,7 +487,7 @@ describe('react-input-mask', () => {
 
       input.setSelection(1, 10);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
     }));
 
   it('should handle single character removal with Backspace on mask with escaped characters (without maskChar)', createInput(
@@ -495,11 +495,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(10);
+      input.setCursorPosition(10);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 12 39');
 
-      input.setCursorPos(9);
+      input.setCursorPosition(9);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 12 ');
 
@@ -507,7 +507,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setCursorPos(6);
+      input.setCursorPosition(6);
       simulateInputBackspacePress(input);
       expect(inputNode.value).to.equal('+49 13 ');
     }));
@@ -517,21 +517,21 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(10);
+      input.setCursorPosition(10);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(9);
+      expect(input.getCursorPosition()).to.equal(9);
 
-      input.setCursorPos(9);
+      input.setCursorPosition(9);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(7);
+      expect(input.getCursorPosition()).to.equal(7);
 
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setCursorPos(6);
+      input.setCursorPosition(6);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(5);
+      expect(input.getCursorPosition()).to.equal(5);
     }));
 
   it('should handle multiple characters removal with Backspace on mask with escaped characters (without maskChar)', createInput(
@@ -557,13 +557,13 @@ describe('react-input-mask', () => {
 
       input.setSelection(4, 6);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
       input.setSelection(4, 6);
       simulateInputBackspacePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
     }));
 
   it('should handle single character removal with Delete (with maskChar)', createInput(
@@ -571,15 +571,15 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) 315 64 54');
 
-      input.setCursorPos(7);
+      input.setCursorPosition(7);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) _15 64 54');
 
-      input.setCursorPos(11);
+      input.setCursorPosition(11);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+7 (_95) _1_ 64 54');
     }));
@@ -589,17 +589,17 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
-      input.setCursorPos(7);
+      input.setCursorPosition(7);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(9);
+      expect(input.getCursorPosition()).to.equal(9);
 
-      input.setCursorPos(11);
+      input.setCursorPosition(11);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(11);
+      expect(input.getCursorPosition()).to.equal(11);
     }));
 
   it('should handle multiple characters removal with Delete (with maskChar)', createInput(
@@ -617,11 +617,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(9);
+      input.setCursorPosition(9);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 12 39');
 
-      input.setCursorPos(7);
+      input.setCursorPosition(7);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 12 ');
 
@@ -629,7 +629,7 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setCursorPos(5);
+      input.setCursorPosition(5);
       simulateInputDeletePress(input);
       expect(inputNode.value).to.equal('+49 13 ');
     }));
@@ -639,21 +639,21 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(9);
+      input.setCursorPosition(9);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(9);
+      expect(input.getCursorPosition()).to.equal(9);
 
-      input.setCursorPos(7);
+      input.setCursorPosition(7);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(7);
+      expect(input.getCursorPosition()).to.equal(7);
 
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
       inputNode.value = '+49 12 39';
       TestUtils.Simulate.change(inputNode);
-      input.setCursorPos(5);
+      input.setCursorPosition(5);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(5);
+      expect(input.getCursorPosition()).to.equal(5);
     }));
 
   it('should handle multiple characters removal with Delete on mask with escaped characters (without maskChar)', createInput(
@@ -679,13 +679,13 @@ describe('react-input-mask', () => {
 
       input.setSelection(4, 6);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
 
       inputNode.value = '+49 12 394 5';
       TestUtils.Simulate.change(inputNode);
       input.setSelection(4, 6);
       simulateInputDeletePress(input);
-      expect(input.getCursorPos()).to.equal(4);
+      expect(input.getCursorPosition()).to.equal(4);
     }));
 
   it('should handle mask change', createInput(
@@ -753,11 +753,11 @@ describe('react-input-mask', () => {
 
       setInputSelection(inputNode, 3, 15);
       simulateInputPaste(input, '478122691');
-      expect(input.getCursorPos()).to.equal(15);
+      expect(input.getCursorPosition()).to.equal(15);
 
       setInputSelection(inputNode, 3, 0);
       simulateInputPaste(input, '3-__81-2_6917');
-      expect(input.getCursorPos()).to.equal(17);
+      expect(input.getCursorPosition()).to.equal(17);
     }));
 
   it('should handle string paste (without maskChar)', createInput(
@@ -888,7 +888,7 @@ describe('react-input-mask', () => {
       setInputProps(input, { value: '12345' });
       expect(inputNode.value).to.equal('12345');
 
-      input.setCursorPos(5);
+      input.setCursorPosition(5);
 
       simulateInputKeyPress(input, '-');
       expect(inputNode.value).to.equal('12345-');
@@ -899,11 +899,11 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
-      input.setCursorPos(0);
+      input.setCursorPosition(0);
       simulateInputKeyPress(input, 'a');
 
       expect(inputNode.value).to.equal('1234');
-      expect(input.getCursorPos()).to.equal(0);
+      expect(input.getCursorPosition()).to.equal(0);
 
       input.setSelection(0, 1);
       simulateInputKeyPress(input, 'a');

@@ -1,4 +1,4 @@
-import { defaultFormatChars, defaultMaskChar } from '../constants/index.js';
+import { defaultFormatChars, defaultMaskChar } from '../constants/index';
 
 export default function(mask, maskChar, formatChars) {
   if (maskChar === undefined) {
@@ -14,7 +14,7 @@ export default function(mask, maskChar, formatChars) {
       formatChars,
       mask: null,
       prefix: null,
-      lastEditablePos: null,
+      lastEditablePosition: null,
       permanents: []
     };
   }
@@ -22,32 +22,33 @@ export default function(mask, maskChar, formatChars) {
   var prefix = '';
   var permanents = [];
   var isPermanent = false;
-  var lastEditablePos = null;
+  var lastEditablePosition = null;
 
-  mask.split('')
-      .forEach((character) => {
-        if (!isPermanent && character === '\\') {
-          isPermanent = true;
-        } else {
-          if (isPermanent || !formatChars[character]) {
-            permanents.push(str.length);
-            if (str.length === permanents.length - 1) {
-              prefix += character;
-            }
-          } else {
-            lastEditablePos = str.length + 1;
+  mask
+    .split('')
+    .forEach((character) => {
+      if (!isPermanent && character === '\\') {
+        isPermanent = true;
+      } else {
+        if (isPermanent || !formatChars[character]) {
+          permanents.push(str.length);
+          if (str.length === permanents.length - 1) {
+            prefix += character;
           }
-          str += character;
-          isPermanent = false;
+        } else {
+          lastEditablePosition = str.length + 1;
         }
-      });
+        str += character;
+        isPermanent = false;
+      }
+    });
 
   return {
     maskChar,
     formatChars,
     prefix,
     mask: str,
-    lastEditablePos: lastEditablePos,
-    permanents: permanents
+    lastEditablePosition,
+    permanents
   };
 }

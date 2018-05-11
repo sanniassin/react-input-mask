@@ -124,7 +124,7 @@ export function clearRange(maskOptions, value, start, len) {
     .join('');
 }
 
-export function insertString(maskOptions, value, insertStr, insertPos) {
+export function insertString(maskOptions, value, insertStr, insertPosition) {
   var { mask, maskChar, prefix } = maskOptions;
   var arrayInsertStr = insertStr.split('');
   var isInputFilled = isFilled(maskOptions, value);
@@ -142,59 +142,59 @@ export function insertString(maskOptions, value, insertStr, insertPos) {
            character !== maskChar;
   };
 
-  if (!maskChar && insertPos > value.length) {
-    value += mask.slice(value.length, insertPos);
+  if (!maskChar && insertPosition > value.length) {
+    value += mask.slice(value.length, insertPosition);
   }
 
   arrayInsertStr.every((insertCharacter) => {
-    while (!isUsablePosition(insertPos, insertCharacter)) {
-      if (insertPos >= value.length) {
-        value += mask[insertPos];
+    while (!isUsablePosition(insertPosition, insertCharacter)) {
+      if (insertPosition >= value.length) {
+        value += mask[insertPosition];
       }
 
-      if (!isUsableCharacter(insertCharacter, insertPos)) {
+      if (!isUsableCharacter(insertCharacter, insertPosition)) {
         return true;
       }
 
-      insertPos++;
+      insertPosition++;
 
       // stop iteration if maximum value length reached
-      if (insertPos >= mask.length) {
+      if (insertPosition >= mask.length) {
         return false;
       }
     }
 
-    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter)
+    var isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
                     ||
                     insertCharacter === maskChar;
     if (!isAllowed) {
       return true;
     }
 
-    if (insertPos < value.length) {
-      if (maskChar || isInputFilled || insertPos < prefix.length) {
-        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos + 1);
+    if (insertPosition < value.length) {
+      if (maskChar || isInputFilled || insertPosition < prefix.length) {
+        value = value.slice(0, insertPosition) + insertCharacter + value.slice(insertPosition + 1);
       } else {
-        value = value.slice(0, insertPos) + insertCharacter + value.slice(insertPos);
+        value = value.slice(0, insertPosition) + insertCharacter + value.slice(insertPosition);
         value = formatValue(maskOptions, value);
       }
     } else if (!maskChar) {
       value += insertCharacter;
     }
 
-    insertPos++;
+    insertPosition++;
 
     // stop iteration if maximum value length reached
-    return insertPos < mask.length;
+    return insertPosition < mask.length;
   });
 
   return value;
 }
 
-export function getInsertStringLength(maskOptions, value, insertStr, insertPos) {
+export function getInsertStringLength(maskOptions, value, insertStr, insertPosition) {
   var { mask, maskChar } = maskOptions;
   var arrayInsertStr = insertStr.split('');
-  var initialInsertPos = insertPos;
+  var initialInsertPosition = insertPosition;
 
   var isUsablePosition = (pos, character) => {
     return !isPermanentChar(maskOptions, pos)
@@ -203,31 +203,31 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPos) 
   };
 
   arrayInsertStr.every((insertCharacter) => {
-    while (!isUsablePosition(insertPos, insertCharacter)) {
-      insertPos++;
+    while (!isUsablePosition(insertPosition, insertCharacter)) {
+      insertPosition++;
 
       // stop iteration if maximum value length reached
-      if (insertPos >= mask.length) {
+      if (insertPosition >= mask.length) {
         return false;
       }
     }
 
-    var isAllowed = isAllowedChar(maskOptions, insertPos, insertCharacter)
+    var isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
                     ||
                     insertCharacter === maskChar;
 
     if (isAllowed) {
-      insertPos++;
+      insertPosition++;
     }
 
     // stop iteration if maximum value length reached
-    return insertPos < mask.length;
+    return insertPosition < mask.length;
   });
 
-  return insertPos - initialInsertPos;
+  return insertPosition - initialInsertPosition;
 }
 
-export function getLeftEditablePos(maskOptions, pos) {
+export function getLeftEditablePosition(maskOptions, pos) {
   for (var i = pos; i >= 0; --i) {
     if (!isPermanentChar(maskOptions, i)) {
       return i;
@@ -236,7 +236,7 @@ export function getLeftEditablePos(maskOptions, pos) {
   return null;
 }
 
-export function getRightEditablePos(maskOptions, pos) {
+export function getRightEditablePosition(maskOptions, pos) {
   var { mask } = maskOptions;
   for (var i = pos; i < mask.length; ++i) {
     if (!isPermanentChar(maskOptions, i)) {

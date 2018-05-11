@@ -11,8 +11,8 @@ import {
   isEmpty,
   getInsertStringLength,
   insertString,
-  getLeftEditablePos,
-  getRightEditablePos,
+  getLeftEditablePosition,
+  getRightEditablePosition,
   getStringValue
 } from './utils/string';
 import { isDOMElement, isFunction } from './utils/helpers';
@@ -79,7 +79,7 @@ class InputElement extends React.Component {
       this.runSaveSelectionLoop();
     }
 
-    var cursorPos = previousSelection ? previousSelection.start : null;
+    var cursorPosition = previousSelection ? previousSelection.start : null;
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
     var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
@@ -95,12 +95,12 @@ class InputElement extends React.Component {
     }
 
     if (isMaskChanged) {
-      var filledLen = getFilledLength(this.maskOptions, newValue);
-      if (cursorPos === null || filledLen < cursorPos) {
+      var filledLength = getFilledLength(this.maskOptions, newValue);
+      if (cursorPosition === null || filledLength < cursorPosition) {
         if (isFilled(this.maskOptions, newValue)) {
-          cursorPos = filledLen;
+          cursorPosition = filledLength;
         } else {
-          cursorPos = getRightEditablePos(this.maskOptions, filledLen);
+          cursorPosition = getRightEditablePosition(this.maskOptions, filledLength);
         }
       }
     }
@@ -109,7 +109,7 @@ class InputElement extends React.Component {
       newValue = '';
     }
 
-    var newSelection = { start: cursorPos, end: cursorPos };
+    var newSelection = { start: cursorPosition, end: cursorPosition };
 
     if (isFunction(beforeMaskedValueChange)) {
       var modifiedValue = beforeMaskedValueChange(
@@ -203,10 +203,10 @@ class InputElement extends React.Component {
   }
 
   setCursorToEnd = () => {
-    var filledLen = getFilledLength(this.maskOptions, this.value);
-    var pos = getRightEditablePos(this.maskOptions, filledLen);
+    var filledLength = getFilledLength(this.maskOptions, this.value);
+    var pos = getRightEditablePosition(this.maskOptions, filledLength);
     if (pos !== null) {
-      this.setCursorPos(pos);
+      this.setCursorPosition(pos);
     }
   }
 
@@ -246,11 +246,11 @@ class InputElement extends React.Component {
     return getInputSelection(input);
   }
 
-  getCursorPos = () => {
+  getCursorPosition = () => {
     return this.getSelection().start;
   }
 
-  setCursorPos = (pos) => {
+  setCursorPosition = (pos) => {
     this.setSelection(pos, pos);
   }
 
@@ -288,10 +288,14 @@ class InputElement extends React.Component {
   onChange = (event) => {
     var { beforePasteState, previousSelection } = this;
     var { beforeMaskedValueChange } = this.props;
-    var { mask, prefix, lastEditablePos } = this.maskOptions;
-    var value = this.getInputValue();
-    var newValue = value;
+    var { mask, prefix, lastEditablePosition } = this.maskOptions;
+    var newValue = this.getInputValue();
     var previousValue = this.value;
+    var enteredString = '';
+    var selection = this.getSelection();
+    var cursorPosition = selection.end;
+    var formattedEnteredStringLength = 0;
+    var removedLength;
 
     // autofill replaces entire value, ignore old one
     // https://github.com/sanniassin/react-input-mask/issues/113
@@ -300,59 +304,52 @@ class InputElement extends React.Component {
       previousSelection = { start: 0, end: 0, length: 0 };
     }
 
-    var enteredString = '';
-    var selection = this.getSelection();
-    var cursorPos = selection.end;
-    selection.start = selection.end;
-    selection.length = 0;
-
     // set value and selection as if we haven't
     // cleared input in onPaste handler
     if (beforePasteState) {
       previousSelection = beforePasteState.selection;
       previousValue = beforePasteState.value;
-      cursorPos = previousSelection.start + newValue.length;
-      selection = { start: cursorPos, end: cursorPos, length: 0 };
+      cursorPosition = previousSelection.start + newValue.length;
+      selection = { start: cursorPosition, end: cursorPosition, length: 0 };
       newValue = previousValue.slice(0, previousSelection.start) + newValue + previousValue.slice(previousSelection.end);
       this.beforePasteState = null;
     }
 
-    var formattedEnteredStringLen = 0;
-    var removedLen = previousSelection.length;
-
-    cursorPos = Math.min(previousSelection.start, selection.start);
+    cursorPosition = Math.min(previousSelection.start, selection.start);
 
     if (selection.end > previousSelection.start) {
       enteredString = newValue.slice(previousSelection.start, selection.end);
-      formattedEnteredStringLen = getInsertStringLength(this.maskOptions, previousValue, enteredString, cursorPos);
-      if (!formattedEnteredStringLen) {
-        removedLen = 0;
+      formattedEnteredStringLength = getInsertStringLength(this.maskOptions, previousValue, enteredString, cursorPosition);
+      if (!formattedEnteredStringLength) {
+        removedLength = 0;
+      } else {
+        removedLength = previousSelection.length;
       }
     } else if (newValue.length < previousValue.length) {
-      removedLen = previousValue.length - newValue.length;
+      removedLength = previousValue.length - newValue.length;
     }
 
     newValue = previousValue;
 
-    if (removedLen) {
-      if (removedLen === 1 && !previousSelection.length) {
+    if (removedLength) {
+      if (removedLength === 1 && !previousSelection.length) {
         var deleteFromRight = previousSelection.start === selection.start;
-        cursorPos = deleteFromRight
-          ? getRightEditablePos(this.maskOptions, selection.start)
-          : getLeftEditablePos(this.maskOptions, selection.start);
+        cursorPosition = deleteFromRight
+          ? getRightEditablePosition(this.maskOptions, selection.start)
+          : getLeftEditablePosition(this.maskOptions, selection.start);
       }
-      newValue = clearRange(this.maskOptions, newValue, cursorPos, removedLen);
+      newValue = clearRange(this.maskOptions, newValue, cursorPosition, removedLength);
     }
 
-    newValue = insertString(this.maskOptions, newValue, enteredString, cursorPos);
+    newValue = insertString(this.maskOptions, newValue, enteredString, cursorPosition);
 
-    cursorPos = cursorPos + formattedEnteredStringLen;
-    if (cursorPos >= mask.length) {
-      cursorPos = mask.length;
-    } else if (cursorPos < prefix.length && !formattedEnteredStringLen) {
-      cursorPos = prefix.length;
-    } else if (cursorPos >= prefix.length && cursorPos < lastEditablePos && formattedEnteredStringLen) {
-      cursorPos = getRightEditablePos(this.maskOptions, cursorPos);
+    cursorPosition = cursorPosition + formattedEnteredStringLength;
+    if (cursorPosition >= mask.length) {
+      cursorPosition = mask.length;
+    } else if (cursorPosition < prefix.length && !formattedEnteredStringLength) {
+      cursorPosition = prefix.length;
+    } else if (cursorPosition >= prefix.length && cursorPosition < lastEditablePosition && formattedEnteredStringLength) {
+      cursorPosition = getRightEditablePosition(this.maskOptions, cursorPosition);
     }
 
     newValue = formatValue(this.maskOptions, newValue);
@@ -361,7 +358,7 @@ class InputElement extends React.Component {
       enteredString = null;
     }
 
-    var newSelection = { start: cursorPos, end: cursorPos };
+    var newSelection = { start: cursorPosition, end: cursorPosition };
 
     if (isFunction(beforeMaskedValueChange)) {
       var modifiedValue = beforeMaskedValueChange(
@@ -400,9 +397,9 @@ class InputElement extends React.Component {
       if (!this.value) {
         var emptyValue = formatValue(this.maskOptions, prefix);
         var newValue = formatValue(this.maskOptions, emptyValue);
-        var filledLen = getFilledLength(this.maskOptions, newValue);
-        var cursorPos = getRightEditablePos(this.maskOptions, filledLen);
-        var newSelection = { start: cursorPos, end: cursorPos };
+        var filledLength = getFilledLength(this.maskOptions, newValue);
+        var cursorPosition = getRightEditablePosition(this.maskOptions, filledLength);
+        var newSelection = { start: cursorPosition, end: cursorPosition };
 
         if (isFunction(beforeMaskedValueChange)) {
           var modifiedValue = beforeMaskedValueChange(
