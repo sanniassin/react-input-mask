@@ -4,6 +4,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
+import { defer } from '../../src/utils/defer';
 import Input from '../../src';
 
 document.body.innerHTML = '<div id="container"></div>';
@@ -229,6 +230,22 @@ describe('react-input-mask', () => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
       expect(input.getCursorPos()).to.equal(2);
+    }));
+
+  it('should handle changes on input with autoFocus', createInput(
+    <Input mask="+7 (999) 999 99 99" autoFocus />, (input, inputNode) => {
+      insertStringIntoInput(input, '222 222 22 22');
+
+      return new Promise((resolve) => {
+        defer(() => {
+          setInputSelection(inputNode, 5, 0);
+          setTimeout(() => {
+            simulateInputKeyPress(input, '3');
+            expect(inputNode.value).to.equal('+7 (232) 222 22 22');
+            resolve();
+          }, 100);
+        });
+      });
     }));
 
   it('should format value in onChange (with maskChar)', createInput(

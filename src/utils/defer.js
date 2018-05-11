@@ -1,11 +1,38 @@
-export default function(fn, timeoutDelay = 0) {
-  var defer = window.requestAnimationFrame
-              ||
-              window.webkitRequestAnimationFrame
-              ||
-              window.mozRequestAnimationFrame
-              ||
-              (() => setTimeout(fn, timeoutDelay));
+function getRequestAnimationFrame() {
+  return window.requestAnimationFrame
+         ||
+         window.webkitRequestAnimationFrame
+         ||
+         window.mozRequestAnimationFrame;
+}
 
-  return defer(fn);
+function getCancelAnimationFrame() {
+  return window.cancelAnimationFrame
+         ||
+         window.webkitCancelRequestAnimationFrame
+         ||
+         window.webkitCancelAnimationFrame
+         ||
+         window.mozCancelAnimationFrame;
+}
+
+export function defer(fn, timeoutDelay = 0) {
+  var deferFn;
+
+  var hasCancelAnimationFrame = !!getCancelAnimationFrame();
+  if (hasCancelAnimationFrame) {
+    deferFn = getRequestAnimationFrame();
+  } else {
+    deferFn = (() => setTimeout(fn, timeoutDelay));
+  }
+
+  return deferFn(fn);
+}
+
+export function cancelDefer(deferId) {
+  var cancelFn = getCancelAnimationFrame()
+                 ||
+                 clearTimeout;
+
+  cancelFn(deferId);
 }

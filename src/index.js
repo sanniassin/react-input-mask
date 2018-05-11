@@ -16,12 +16,13 @@ import {
   getStringValue
 } from './utils/string';
 import { isDOMElement, isFunction } from './utils/helpers';
-import defer from './utils/defer';
+import { defer, cancelDefer } from './utils/defer';
 
 class InputElement extends React.Component {
   focused = false
   mounted = false
-  previousSelection = null
+  previousSelection = { start: 0, end: 0, length: 0 }
+  selectionDeferId = null
 
   constructor(props) {
     super(props);
@@ -129,11 +130,15 @@ class InputElement extends React.Component {
       this.forceUpdate();
     }
 
-    var isSelectionChanged = !previousSelection
-                             ||
-                             previousSelection.start !== newSelection.start
-                             ||
-                             previousSelection.end !== newSelection.end;
+    var isSelectionChanged = false;
+    if (newSelection.start != null && newSelection.end != null) {
+      isSelectionChanged = !previousSelection
+                           ||
+                           previousSelection.start !== newSelection.start
+                           ||
+                           previousSelection.end !== newSelection.end;
+    }
+
     if (isSelectionChanged) {
       this.setSelection(newSelection.start, newSelection.end);
     }
@@ -141,6 +146,9 @@ class InputElement extends React.Component {
 
   componentWillUnmount() {
     this.mounted = false;
+    if (this.selectionDeferId) {
+      cancelDefer(this.selectionDeferId);
+    }
   }
 
   saveSelectionLoop = () => {
@@ -197,14 +205,28 @@ class InputElement extends React.Component {
     }
   }
 
-  setSelection = (start, end) => {
+  setSelection = (start, end, options = {}) => {
     var input = this.getInputDOMNode();
     if (!input) {
       return;
     }
 
-    setInputSelection(input, start, end);
-    defer(() => {
+    var { deferred } = options;
+
+    if (!deferred) {
+      setInputSelection(input, start, end);
+    }
+
+    if (this.selectionDeferId !== null) {
+      cancelDefer(this.selectionDeferId);
+    }
+
+    // deferred selection update is required
+    // for pre-Lollipop Android browser,
+    // but for consistent behavior we
+    // do it for all browsers
+    this.selectionDeferId = defer(() => {
+      this.selectionDeferId = null;
       setInputSelection(input, start, end);
     });
 
@@ -356,18 +378,7 @@ class InputElement extends React.Component {
     }
 
     if (this.isWindowsPhoneBrowser) {
-      defer(() => {
-        if (!this.mounted || !this.isFocused()) {
-          return;
-        }
-
-        var input = this.getInputDOMNode();
-        setInputSelection(input, newSelection.start, newSelection.end);
-        this.previousSelection = {
-          ...newSelection,
-          length: newSelection.end - newSelection.start
-        };
-      });
+      this.setSelection(newSelection.start, newSelection.end, { deferred: true });
     } else {
       this.setSelection(newSelection.start, newSelection.end);
     }
@@ -378,9 +389,10 @@ class InputElement extends React.Component {
     var { mask, prefix } = this.maskOptions;
     this.focused = true;
 
-    if (!this.input) {
-      this.input = event.target;
-    }
+    // if autoFocus is set onFocus
+    // triggers before componentDidMount
+    this.input = event.target;
+    this.mounted = true;
 
     if (mask) {
       if (!this.value) {
