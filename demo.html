@@ -43,24 +43,24 @@ layout: master
 
 <h2>Credit card <small>(autochange to Amex format if starts with 34 or 37)</small></h2>
 
-<pre><code id="card1-code">getInitialState: function() {
-  return {
-    value: "",
-    mask: "9999-9999-9999-9999"
-  };
-},
-onChange: function(event) {
+<pre><code id="card1-code">state = {
+  value: '',
+  mask: '9999-9999-9999-9999'
+}
+
+onChange = (event) => {
   var value = event.target.value;
   var newState = {
-    mask: "9999-9999-9999-9999",
+    mask: '9999-9999-9999-9999',
     value: value
-  }
+  };
   if (/^3[47]/.test(value)) {
     newState.mask = '9999-999999-99999';
   }
   this.setState(newState);
-},
-render: function() {
+}
+
+render() {
   return &lt;InputMask {...this.state} onChange={this.onChange} /&gt;;
 }</code></pre>
 <div id="card1"></div>
