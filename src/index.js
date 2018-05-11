@@ -1,17 +1,14 @@
 import React from 'react';
 
 import { setInputSelection, getInputSelection } from './utils/selection';
-import parseMask from './utils/parseMask';
+import parseMask from './parseMask';
+import processChange from './processChange';
 import { isWindowsPhoneBrowser } from './utils/environment';
 import {
-  clearRange,
   formatValue,
   getFilledLength,
   isFilled,
   isEmpty,
-  getInsertStringLength,
-  insertString,
-  getLeftEditablePosition,
   getRightEditablePosition,
   getStringValue
 } from './utils/string';
@@ -288,14 +285,9 @@ class InputElement extends React.Component {
   onChange = (event) => {
     var { beforePasteState, previousSelection } = this;
     var { beforeMaskedValueChange } = this.props;
-    var { mask, prefix, lastEditablePosition } = this.maskOptions;
-    var newValue = this.getInputValue();
+    var value = this.getInputValue();
     var previousValue = this.value;
-    var enteredString = '';
     var selection = this.getSelection();
-    var cursorPosition = selection.end;
-    var formattedEnteredStringLength = 0;
-    var removedLength;
 
     // autofill replaces entire value, ignore old one
     // https://github.com/sanniassin/react-input-mask/issues/113
@@ -309,56 +301,16 @@ class InputElement extends React.Component {
     if (beforePasteState) {
       previousSelection = beforePasteState.selection;
       previousValue = beforePasteState.value;
-      cursorPosition = previousSelection.start + newValue.length;
-      selection = { start: cursorPosition, end: cursorPosition, length: 0 };
-      newValue = previousValue.slice(0, previousSelection.start) + newValue + previousValue.slice(previousSelection.end);
+      selection = {
+        start: previousSelection.start + value.length,
+        end: previousSelection.start + value.length,
+        length: 0
+      };
+      value = previousValue.slice(0, previousSelection.start) + value + previousValue.slice(previousSelection.end);
       this.beforePasteState = null;
     }
 
-    cursorPosition = Math.min(previousSelection.start, selection.start);
-
-    if (selection.end > previousSelection.start) {
-      enteredString = newValue.slice(previousSelection.start, selection.end);
-      formattedEnteredStringLength = getInsertStringLength(this.maskOptions, previousValue, enteredString, cursorPosition);
-      if (!formattedEnteredStringLength) {
-        removedLength = 0;
-      } else {
-        removedLength = previousSelection.length;
-      }
-    } else if (newValue.length < previousValue.length) {
-      removedLength = previousValue.length - newValue.length;
-    }
-
-    newValue = previousValue;
-
-    if (removedLength) {
-      if (removedLength === 1 && !previousSelection.length) {
-        var deleteFromRight = previousSelection.start === selection.start;
-        cursorPosition = deleteFromRight
-          ? getRightEditablePosition(this.maskOptions, selection.start)
-          : getLeftEditablePosition(this.maskOptions, selection.start);
-      }
-      newValue = clearRange(this.maskOptions, newValue, cursorPosition, removedLength);
-    }
-
-    newValue = insertString(this.maskOptions, newValue, enteredString, cursorPosition);
-
-    cursorPosition = cursorPosition + formattedEnteredStringLength;
-    if (cursorPosition >= mask.length) {
-      cursorPosition = mask.length;
-    } else if (cursorPosition < prefix.length && !formattedEnteredStringLength) {
-      cursorPosition = prefix.length;
-    } else if (cursorPosition >= prefix.length && cursorPosition < lastEditablePosition && formattedEnteredStringLength) {
-      cursorPosition = getRightEditablePosition(this.maskOptions, cursorPosition);
-    }
-
-    newValue = formatValue(this.maskOptions, newValue);
-
-    if (!enteredString) {
-      enteredString = null;
-    }
-
-    var newSelection = { start: cursorPosition, end: cursorPosition };
+    var { enteredString, selection: newSelection, value: newValue } = processChange(this.maskOptions, value, selection, previousValue, previousSelection);
 
     if (isFunction(beforeMaskedValueChange)) {
       var modifiedValue = beforeMaskedValueChange(
