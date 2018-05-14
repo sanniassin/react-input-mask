@@ -6,7 +6,13 @@ Yet another React component for input masking. Made with attention to UX. Compat
 
 #### [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
-## Install
+# Table of Contents
+* [Install](#install)
+* [Properties](#properties)
+* [Examples](#examples)
+* [Known Issues](#known-issues)
+
+# Install
 ```npm install react-input-mask --save```
 
 Also you can use it without a module bundler
@@ -18,7 +24,7 @@ Also you can use it without a module bundler
 <script src="https://unpkg.com/react-input-mask/dist/react-input-mask.min.js"></script>
 ```
 
-## Properties
+# Properties
 ### `mask` : `string`
 
 Mask string. Default format characters are:<br/>
@@ -83,7 +89,7 @@ Please note that `beforeMaskedValueChange` executes more often than `onChange` a
 Customize the rendering of the <input> via a [render prop](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce).
 
 
-## Example
+# Examples
 ```jsx
 import React from 'react';
 import InputMask from 'react-input-mask';
@@ -155,5 +161,14 @@ class Input extends React.Component {
 }
 ```
 
-## Thanks
+# Known Issues
+### Autofill
+Browser's autofill requires either empty value in input or value which exactly matches beginning of the autofilled value. I.e. autofilled value "+1 (555) 123-4567" will work with "+1" or "+1 (5", but won't work with "+1 (\_\_\_) \_\_\_-\_\_\_\_" or "1 (555)". There are several possible solutions:
+1. Set `maskChar` to null and trim space after "+1" with `beforeMaskedValueChange` if no more digits are entered.
+2. Apply mask only if value is not empty. In general, this is the most reliable solution because we can't be sure about formatting in autofilled value.
+3. Use less formatting in the mask.
+
+Please note that it might lead to worse user experience (should I enter =1 if input is empty?). You should choose what's more important to your users — smooth typing experience or autofill. Phone and ZIP code inputs are very likely to be autofilled and it's a good idea to care about it, while security confirmation code in two-factor authorization shouldn't care about autofill at all.
+
+# Thanks
 Thanks to [BrowserStack](https://www.browserstack.com/) for the help with testing on real devices
