@@ -68,15 +68,21 @@ class InputElement extends React.Component {
     this.hasValue = this.props.value != null;
     this.maskOptions = parseMask(this.props.mask, this.props.maskChar, this.props.formatChars);
 
+    var cursorPosition = previousSelection ? previousSelection.start : null;
+
     if (!this.maskOptions.mask) {
-      this.stopSaveSelectionLoop();
-      this.previousSelection = null;
+      if (oldMaskOptions.mask) {
+        this.stopSaveSelectionLoop();
+
+        // render depends on this.maskOptions and this.value,
+        // call forceUpdate to keep it in sync
+        this.forceUpdate();
+      }
       return;
     } else if (!oldMaskOptions.mask && this.isFocused()) {
       this.runSaveSelectionLoop();
     }
 
-    var cursorPosition = previousSelection ? previousSelection.start : null;
     var isMaskChanged = this.maskOptions.mask && this.maskOptions.mask !== oldMaskOptions.mask;
     var showEmpty = this.props.alwaysShowMask || this.isFocused();
     var newValue = this.hasValue
@@ -121,8 +127,12 @@ class InputElement extends React.Component {
 
     this.value = newValue;
 
-    if (this.maskOptions.mask && this.getInputValue() !== this.value) {
+    // render depends on this.maskOptions and this.value,
+    // call forceUpdate to keep it in sync
+    if (this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
+      this.forceUpdate();
+    } else if (isMaskChanged) {
       this.forceUpdate();
     }
 
@@ -163,6 +173,7 @@ class InputElement extends React.Component {
     if (this.saveSelectionLoopDeferId !== null) {
       cancelDefer(this.saveSelectionLoopDeferId);
       this.saveSelectionLoopDeferId = null;
+      this.previousSelection = null;
     }
   }
 
@@ -382,9 +393,9 @@ class InputElement extends React.Component {
       } else if (getFilledLength(this.maskOptions, this.value) < this.maskOptions.mask.length) {
         this.setCursorToEnd();
       }
-    }
 
-    this.runSaveSelectionLoop();
+      this.runSaveSelectionLoop();
+    }
 
     if (isFunction(this.props.onFocus)) {
       this.props.onFocus(event);
@@ -396,7 +407,6 @@ class InputElement extends React.Component {
     var { mask } = this.maskOptions;
 
     this.stopSaveSelectionLoop();
-    this.previousSelection = null;
     this.focused = false;
 
     if (mask && !this.props.alwaysShowMask && isEmpty(this.maskOptions, this.value)) {

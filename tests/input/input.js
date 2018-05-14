@@ -929,4 +929,41 @@ describe('react-input-mask', () => {
 
       expect(inputNode.value).to.equal('1234-5678');
     }));
+
+  it('should handle transition between masked and non-masked state', createInput(
+    <Input />, (input, inputNode) => {
+      setInputProps(input, {
+        value: '',
+        onChange: (event) => {
+          setInputProps(input, {
+            value: event.target.value,
+            mask: event.target.value ? '+7 999 999 99 99' : null
+          });
+        }
+      });
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(0);
+
+      simulateInputKeyPress(input, '1');
+      expect(inputNode.value).to.equal('+7 1__ ___ __ __');
+      expect(input.getCursorPosition()).to.equal(4);
+
+      simulateInputBackspacePress(input);
+      inputNode.blur();
+      TestUtils.Simulate.blur(inputNode);
+
+      expect(inputNode.value).to.equal('');
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(0);
+
+      simulateInputKeyPress(input, '1');
+      expect(inputNode.value).to.equal('+7 1__ ___ __ __');
+      expect(input.getCursorPosition()).to.equal(4);
+    }));
 });
