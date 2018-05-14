@@ -78,6 +78,10 @@ In case you need to implement more complex masking behavior, you can provide `be
 
 Please note that `beforeMaskedValueChange` executes more often than `onChange` and must be pure.
 
+### `render` : `function`
+
+Customize the rendering of the <input> via a [render prop](https://cdb.reacttraining.com/use-a-render-prop-50de598f11ce).
+
 
 ## Example
 ```jsx
@@ -129,6 +133,24 @@ class Input extends React.Component {
 
   render() {
     return <InputMask mask="99999-9999" maskChar={null} value={this.state.value} onChange={this.onChange} beforeMaskedValueChange={this.beforeMaskedValueChange} />;
+  }
+}
+```
+
+Use render prop to customize input element.
+
+```jsx
+import React from 'react';
+import InputMask from 'react-input-mask';
+import styled from 'styled-components';
+
+const StyledInput = styled.input`
+  border-color: red;
+`;
+
+class Input extends React.Component {
+  render() {
+    return <InputMask mask="99999-9999" render={(ref, props) => <StyledInput innerRef={ref} {...props} />} />;
   }
 }
 ```

@@ -488,7 +488,7 @@ class InputElement extends React.Component {
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, ...props } = this.props;
+    var { render, mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, ...props } = this.props;
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
@@ -503,8 +503,16 @@ class InputElement extends React.Component {
       }
     }
 
-    return <input ref={this.handleRef} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
+    return render(this.handleRef, {
+      ...props,
+      onFocus: this.onFocus,
+      onBlur: this.onBlur
+    });
   }
 }
+
+InputElement.defaultProps = {
+  render: (ref, props) => <input ref={ref} {...props} />
+};
 
 export default InputElement;
