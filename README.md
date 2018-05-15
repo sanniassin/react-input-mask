@@ -26,7 +26,6 @@ Also you can use it without a module bundler
 
 # Properties
 ### `mask` : `string`
-
 Mask string. Default format characters are:<br/>
 `9`: `0-9`<br/>
 `a`: `A-Z, a-z`<br/>
@@ -35,11 +34,9 @@ Mask string. Default format characters are:<br/>
 Any character can be escaped with a backslash. It will appear as a double backslash in JS strings. For example, a German phone mask with unremoveable prefix +49 will look like <code>mask="+4\\9 99 999 99"</code> or <code>mask={'+4\\\\9 99 999 99'}</code>
 
 ### `maskChar` : `string`
-
 Character to cover unfilled parts of the mask. Default character is "\_". If set to null or empty string, unfilled parts will be empty as in ordinary input.
 
 ### `formatChars` : `object`
-
 Defines format characters with characters as a keys and corresponding RegExp strings as a values. Default ones:
 ```js
 {
@@ -50,15 +47,15 @@ Defines format characters with characters as a keys and corresponding RegExp str
 ```
 
 ### `alwaysShowMask` : `boolean`
-
 Show mask when input is empty and has no focus.
 
 ### `inputRef` : `function`
-
 Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
 
-### `beforeMaskedValueChange` : `function`
+## Experimental
+The following props are considered experimental because they are more prone to issues and are likely to be changed in future. Use with caution.
 
+### `beforeMaskedValueChange` : `function`
 In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
 1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur.  Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`
 2. **oldState** (object): Input state before change. Contains `value` and `selection` fields. `selection` is null on input focus.
@@ -84,6 +81,27 @@ In case you need to implement more complex masking behavior, you can provide `be
 
 Please note that `beforeMaskedValueChange` executes more often than `onChange` and must be pure.
 
+### `children` : `function`
+To use another component instead of regular `<input />` pass render function as a children. Function receives `props` argument which contains props that aren't used by react-input-mask's internals. I.e. it passes down every prop except the following ones: `onChange`, `onPaste`, `onMouseDown`, `onFocus`, `onBlur`, `value`, `disabled`, `readOnly`. These properties, if used, should always be passed directly to react-input-mask instead of children and shouldn't be altered in chldren's function.
+```jsx
+import React from 'react';
+import InputMask from 'react-input-mask';
+import MaterialInput from '@material-ui/core/Input';
+
+// Will work fine
+const Input = (props) => (
+  <InputMask mask="99/99/9999" value={this.state.value} onChange={props.onChange}>
+    {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline />}
+  </InputMask>
+);
+
+// Will throw an error because InputMask's and children's onChange aren't the same
+const InvalidInput = (props) => (
+  <InputMask mask="99/99/9999" value={this.state.value}>
+    {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline onChange={props.onChange} />}
+  </InputMask>
+);
+```
 
 # Examples
 ```jsx

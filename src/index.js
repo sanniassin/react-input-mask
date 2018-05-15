@@ -1,4 +1,7 @@
 import React from 'react';
+import { findDOMNode } from 'react-dom';
+import invariant from 'invariant';
+import warning from 'warning';
 
 import { setInputSelection, getInputSelection } from './utils/selection';
 import parseMask from './parseMask';
@@ -12,7 +15,7 @@ import {
   getRightEditablePosition,
   getStringValue
 } from './utils/string';
-import { isDOMElement, isFunction } from './utils/helpers';
+import { isFunction } from './utils/helpers';
 import { defer, cancelDefer } from './utils/defer';
 
 class InputElement extends React.Component {
@@ -55,9 +58,10 @@ class InputElement extends React.Component {
       this.setInputValue(this.value);
     }
 
-    if (this.props.maxLength && this.maskOptions.mask && typeof console === 'object' && console.error) {
-      console.error('react-input-mask: You shouldn\'t pass maxLength property to the masked input. It breaks masking and unnecessary because length is limited by the mask length.');
-    }
+    warning(
+      !!(this.props.maxLength && this.maskOptions.mask),
+      'react-input-mask: You shouldn\'t pass maxLength property to the masked input. It breaks masking and unnecessary because length is limited by the mask length.'
+    );
   }
 
   componentDidUpdate() {
@@ -178,17 +182,25 @@ class InputElement extends React.Component {
   }
 
   getInputDOMNode = () => {
-    var input = this.input;
-    if (!input) {
+    if (!this.mounted) {
       return null;
     }
 
-    if (isDOMElement(input)) {
-      return input;
+    if (this.input) {
+      return this.input;
     }
 
-    // React 0.13
-    return React.findDOMNode(input);
+    var input = findDOMNode(this);
+
+    if (input.nodeName !== 'INPUT') {
+      input = input.querySelector('input');
+    }
+
+    if (!input) {
+      throw new Error('react-input-mask: inputComponent doesn\'t contain input node');
+    }
+
+    return input;
   }
 
   getInputValue = () => {
@@ -490,30 +502,67 @@ class InputElement extends React.Component {
   }
 
   handleRef = (ref) => {
-    this.input = ref;
+    this.input = this.getInputDOMNode();
 
-    if (isFunction(this.props.inputRef)) {
+    if (this.props.children == null && isFunction(this.props.inputRef)) {
       this.props.inputRef(ref);
     }
   }
 
   render() {
-    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, ...props } = this.props;
+    var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, children, ...props } = this.props;
+
+    var inputElement;
+    if (children) {
+      invariant(
+        isFunction(children),
+        'react-input-mask: children must be a function'
+      );
+
+      var controlledProps = ['onChange', 'onPaste', 'onMouseDown', 'onFocus', 'onBlur', 'value', 'disabled', 'readOnly'];
+      var childrenProps = { ...props };
+      controlledProps.forEach((propId) => delete childrenProps[propId]);
+
+      children = children(childrenProps);
+
+      var conflictProps = controlledProps
+        .filter((propId) => children.props[propId] != null && children.props[propId] !== props[propId]);
+
+      invariant(
+        !conflictProps.length,
+        `react-input-mask: the following props should be passed to the react-input-mask's component and should not be altered in children's function: ${conflictProps.join(', ')}`
+      );
+
+      warning(
+        !inputRef,
+        'react-input-mask: inputRef is ignored when children is passed, attach ref to the children instead'
+      );
+
+      inputElement = children;
+    } else {
+      inputElement = <input ref={this.handleRef} {...props} />;
+    }
+
+    var changedProps = {
+      onFocus: this.onFocus,
+      onBlur: this.onBlur
+    };
 
     if (this.maskOptions.mask) {
       if (!props.disabled && !props.readOnly) {
-        var handlersKeys = ['onChange', 'onPaste', 'onMouseDown'];
-        handlersKeys.forEach((key) => {
-          props[key] = this[key];
-        });
+        changedProps.onChange = this.onChange;
+        changedProps.onPaste = this.onPaste;
+        changedProps.onMouseDown = this.onMouseDown;
       }
 
       if (props.value != null) {
-        props.value = this.value;
+        changedProps.value = this.value;
       }
     }
 
-    return <input ref={this.handleRef} {...props} onFocus={this.onFocus} onBlur={this.onBlur} />;
+    inputElement = React.cloneElement(inputElement, changedProps);
+
+    return inputElement;
   }
 }
 

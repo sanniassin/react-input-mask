@@ -6,9 +6,26 @@ import TestUtils from 'react-dom/test-utils';
 import { expect } from 'chai';
 import { defer } from '../../src/utils/defer';
 import Input from '../../src';
+import { isDOMElement } from '../../src/utils/helpers';
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById('container');
+
+const getInputDOMNode = (input) => {
+  if (!isDOMElement(input)) {
+    input = ReactDOM.findDOMNode(input);
+  }
+
+  if (input.nodeName !== 'INPUT') {
+    input = input.querySelector('input');
+  }
+
+  if (!input) {
+    throw new Error('inputComponent doesn\'t contain input node');
+  }
+
+  return input;
+};
 
 const createInput = (component, cb) => {
   return () => {
@@ -24,7 +41,7 @@ const createInput = (component, cb) => {
       ReactDOM.render(component, container, () => {
         // IE can fail if executed synchronously
         setImmediate(() => {
-          var inputNode = ReactDOM.findDOMNode(input);
+          var inputNode = getInputDOMNode(input);
           Promise.resolve(cb(input, inputNode))
             .then(() => {
               ReactDOM.unmountComponentAtNode(container);
@@ -59,7 +76,7 @@ const setInputProps = (input, props) => {
 };
 
 const insertStringIntoInput = (input, str) => {
-  var inputNode = ReactDOM.findDOMNode(input);
+  var inputNode = getInputDOMNode(input);
   var selection = input.getSelection();
   var { value } = inputNode;
 
@@ -73,7 +90,7 @@ const insertStringIntoInput = (input, str) => {
 const simulateInputKeyPress = insertStringIntoInput;
 
 const simulateInputPaste = (input, str) => {
-  var inputNode = ReactDOM.findDOMNode(input);
+  var inputNode = getInputDOMNode(input);
 
   TestUtils.Simulate.paste(inputNode);
 
@@ -81,7 +98,7 @@ const simulateInputPaste = (input, str) => {
 };
 
 const simulateInputBackspacePress = (input) => {
-  var inputNode = ReactDOM.findDOMNode(input);
+  var inputNode = getInputDOMNode(input);
   var selection = input.getSelection();
   var { value } = inputNode;
 
@@ -97,7 +114,7 @@ const simulateInputBackspacePress = (input) => {
 };
 
 const simulateInputDeletePress = (input) => {
-  var inputNode = ReactDOM.findDOMNode(input);
+  var inputNode = getInputDOMNode(input);
   var selection = input.getSelection();
   var { value } = inputNode;
 
@@ -111,6 +128,16 @@ const simulateInputDeletePress = (input) => {
   setInputSelection(inputNode, selection.start, 0);
 
   TestUtils.Simulate.change(inputNode);
+};
+
+class TestInputComponent extends React.Component {
+  render() {
+    return <div><input {...this.props} /></div>;
+  }
+}
+
+const TestFunctionalInputComponent = (props) => {
+  return <div><div><input {...props} /></div></div>;
 };
 
 describe('react-input-mask', () => {
@@ -249,7 +276,7 @@ describe('react-input-mask', () => {
     }));
 
   it('should format value in onChange (with maskChar)', createInput(
-    <Input mask="**** **** **** ****" />, (input, inputNode) => {
+    <Input mask="**** **** **** ****" />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
 
@@ -257,44 +284,44 @@ describe('react-input-mask', () => {
       inputNode.value = 'a' + inputNode.value;
       setInputSelection(inputNode, 1, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('a___ ____ ____ ____');
+      expect(inputNode.value).to.equal('a___ ____ ____ ____');
       expect(input.getCursorPosition()).to.equal(1);
 
       setInputSelection(inputNode, 0, 19);
       inputNode.value = 'a';
       setInputSelection(inputNode, 1, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('a___ ____ ____ ____');
+      expect(inputNode.value).to.equal('a___ ____ ____ ____');
       expect(input.getCursorPosition()).to.equal(1);
 
-      inputNode.value = 'aaaaa___ ____ ____ ____';
+      inputNode.value = 'aaaaa___ ____ ____ ____';
       setInputSelection(inputNode, 1, 4);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa a___ ____ ____');
+      expect(inputNode.value).to.equal('aaaa a___ ____ ____');
       expect(input.getCursorPosition()).to.equal(6);
 
       input.setCursorPosition(4);
-      inputNode.value = 'aaa a___ ____ ____';
+      inputNode.value = 'aaa a___ ____ ____';
       setInputSelection(inputNode, 3, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaa_ a___ ____ ____');
+      expect(inputNode.value).to.equal('aaa_ a___ ____ ____');
 
       input.setSelection(3, 6);
-      inputNode.value = 'aaaaaa___ ____ ____';
+      inputNode.value = 'aaaaaa___ ____ ____';
       setInputSelection(inputNode, 6, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa aa__ ____ ____');
+      expect(inputNode.value).to.equal('aaaa aa__ ____ ____');
 
       input.setSelection(3, 6);
-      inputNode.value = 'aaaaxa__ ____ ____';
+      inputNode.value = 'aaaaxa__ ____ ____';
       setInputSelection(inputNode, 5, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa xa__ ____ ____');
+      expect(inputNode.value).to.equal('aaaa xa__ ____ ____');
       expect(input.getCursorPosition()).to.equal(6);
     }));
 
   it('should format value in onChange (without maskChar)', createInput(
-    <Input mask="**** **** **** ****" maskChar={null} />, (input, inputNode) => {
+    <Input mask="**** **** **** ****" maskChar={null} />, (input, inputNode) => {
       inputNode.focus();
       TestUtils.Simulate.focus(inputNode);
       expect(inputNode.value).to.equal('');
@@ -309,19 +336,19 @@ describe('react-input-mask', () => {
       inputNode.value = 'aaaaa';
       setInputSelection(inputNode, 5, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa a');
+      expect(inputNode.value).to.equal('aaaa a');
       expect(input.getCursorPosition()).to.equal(6);
 
       inputNode.value = 'aaaa afgh ijkl mnop';
       setInputSelection(inputNode, 19, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
+      expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
       expect(input.getCursorPosition()).to.equal(19);
 
       inputNode.value = 'aaaa afgh ijkl mnopq';
       setInputSelection(inputNode, 20, 0);
       TestUtils.Simulate.change(inputNode);
-      expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
+      expect(inputNode.value).to.equal('aaaa afgh ijkl mnop');
       expect(input.getCursorPosition()).to.equal(19);
     }));
 
@@ -965,5 +992,68 @@ describe('react-input-mask', () => {
       simulateInputKeyPress(input, '1');
       expect(inputNode.value).to.equal('+7 1__ ___ __ __');
       expect(input.getCursorPosition()).to.equal(4);
+    }));
+
+  it('should handle regular component as children', createInput(
+    <Input mask="+7 (999) 999 99 99">{(props) => <TestInputComponent {...props} />}</Input>, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(4);
+
+      simulateInputKeyPress(input, '1');
+      expect(inputNode.value).to.equal('+7 (1__) ___ __ __');
+      expect(input.getCursorPosition()).to.equal(5);
+    }));
+
+  it('should handle functional component as children', createInput(
+    <Input mask="+7 (999) 999 99 99">{(props) => <TestFunctionalInputComponent {...props} />}</Input>, (input, inputNode) => {
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(4);
+
+      simulateInputKeyPress(input, '1');
+      expect(inputNode.value).to.equal('+7 (1__) ___ __ __');
+      expect(input.getCursorPosition()).to.equal(5);
+    }));
+
+
+  it('should handle children change', createInput(
+    <Input mask="+7 (999) 999 99 99" />, (input, inputNode) => {
+      setInputProps(input, {
+        value: '',
+        onChange: (event) => {
+          setInputProps(input, {
+            value: event.target.value
+          });
+        },
+        children: (props) => <TestInputComponent {...props} />
+      });
+      inputNode = getInputDOMNode(input);
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(4);
+
+      simulateInputKeyPress(input, '1');
+      expect(inputNode.value).to.equal('+7 (1__) ___ __ __');
+      expect(input.getCursorPosition()).to.equal(5);
+
+      setInputProps(input, {
+        children: (props) => <TestFunctionalInputComponent {...props} />,
+        value: '22'
+      });
+      inputNode = getInputDOMNode(input);
+
+      expect(inputNode.value).to.equal('+7 (22_) ___ __ __');
+
+      setInputProps(input, {
+        children: null
+      });
+      inputNode = getInputDOMNode(input);
+
+      expect(inputNode.value).to.equal('+7 (22_) ___ __ __');
     }));
 });

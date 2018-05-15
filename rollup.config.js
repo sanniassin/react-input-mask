@@ -1,14 +1,43 @@
 import babel from 'rollup-plugin-babel';
 import uglify from 'rollup-plugin-uglify';
+import resolve from 'rollup-plugin-node-resolve';
+import commonjs from 'rollup-plugin-commonjs';
+import replace from 'rollup-plugin-replace';
 import protoToAssign from './rollup.proto-to-assign.plugin';
 import { sizeSnapshot } from 'rollup-plugin-size-snapshot';
-import pkg from './package.json';
 
 const input = './src/index.js';
 
 // Treat as externals all not relative and not absolute paths
 // e.g. 'react' to prevent duplications in user bundle.
 const isExternal = id => !id.startsWith('\0') && !id.startsWith('.') && !id.startsWith('/');
+
+const external = ['react', 'react-dom'];
+const plugins = [
+  babel(),
+  resolve({
+    jsnext: true
+  }),
+  commonjs(),
+  protoToAssign()
+];
+const minifiedPlugins = [
+  ...plugins,
+  replace({
+    'process.env.NODE_ENV': '"production"'
+  }),
+  babel({
+    babelrc: false,
+    plugins: [
+      'babel-plugin-minify-dead-code-elimination'
+    ]
+  }),
+  uglify({
+    compress: { warnings: false, ie8: true },
+    mangle: { ie8: true },
+    output: { ie8: true }
+  })
+];
 
 export default [
   {
@@ -19,8 +48,8 @@ export default [
       name: 'ReactInputMask',
       globals: { react: 'React' }
     },
-    external: ['react'],
-    plugins: [babel(), protoToAssign(), sizeSnapshot()]
+    external,
+    plugins: [...plugins, sizeSnapshot()]
   },
 
   {
@@ -31,22 +60,21 @@ export default [
       name: 'ReactInputMask',
       globals: { react: 'React' }
     },
-    external: ['react'],
-    plugins: [
-      babel(),
-      protoToAssign(),
-      uglify({
-        compress: { warnings: false, ie8: true },
-        mangle: { ie8: true },
-        output: { ie8: true }
-      })
-    ]
+    external,
+    plugins: minifiedPlugins
   },
 
   {
     input,
-    output: { file: pkg.main, format: 'cjs' },
+    output: { file: 'lib/react-input-mask.development.js', format: 'cjs' },
     external: isExternal,
-    plugins: [babel(), protoToAssign(), sizeSnapshot()]
+    plugins: [...plugins, sizeSnapshot()]
+  },
+
+  {
+    input,
+    output: { file: 'lib/react-input-mask.production.min.js', format: 'cjs' },
+    external,
+    plugins: minifiedPlugins
   }
 ];

@@ -4,12 +4,11 @@ import path from 'path';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { expect } from 'chai';
-import pjson from '../../package.json';
 
 var rootDir = path.resolve(__dirname, '../..');
 
 describe('CommonJS build', () => {
-  var libPath = path.resolve(rootDir, pjson.main);
+  var libPath = path.resolve(rootDir, 'lib/react-input-mask.production.min.js');
   var InputElement = require(libPath);
 
   it('should return a string', () => {
@@ -19,7 +18,7 @@ describe('CommonJS build', () => {
 });
 
 describe('UMD build', () => {
-  var libPath = path.resolve(rootDir, 'dist/react-input-mask.js');
+  var libPath = path.resolve(rootDir, 'dist/react-input-mask.min.js');
   var InputElement = require(libPath);
 
   it('should return a string', () => {
