@@ -82,6 +82,8 @@ In case you need to implement more complex masking behavior, you can provide `be
 Please note that `beforeMaskedValueChange` executes more often than `onChange` and must be pure.
 
 ### `children` : `function`
+**NOTE: To make this feature more reliable, please tell about your use case in [this issue](https://github.com/sanniassin/react-input-mask/issues/139)**
+
 To use another component instead of regular `<input />` pass render function as a children. Function receives `props` argument which contains props that aren't used by react-input-mask's internals. I.e. it passes down every prop except the following ones: `onChange`, `onPaste`, `onMouseDown`, `onFocus`, `onBlur`, `value`, `disabled`, `readOnly`. These properties, if used, should always be passed directly to react-input-mask instead of children and shouldn't be altered in chldren's function.
 ```jsx
 import React from 'react';
