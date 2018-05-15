@@ -52,8 +52,8 @@ Show mask when input is empty and has no focus.
 ### `inputRef` : `function`
 Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
 
-## Experimental
-The following props are considered experimental because they are more prone to issues and are likely to be changed in future. Use with caution.
+## Experimental :fire:
+The following props are considered experimental because they are more prone to issues and are likely to be changed in the future. Use with caution.
 
 ### `beforeMaskedValueChange` : `function`
 In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
