@@ -57,11 +57,6 @@ class InputElement extends React.Component {
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
       this.setInputValue(this.value);
     }
-
-    warning(
-      !!(this.props.maxLength && this.maskOptions.mask),
-      'react-input-mask: You shouldn\'t pass maxLength property to the masked input. It breaks masking and unnecessary because length is limited by the mask length.'
-    );
   }
 
   componentDidUpdate() {
@@ -511,6 +506,13 @@ class InputElement extends React.Component {
 
   render() {
     var { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, children, ...props } = this.props;
+
+    warning(
+      // parse mask to test against actual mask prop as this.maskOptions
+      // will be updated later in componentDidUpdate
+      !props.maxLength || !parseMask(mask, maskChar, formatChars).mask,
+      'react-input-mask: maxLength property shouldn\'t be passed to the masked input. It breaks masking and unnecessary because length is limited by the mask length.'
+    );
 
     var inputElement;
     if (children) {
