@@ -34,7 +34,7 @@ module.exports = {
     'react/jsx-filename-extension': OFF,
     'react/no-array-index-key': OFF,
     'react/no-string-refs': WARN,
-    'react/no-find-dom-node': WARN,
+    'react/no-find-dom-node': OFF,
     'react/jsx-no-target-blank': WARN,
     'react/jsx-no-undef': [ERROR, { allowGlobals: false }],
     'react/no-unescaped-entities': OFF,
@@ -71,6 +71,7 @@ module.exports = {
     'no-throw-literal': OFF,
     'object-curly-newline': OFF,
     'function-paren-newline': OFF,
-    'prefer-destructuring': OFF
+    'prefer-destructuring': OFF,
+    'no-empty': [ERROR, { allowEmptyCatch: true }]
   }
 };

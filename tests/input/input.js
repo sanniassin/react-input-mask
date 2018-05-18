@@ -3,7 +3,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import TestUtils from 'react-dom/test-utils';
-import { expect } from 'chai';
+import { expect } from 'chai'; // eslint-disable-line import/no-extraneous-dependencies
 import { defer } from '../../src/utils/defer';
 import Input from '../../src';
 import { isDOMElement } from '../../src/utils/helpers';

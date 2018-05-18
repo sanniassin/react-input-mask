@@ -1,3 +1,5 @@
+/* eslint no-use-before-define: ["error", { functions: false }] */
+
 export function isPermanentChar(maskOptions, pos) {
   return maskOptions.permanents.indexOf(pos) !== -1;
 }
