@@ -510,11 +510,8 @@ class InputElement extends React.Component {
   }
 
   render() {
-    const { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, ...restProps } = this.props;
-    let { children } = restProps;
+    const { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, children, ...restProps } = this.props;
     let inputElement;
-
-    delete restProps.children;
 
     warning(
       // parse mask to test against actual mask prop as this.maskOptions
@@ -533,10 +530,10 @@ class InputElement extends React.Component {
       const childrenProps = { ...restProps };
       controlledProps.forEach((propId) => delete childrenProps[propId]);
 
-      children = children(childrenProps);
+      inputElement = children(childrenProps);
 
       const conflictProps = controlledProps
-        .filter((propId) => children.props[propId] != null && children.props[propId] !== restProps[propId]);
+        .filter((propId) => inputElement.props[propId] != null && inputElement.props[propId] !== restProps[propId]);
 
       invariant(
         !conflictProps.length,
@@ -547,8 +544,6 @@ class InputElement extends React.Component {
         !inputRef,
         'react-input-mask: inputRef is ignored when children is passed, attach ref to the children instead'
       );
-
-      inputElement = children;
     } else {
       inputElement = <input ref={this.handleRef} {...restProps} />;
     }
