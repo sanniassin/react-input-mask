@@ -29,7 +29,7 @@ const getInputDOMNode = (input) => {
 
 const createInput = (component, cb) => {
   return () => {
-    var input;
+    let input;
 
     ReactDOM.unmountComponentAtNode(container);
 
@@ -41,7 +41,7 @@ const createInput = (component, cb) => {
       ReactDOM.render(component, container, () => {
         // IE can fail if executed synchronously
         setImmediate(() => {
-          var inputNode = getInputDOMNode(input);
+          const inputNode = getInputDOMNode(input);
           Promise.resolve(cb(input, inputNode))
             .then(() => {
               ReactDOM.unmountComponentAtNode(container);
@@ -58,12 +58,12 @@ const createInput = (component, cb) => {
 };
 
 const setInputSelection = (input, start, length) => {
-  var end = start + length;
+  const end = start + length;
   if ('selectionStart' in input && 'selectionEnd' in input) {
     input.selectionStart = start;
     input.selectionEnd = end;
   } else {
-    var range = input.createTextRange();
+    const range = input.createTextRange();
     range.collapse(true);
     range.moveStart('character', start);
     range.moveEnd('character', end - start);
@@ -76,9 +76,9 @@ const setInputProps = (input, props) => {
 };
 
 const insertStringIntoInput = (input, str) => {
-  var inputNode = getInputDOMNode(input);
-  var selection = input.getSelection();
-  var { value } = inputNode;
+  const inputNode = getInputDOMNode(input);
+  const selection = input.getSelection();
+  const { value } = inputNode;
 
   inputNode.value = value.slice(0, selection.start) + str + value.slice(selection.end);
 
@@ -90,7 +90,7 @@ const insertStringIntoInput = (input, str) => {
 const simulateInputKeyPress = insertStringIntoInput;
 
 const simulateInputPaste = (input, str) => {
-  var inputNode = getInputDOMNode(input);
+  const inputNode = getInputDOMNode(input);
 
   TestUtils.Simulate.paste(inputNode);
 
@@ -98,9 +98,9 @@ const simulateInputPaste = (input, str) => {
 };
 
 const simulateInputBackspacePress = (input) => {
-  var inputNode = getInputDOMNode(input);
-  var selection = input.getSelection();
-  var { value } = inputNode;
+  const inputNode = getInputDOMNode(input);
+  const selection = input.getSelection();
+  const { value } = inputNode;
 
   if (selection.length) {
     inputNode.value = value.slice(0, selection.start) + value.slice(selection.end);
@@ -114,9 +114,9 @@ const simulateInputBackspacePress = (input) => {
 };
 
 const simulateInputDeletePress = (input) => {
-  var inputNode = getInputDOMNode(input);
-  var selection = input.getSelection();
-  var { value } = inputNode;
+  const inputNode = getInputDOMNode(input);
+  const selection = input.getSelection();
+  let { value } = inputNode;
 
   if (selection.length) {
     value = value.slice(0, selection.start) + value.slice(selection.end);
@@ -875,7 +875,7 @@ describe('react-input-mask', () => {
     }));
 
   it('should pass input DOM node to inputRef function', () => {
-    var inputRef;
+    let inputRef;
     return createInput(
       <Input inputRef={ref => inputRef = ref} />, (input, inputNode) => {
         expect(inputRef).to.equal(inputNode);
@@ -891,9 +891,9 @@ describe('react-input-mask', () => {
           });
         },
         beforeMaskedValueChange: (newState, oldState, userInput) => {
-          var { value } = newState;
-          var selection = newState.selection;
-          var cursorPosition = selection ? selection.start : null;
+          let { value } = newState;
+          let selection = newState.selection;
+          let cursorPosition = selection ? selection.start : null;
           if (value.endsWith('-') && userInput !== '-' && !input.props.value.endsWith('-')) {
             if (cursorPosition === value.length) {
               cursorPosition--;

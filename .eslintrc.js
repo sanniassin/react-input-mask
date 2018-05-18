@@ -18,7 +18,7 @@ module.exports = {
   'rules': {
     'indent': [ERROR, 2, { SwitchCase: 1 }],
     'spaced-comment': OFF,
-    'no-var': OFF,
+    'no-var': ERROR,
     'vars-on-top': OFF,
     'no-alert': OFF,
     'func-names': OFF,
@@ -67,7 +67,7 @@ module.exports = {
     'no-nested-ternary': OFF,
     'global-require': OFF,
     'prefer-spread': OFF,
-    'prefer-const': OFF,
+    'prefer-const': ERROR,
     'no-throw-literal': OFF,
     'object-curly-newline': OFF,
     'function-paren-newline': OFF,

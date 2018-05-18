@@ -17,9 +17,9 @@ function getCancelAnimationFrame() {
 }
 
 export function defer(fn) {
-  var deferFn;
+  const hasCancelAnimationFrame = !!getCancelAnimationFrame();
+  let deferFn;
 
-  var hasCancelAnimationFrame = !!getCancelAnimationFrame();
   if (hasCancelAnimationFrame) {
     deferFn = getRequestAnimationFrame();
   } else {
@@ -30,9 +30,9 @@ export function defer(fn) {
 }
 
 export function cancelDefer(deferId) {
-  var cancelFn = getCancelAnimationFrame()
-                 ||
-                 clearTimeout;
+  const cancelFn = getCancelAnimationFrame()
+                   ||
+                   clearTimeout;
 
   cancelFn(deferId);
 }

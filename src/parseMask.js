@@ -1,9 +1,15 @@
 import { defaultFormatChars, defaultMaskChar } from './constants/index';
 
 export default function(mask, maskChar, formatChars) {
+  let parsedMaskString = '';
+  let prefix = '';
+  let lastEditablePosition = null;
+  const permanents = [];
+
   if (maskChar === undefined) {
     maskChar = defaultMaskChar;
   }
+
   if (formatChars == null) {
     formatChars = defaultFormatChars;
   }
@@ -18,12 +24,8 @@ export default function(mask, maskChar, formatChars) {
       permanents: []
     };
   }
-  var str = '';
-  var prefix = '';
-  var permanents = [];
-  var isPermanent = false;
-  var lastEditablePosition = null;
 
+  let isPermanent = false;
   mask
     .split('')
     .forEach((character) => {
@@ -31,14 +33,14 @@ export default function(mask, maskChar, formatChars) {
         isPermanent = true;
       } else {
         if (isPermanent || !formatChars[character]) {
-          permanents.push(str.length);
-          if (str.length === permanents.length - 1) {
+          permanents.push(parsedMaskString.length);
+          if (parsedMaskString.length === permanents.length - 1) {
             prefix += character;
           }
         } else {
-          lastEditablePosition = str.length + 1;
+          lastEditablePosition = parsedMaskString.length + 1;
         }
-        str += character;
+        parsedMaskString += character;
         isPermanent = false;
       }
     });
@@ -47,7 +49,7 @@ export default function(mask, maskChar, formatChars) {
     maskChar,
     formatChars,
     prefix,
-    mask: str,
+    mask: parsedMaskString,
     lastEditablePosition,
     permanents
   };

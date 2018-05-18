@@ -7,7 +7,7 @@ import InputElement from '../../index';
 
 describe('Test prerender', () => {
   it('should return a string', () => {
-    var result = ReactDOMServer.renderToString(<InputElement value="some" mask="799" />);
+    const result = ReactDOMServer.renderToString(<InputElement value="some" mask="799" />);
     expect(typeof result).to.equal('string');
   });
 });

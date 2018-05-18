@@ -3,7 +3,7 @@ export function isPermanentChar(maskOptions, pos) {
 }
 
 export function isAllowedChar(maskOptions, pos, character) {
-  var { mask, formatChars } = maskOptions;
+  const { mask, formatChars } = maskOptions;
 
   if (!character) {
     return false;
@@ -13,8 +13,8 @@ export function isAllowedChar(maskOptions, pos, character) {
     return mask[pos] === character;
   }
 
-  var ruleChar = mask[pos];
-  var charRule = formatChars[ruleChar];
+  const ruleChar = mask[pos];
+  const charRule = formatChars[ruleChar];
 
   return (new RegExp(charRule)).test(character);
 }
@@ -30,7 +30,7 @@ export function isEmpty(maskOptions, value) {
 }
 
 export function getFilledLength(maskOptions, value) {
-  var { maskChar, prefix } = maskOptions;
+  const { maskChar, prefix } = maskOptions;
 
   if (!maskChar) {
     while (value.length > prefix.length && isPermanentChar(maskOptions, value.length - 1)) {
@@ -39,12 +39,12 @@ export function getFilledLength(maskOptions, value) {
     return value.length;
   }
 
-  var filledLength = prefix.length;
-  for (var i = value.length; i >= prefix.length; i--) {
-    var character = value[i];
-    var isEnteredCharacter = !isPermanentChar(maskOptions, i)
-                             &&
-                             isAllowedChar(maskOptions, i, character);
+  let filledLength = prefix.length;
+  for (let i = value.length; i >= prefix.length; i--) {
+    const character = value[i];
+    const isEnteredCharacter = !isPermanentChar(maskOptions, i)
+                               &&
+                               isAllowedChar(maskOptions, i, character);
     if (isEnteredCharacter) {
       filledLength = i + 1;
       break;
@@ -59,7 +59,7 @@ export function isFilled(maskOptions, value) {
 }
 
 export function formatValue(maskOptions, value) {
-  var { maskChar, mask, prefix } = maskOptions;
+  const { maskChar, mask, prefix } = maskOptions;
 
   if (!maskChar) {
     value = insertString(maskOptions, '', value, 0);
@@ -76,11 +76,11 @@ export function formatValue(maskOptions, value) {
   }
 
   if (value) {
-    var emptyValue = formatValue(maskOptions, '');
+    const emptyValue = formatValue(maskOptions, '');
     return insertString(maskOptions, emptyValue, value, 0);
   }
 
-  for (var i = 0; i < mask.length; i++) {
+  for (let i = 0; i < mask.length; i++) {
     if (isPermanentChar(maskOptions, i)) {
       value += mask[i];
     } else {
@@ -92,13 +92,13 @@ export function formatValue(maskOptions, value) {
 }
 
 export function clearRange(maskOptions, value, start, len) {
-  var end = start + len;
-  var { maskChar, mask, prefix } = maskOptions;
-  var arrayValue = value.split('');
+  const end = start + len;
+  const { maskChar, mask, prefix } = maskOptions;
+  const arrayValue = value.split('');
 
   if (!maskChar) {
     // remove any permanent chars after clear range, they will be added back by formatValue
-    for (var i = end; i < arrayValue.length; i++) {
+    for (let i = end; i < arrayValue.length; i++) {
       if (isPermanentChar(maskOptions, i)) {
         arrayValue[i] = '';
       }
@@ -125,16 +125,16 @@ export function clearRange(maskOptions, value, start, len) {
 }
 
 export function insertString(maskOptions, value, insertStr, insertPosition) {
-  var { mask, maskChar, prefix } = maskOptions;
-  var arrayInsertStr = insertStr.split('');
-  var isInputFilled = isFilled(maskOptions, value);
+  const { mask, maskChar, prefix } = maskOptions;
+  const arrayInsertStr = insertStr.split('');
+  const isInputFilled = isFilled(maskOptions, value);
 
-  var isUsablePosition = (pos, character) => {
+  const isUsablePosition = (pos, character) => {
     return !isPermanentChar(maskOptions, pos)
            ||
            character === mask[pos];
   };
-  var isUsableCharacter = (character, pos) => {
+  const isUsableCharacter = (character, pos) => {
     return !maskChar
            ||
            !isPermanentChar(maskOptions, pos)
@@ -164,7 +164,7 @@ export function insertString(maskOptions, value, insertStr, insertPosition) {
       }
     }
 
-    var isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
+    const isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
                     ||
                     insertCharacter === maskChar;
     if (!isAllowed) {
@@ -192,11 +192,11 @@ export function insertString(maskOptions, value, insertStr, insertPosition) {
 }
 
 export function getInsertStringLength(maskOptions, value, insertStr, insertPosition) {
-  var { mask, maskChar } = maskOptions;
-  var arrayInsertStr = insertStr.split('');
-  var initialInsertPosition = insertPosition;
+  const { mask, maskChar } = maskOptions;
+  const arrayInsertStr = insertStr.split('');
+  const initialInsertPosition = insertPosition;
 
-  var isUsablePosition = (pos, character) => {
+  const isUsablePosition = (pos, character) => {
     return !isPermanentChar(maskOptions, pos)
            ||
            character === mask[pos];
@@ -212,9 +212,9 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPosit
       }
     }
 
-    var isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
-                    ||
-                    insertCharacter === maskChar;
+    const isAllowed = isAllowedChar(maskOptions, insertPosition, insertCharacter)
+                      ||
+                      insertCharacter === maskChar;
 
     if (isAllowed) {
       insertPosition++;
@@ -228,7 +228,7 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPosit
 }
 
 export function getLeftEditablePosition(maskOptions, pos) {
-  for (var i = pos; i >= 0; --i) {
+  for (let i = pos; i >= 0; --i) {
     if (!isPermanentChar(maskOptions, i)) {
       return i;
     }
@@ -237,8 +237,8 @@ export function getLeftEditablePosition(maskOptions, pos) {
 }
 
 export function getRightEditablePosition(maskOptions, pos) {
-  var { mask } = maskOptions;
-  for (var i = pos; i < mask.length; ++i) {
+  const { mask } = maskOptions;
+  for (let i = pos; i < mask.length; ++i) {
     if (!isPermanentChar(maskOptions, i)) {
       return i;
     }

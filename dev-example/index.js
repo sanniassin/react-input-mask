@@ -29,8 +29,8 @@ function escapeHtml(unsafe) {
     .replace(/'/g, '&#039;');
 }
 
-var consoleDiv = document.getElementById('console');
-var log = console.log;
+const consoleDiv = document.getElementById('console');
+const log = console.log;
 console.log = (text, ...rest) => {
   log.apply(console, [text, ...rest]);
   consoleDiv.innerHTML = `${escapeHtml(text)}<br/>${consoleDiv.innerHTML}`;

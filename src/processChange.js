@@ -8,12 +8,12 @@ import {
 } from './utils/string';
 
 export default function processChange(maskOptions, value, selection, previousValue, previousSelection) {
-  var { mask, prefix, lastEditablePosition } = maskOptions;
-  var newValue = value;
-  var enteredString = '';
-  var formattedEnteredStringLength = 0;
-  var removedLength = 0;
-  var cursorPosition = Math.min(previousSelection.start, selection.start);
+  const { mask, prefix, lastEditablePosition } = maskOptions;
+  let newValue = value;
+  let enteredString = '';
+  let formattedEnteredStringLength = 0;
+  let removedLength = 0;
+  let cursorPosition = Math.min(previousSelection.start, selection.start);
 
   if (selection.end > previousSelection.start) {
     enteredString = newValue.slice(previousSelection.start, selection.end);
@@ -31,7 +31,7 @@ export default function processChange(maskOptions, value, selection, previousVal
 
   if (removedLength) {
     if (removedLength === 1 && !previousSelection.length) {
-      var deleteFromRight = previousSelection.start === selection.start;
+      const deleteFromRight = previousSelection.start === selection.start;
       cursorPosition = deleteFromRight
         ? getRightEditablePosition(maskOptions, selection.start)
         : getLeftEditablePosition(maskOptions, selection.start);
