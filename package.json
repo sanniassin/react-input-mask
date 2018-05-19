@@ -67,8 +67,8 @@
   "scripts": {
     "clean": "rimraf lib dist",
     "build": "cross-env BABEL_ENV=rollup rollup -c",
-    "dev": "cross-env BABEL_ENV=dev NODE_ENV=development webpack-dev-server",
-    "dev-ie8": "cross-env BABEL_ENV=dev NODE_ENV=development webpack-dev-server --inline=false",
+    "dev": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server",
+    "dev-ie8": "cross-env BABEL_ENV=test NODE_ENV=development webpack-dev-server --inline=false",
     "prepare": "npm test && npm run clean && npm run build",
     "test": "npm run build && npm run test:input && npm run test:server-render && npm run test:build",
     "test:input": "cross-env BABEL_ENV=test karma start",
