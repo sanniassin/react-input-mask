@@ -57,8 +57,8 @@ The following props are considered experimental because they are more prone to i
 
 ### `beforeMaskedValueChange` : `function`
 In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
-1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur.  Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`
-2. **oldState** (object): Input state before change. Contains `value` and `selection` fields. `selection` is null on input focus.
+1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur or when function is called before input mount. Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`
+2. **oldState** (object): Input state before change. Contains `value` and `selection` fields. `selection` is null on input focus or when function is called before input mount.
 3. **userInput** (string): Raw entered or pasted string. `null` if user didn't enter anything (e.g. triggered by deletion or rerender due to props change).
 4. **maskOptions** (object): Mask options. Example:
 ```js

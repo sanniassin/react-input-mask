@@ -28,7 +28,7 @@ class InputElement extends React.Component {
   constructor(props) {
     super(props);
 
-    const { mask, maskChar, formatChars, alwaysShowMask } = props;
+    const { mask, maskChar, formatChars, alwaysShowMask, beforeMaskedValueChange } = props;
     let { defaultValue, value } = props;
 
     this.maskOptions = parseMask(mask, maskChar, formatChars);
@@ -40,13 +40,30 @@ class InputElement extends React.Component {
       value = defaultValue;
     }
 
-    value = getStringValue(value);
+    let newValue = getStringValue(value);
 
-    if (this.maskOptions.mask && (alwaysShowMask || value)) {
-      value = formatValue(this.maskOptions, value);
+    if (this.maskOptions.mask && (alwaysShowMask || newValue)) {
+      newValue = formatValue(this.maskOptions, newValue);
+
+      if (isFunction(beforeMaskedValueChange)) {
+        let oldValue = props.value;
+        if (props.value == null) {
+          oldValue = defaultValue;
+        }
+        oldValue = getStringValue(oldValue);
+
+        const modifiedValue = beforeMaskedValueChange(
+          { value: newValue, selection: null },
+          { value: oldValue, selection: null },
+          null,
+          this.getModifyMaskedValueConfig()
+        );
+
+        newValue = modifiedValue.value;
+      }
     }
 
-    this.value = value;
+    this.value = newValue;
   }
 
   componentDidMount() {

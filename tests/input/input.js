@@ -882,44 +882,52 @@ describe('react-input-mask', () => {
       })();
   });
 
-  it('should allow to modify value with beforeMaskedValueChange', createInput(
-    <Input mask="99999-9999" maskChar={null} value="" />, (input, inputNode) => {
-      setInputProps(input, {
-        onChange: (event) => {
-          setInputProps(input, {
-            value: event.target.value
-          });
-        },
-        beforeMaskedValueChange: (newState, oldState, userInput) => {
-          let { value } = newState;
-          let selection = newState.selection;
-          let cursorPosition = selection ? selection.start : null;
-          if (value.endsWith('-') && userInput !== '-' && !input.props.value.endsWith('-')) {
-            if (cursorPosition === value.length) {
-              cursorPosition--;
-              selection = { start: cursorPosition, end: cursorPosition };
-            }
-            value = value.slice(0, -1);
-          }
-
-          return {
-            value,
-            selection
-          };
+  it('should allow to modify value with beforeMaskedValueChange', (() => {
+    const beforeMaskedValueChange = (newState, oldState, userInput, options, inputInstance) => {
+      let { value } = newState;
+      let selection = newState.selection;
+      let cursorPosition = selection ? selection.start : null;
+      if (value.endsWith('-') && userInput !== '-' && (!inputInstance || !inputInstance.props.value.endsWith('-'))) {
+        if (cursorPosition === value.length) {
+          cursorPosition--;
+          selection = { start: cursorPosition, end: cursorPosition };
         }
+        value = value.slice(0, -1);
+      }
+
+      return {
+        value,
+        selection
+      };
+    };
+
+    return createInput(
+      <Input mask="99999-9999" maskChar={null} value="12345" beforeMaskedValueChange={beforeMaskedValueChange} />, (input, inputNode) => {
+        expect(inputNode.value).to.equal('12345');
+
+        setInputProps(input, {
+          onChange: (event) => {
+            setInputProps(input, {
+              value: event.target.value
+            });
+          },
+          beforeMaskedValueChange: (newState, oldState, userInput, options) => {
+            return beforeMaskedValueChange(newState, oldState, userInput, options, input);
+          }
+        });
+
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
+        setInputProps(input, { value: '12345' });
+        expect(inputNode.value).to.equal('12345');
+
+        input.setCursorPosition(5);
+
+        simulateInputKeyPress(input, '-');
+        expect(inputNode.value).to.equal('12345-');
       });
-
-      inputNode.focus();
-      TestUtils.Simulate.focus(inputNode);
-
-      setInputProps(input, { value: '12345' });
-      expect(inputNode.value).to.equal('12345');
-
-      input.setCursorPosition(5);
-
-      simulateInputKeyPress(input, '-');
-      expect(inputNode.value).to.equal('12345-');
-    }));
+  })());
 
   it('shouldn\'t modify value on entering non-allowed character', createInput(
     <Input mask="9999" defaultValue="1234" />, (input, inputNode) => {
