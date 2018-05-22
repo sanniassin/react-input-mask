@@ -46,10 +46,16 @@ export default [
       file: 'dist/react-input-mask.js',
       format: 'umd',
       name: 'ReactInputMask',
-      globals: { react: 'React' }
+      globals: { 'react': 'React', 'react-dom': 'ReactDOM' }
     },
     external,
-    plugins: [...plugins, sizeSnapshot()]
+    plugins: [
+      ...plugins,
+      replace({
+        'process.env.NODE_ENV': '"development"'
+      }),
+      sizeSnapshot()
+    ]
   },
 
   {
@@ -58,7 +64,7 @@ export default [
       file: 'dist/react-input-mask.min.js',
       format: 'umd',
       name: 'ReactInputMask',
-      globals: { react: 'React' }
+      globals: { 'react': 'React', 'react-dom': 'ReactDOM' }
     },
     external,
     plugins: minifiedPlugins
