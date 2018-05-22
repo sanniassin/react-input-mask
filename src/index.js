@@ -56,7 +56,7 @@ class InputElement extends React.Component {
           { value: newValue, selection: null },
           { value: oldValue, selection: null },
           null,
-          this.getModifyMaskedValueConfig()
+          this.getBeforeMaskedValueChangeConfig()
         );
 
         newValue = modifiedValue.value;
@@ -136,7 +136,7 @@ class InputElement extends React.Component {
         { value: newValue, selection: newSelection },
         { value: this.value, selection: this.previousSelection },
         null,
-        this.getModifyMaskedValueConfig()
+        this.getBeforeMaskedValueChangeConfig()
       );
       newValue = modifiedValue.value;
       newSelection = modifiedValue.selection;
@@ -291,7 +291,7 @@ class InputElement extends React.Component {
     return this.focused;
   }
 
-  getModifyMaskedValueConfig = () => {
+  getBeforeMaskedValueChangeConfig = () => {
     const { mask, maskChar, permanents, formatChars } = this.maskOptions;
     const { alwaysShowMask } = this.props;
 
@@ -357,7 +357,7 @@ class InputElement extends React.Component {
         { value: newValue, selection: newSelection },
         { value: previousValue, selection: previousSelection },
         enteredString,
-        this.getModifyMaskedValueConfig()
+        this.getBeforeMaskedValueChangeConfig()
       );
       newValue = modifiedValue.value;
       newSelection = modifiedValue.selection;
@@ -398,7 +398,7 @@ class InputElement extends React.Component {
             { value: newValue, selection: newSelection },
             { value: this.value, selection: null },
             null,
-            this.getModifyMaskedValueConfig()
+            this.getBeforeMaskedValueChangeConfig()
           );
           newValue = modifiedValue.value;
           newSelection = modifiedValue.selection;
@@ -446,7 +446,7 @@ class InputElement extends React.Component {
           { value: newValue, selection: null },
           { value: this.value, selection: this.previousSelection },
           null,
-          this.getModifyMaskedValueConfig()
+          this.getBeforeMaskedValueChangeConfig()
         );
         newValue = modifiedValue.value;
       }
