@@ -1064,4 +1064,12 @@ describe('react-input-mask', () => {
 
       expect(inputNode.value).to.equal('+7 (22_) ___ __ __');
     }));
+
+
+  it('should handle change event without focus', createInput(
+    <Input mask="+7 (999) 999 99 99" maskChar={null} />, (input, inputNode) => {
+      inputNode.value = '+71234567890';
+      TestUtils.Simulate.change(inputNode);
+      expect(inputNode.value).to.equal('+7 (123) 456 78 90');
+    }));
 });

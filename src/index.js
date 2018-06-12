@@ -304,18 +304,30 @@ class InputElement extends React.Component {
     };
   }
 
-  isInputAutofilled = () => {
+  isInputAutofilled = (value, selection, previousValue, previousSelection) => {
     const input = this.getInputDOMNode();
-    let isAutofilled = false;
 
+    // only check for positive match because it will be false negative
+    // in case of autofill simulation in tests
+    //
     // input.matches throws an exception if selector isn't supported
     try {
-      if (isFunction(input.matches) && input.matches(':-webkit-autofill')) {
-        isAutofilled = true;
+      if (input.matches(':-webkit-autofill')) {
+        return true;
       }
     } catch (e) {}
 
-    return isAutofilled;
+    // if input isn't focused then change event must have been triggered
+    // either by autofill or event simulation in tests
+    if (!this.focused) {
+      return true;
+    }
+
+    // if cursor has moved to the end while previousSelection forbids it
+    // then it must be autofill
+    return previousSelection.end < previousValue.length
+           &&
+           selection.end === value.length;
   }
 
   onChange = (event) => {
@@ -328,7 +340,7 @@ class InputElement extends React.Component {
 
     // autofill replaces entire value, ignore old one
     // https://github.com/sanniassin/react-input-mask/issues/113
-    if (this.isInputAutofilled()) {
+    if (this.isInputAutofilled(value, selection, previousValue, previousSelection)) {
       previousValue = formatValue(this.maskOptions, '');
       previousSelection = { start: 0, end: 0, length: 0 };
     }
