@@ -555,7 +555,7 @@ class InputElement extends React.Component {
         'react-input-mask: children must be a function'
       );
 
-      const controlledProps = ['onChange', 'onPaste', 'onMouseDown', 'onFocus', 'onBlur', 'value', 'disabled', 'readOnly'];
+      const controlledProps = ['onChange', 'onPaste', 'onMouseDown', 'onFocus', 'onBlur', 'disabled', 'readOnly'];
       const childrenProps = { ...restProps };
       controlledProps.forEach((propId) => delete childrenProps[propId]);
 
