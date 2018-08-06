@@ -199,10 +199,6 @@ class InputElement extends React.Component {
       return null;
     }
 
-    if (this.input) {
-      return this.input;
-    }
-
     let input = findDOMNode(this);
 
     if (input.nodeName !== 'INPUT') {
@@ -394,7 +390,6 @@ class InputElement extends React.Component {
     this.focused = true;
 
     // if autoFocus is set, onFocus triggers before componentDidMount
-    this.input = event.target;
     this.mounted = true;
 
     if (mask) {
@@ -416,15 +411,11 @@ class InputElement extends React.Component {
           newSelection = modifiedValue.selection;
         }
 
-        // do not use this.getInputValue and this.setInputValue as this.input
-        // will be undefined if it's an initial mount of input with autoFocus attribute
-        const isInputValueChanged = newValue !== event.target.value;
+        const isInputValueChanged = newValue !== this.getInputValue();
 
         if (isInputValueChanged) {
-          event.target.value = newValue;
+          this.setInputValue(newValue);
         }
-
-        this.value = newValue;
 
         if (isInputValueChanged && isFunction(this.props.onChange)) {
           this.props.onChange(event);
@@ -531,8 +522,6 @@ class InputElement extends React.Component {
   }
 
   handleRef = (ref) => {
-    this.input = this.getInputDOMNode();
-
     if (this.props.children == null && isFunction(this.props.inputRef)) {
       this.props.inputRef(ref);
     }
