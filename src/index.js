@@ -69,6 +69,12 @@ class InputElement extends React.Component {
   componentDidMount() {
     this.mounted = true;
 
+    // workaround for react-test-renderer
+    // https://github.com/sanniassin/react-input-mask/issues/147
+    if (!this.getInputDOMNode()) {
+      return;
+    }
+
     this.isWindowsPhoneBrowser = isWindowsPhoneBrowser();
 
     if (this.maskOptions.mask && this.getInputValue() !== this.value) {
@@ -200,6 +206,15 @@ class InputElement extends React.Component {
     }
 
     let input = findDOMNode(this);
+    const isDOMNode = typeof window !== 'undefined'
+                      &&
+                      input instanceof window.HTMLElement;
+
+    // workaround for react-test-renderer
+    // https://github.com/sanniassin/react-input-mask/issues/147
+    if (input && !isDOMNode) {
+      return null;
+    }
 
     if (input.nodeName !== 'INPUT') {
       input = input.querySelector('input');
