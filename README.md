@@ -92,14 +92,14 @@ import MaterialInput from '@material-ui/core/Input';
 
 // Will work fine
 const Input = (props) => (
-  <InputMask mask="99/99/9999" value={this.state.value} onChange={props.onChange}>
+  <InputMask mask="99/99/9999" value={props.value} onChange={props.onChange}>
     {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline />}
   </InputMask>
 );
 
 // Will throw an error because InputMask's and children's onChange aren't the same
 const InvalidInput = (props) => (
-  <InputMask mask="99/99/9999" value={this.state.value}>
+  <InputMask mask="99/99/9999" value={props.value}>
     {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline onChange={props.onChange} />}
   </InputMask>
 );
