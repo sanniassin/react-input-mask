@@ -256,7 +256,8 @@ class InputElement extends React.Component {
 
   setSelection = (start, end, options = {}) => {
     const input = this.getInputDOMNode();
-    if (!input) {
+    const isFocused = this.isFocused();
+    if (!input || !isFocused) {
       return;
     }
 
