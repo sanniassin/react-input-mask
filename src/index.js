@@ -258,6 +258,8 @@ class InputElement extends React.Component {
   setSelection = (start, end, options = {}) => {
     const input = this.getInputDOMNode();
     const isFocused = this.isFocused();
+    // don't change selection on unfocused input
+    // because Safari sets focus on selection change (#154)
     if (!input || !isFocused) {
       return;
     }
