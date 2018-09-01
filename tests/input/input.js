@@ -1072,4 +1072,33 @@ describe('react-input-mask', () => {
       TestUtils.Simulate.change(inputNode);
       expect(inputNode.value).to.equal('+7 (123) 456 78 90');
     }));
+
+
+  it('shouldn\'t move cursor on delayed value change', createInput(
+    <Input mask="+7 (999) 999 99 99" maskChar={null} />, (input, inputNode) => {
+      setInputProps(input, {
+        value: '+7 (9',
+        onChange: (event) => {
+          setInputProps(input, {
+            value: event.target.value
+          });
+        }
+      });
+
+      inputNode.focus();
+      TestUtils.Simulate.focus(inputNode);
+
+      expect(input.getCursorPosition()).to.equal(5);
+
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          setInputProps(input, {
+            value: '+7 (99'
+          });
+
+          expect(input.getCursorPosition()).to.equal(5);
+          resolve();
+        }, 100);
+      });
+    }));
 });

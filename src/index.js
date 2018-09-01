@@ -149,10 +149,11 @@ class InputElement extends React.Component {
     }
 
     this.value = newValue;
+    const isValueChanged = this.getInputValue() !== this.value;
 
     // render depends on this.maskOptions and this.value,
     // call forceUpdate to keep it in sync
-    if (this.getInputValue() !== this.value) {
+    if (isValueChanged) {
       this.setInputValue(this.value);
       this.forceUpdate();
     } else if (isMaskChanged) {
@@ -168,7 +169,7 @@ class InputElement extends React.Component {
                            previousSelection.end !== newSelection.end;
     }
 
-    if (isSelectionChanged) {
+    if (isSelectionChanged || isValueChanged) {
       this.setSelection(newSelection.start, newSelection.end);
     }
   }
