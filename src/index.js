@@ -209,7 +209,7 @@ class InputElement extends React.Component {
     let input = findDOMNode(this);
     const isDOMNode = typeof window !== 'undefined'
                       &&
-                      input instanceof window.HTMLElement;
+                      input instanceof window.Element;
 
     // workaround for react-test-renderer
     // https://github.com/sanniassin/react-input-mask/issues/147
