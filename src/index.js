@@ -7,7 +7,9 @@ import { setInputSelection, getInputSelection } from './utils/selection';
 import parseMask from './parseMask';
 import processChange from './processChange';
 import { isWindowsPhoneBrowser } from './utils/environment';
+
 import {
+  collapseSpaceBetweenChars,
   formatValue,
   getFilledLength,
   isFilled,
@@ -15,6 +17,7 @@ import {
   getRightEditablePosition,
   getStringValue
 } from './utils/string';
+
 import { isFunction } from './utils/helpers';
 import { defer, cancelDefer } from './utils/defer';
 
@@ -24,6 +27,10 @@ class InputElement extends React.Component {
   previousSelection = null
   selectionDeferId = null
   saveSelectionLoopDeferId = null
+
+  static defaultProps = {
+    noSpaceBetweenChars: false
+  }
 
   constructor(props) {
     super(props);
@@ -379,6 +386,17 @@ class InputElement extends React.Component {
     let newSelection = changedState.selection;
     let newValue = changedState.value;
 
+    if (this.props.noSpaceBetweenChars && this.maskOptions.maskChar) {
+      const collapsedState = collapseSpaceBetweenChars(
+        newValue,
+        newSelection,
+        this.maskOptions
+      );
+
+      newValue = collapsedState.value;
+      newSelection = collapsedState.selection;
+    }
+
     if (isFunction(beforeMaskedValueChange)) {
       const modifiedValue = beforeMaskedValueChange(
         { value: newValue, selection: newSelection },
@@ -547,7 +565,18 @@ class InputElement extends React.Component {
   }
 
   render() {
-    const { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, children, ...restProps } = this.props;
+    const {
+      alwaysShowMask,
+      beforeMaskedValueChange,
+      children,
+      formatChars,
+      inputRef,
+      mask,
+      maskChar,
+      noSpaceBetweenChars,
+      ...restProps
+    } = this.props;
+
     let inputElement;
 
     warning(
@@ -563,7 +592,17 @@ class InputElement extends React.Component {
         'react-input-mask: children must be a function'
       );
 
-      const controlledProps = ['onChange', 'onPaste', 'onMouseDown', 'onFocus', 'onBlur', 'value', 'disabled', 'readOnly'];
+      const controlledProps = [
+        'disabled',
+        'onBlur',
+        'onChange',
+        'onFocus',
+        'onMouseDown',
+        'onPaste',
+        'readOnly',
+        'value'
+      ];
+
       const childrenProps = { ...restProps };
       controlledProps.forEach((propId) => delete childrenProps[propId]);
 
