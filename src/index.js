@@ -313,6 +313,14 @@ class InputElement extends React.Component {
     return this.focused;
   }
 
+  isCursorPastLastChar = () => {
+    const filledLength = getFilledLength(this.maskOptions, this.value);
+    const maxPosition = getRightEditablePosition(this.maskOptions, filledLength);
+    const currentPos = this.getCursorPosition();
+
+    return currentPos > maxPosition
+  }
+
   getBeforeMaskedValueChangeConfig = () => {
     const { mask, maskChar, permanents, formatChars } = this.maskOptions;
     const { alwaysShowMask } = this.props;
@@ -507,7 +515,33 @@ class InputElement extends React.Component {
     }
   }
 
+  snapCursorToLastChar = () => {
+    if (this.isCursorPastLastChar()) {
+      this.setCursorToEnd();
+    }
+  }
+
+  ensureCursorSnapsToLastChar = (eventType) => {
+    if (!document.addEventListener || !this.props.noSpaceBetweenChars) {
+      return
+    }
+
+    const cursorHandler = (mouseUpEvent) => {
+      document.removeEventListener(eventType, cursorHandler);
+
+      this.snapCursorToLastChar();
+    }
+
+    document.addEventListener(eventType, cursorHandler);
+  }
+
+  onKeyDown = (event) => {
+    this.ensureCursorSnapsToLastChar('keyup');
+  }
+
   onMouseDown = (event) => {
+    console.log('mousedown')
+
     // tiny unintentional mouse movements can break cursor
     // position on focus, so we have to restore it in that case
     //
@@ -536,6 +570,8 @@ class InputElement extends React.Component {
 
       document.addEventListener('mouseup', mouseUpHandler);
     }
+
+    this.ensureCursorSnapsToLastChar('mouseup');
 
     if (isFunction(this.props.onMouseDown)) {
       this.props.onMouseDown(event);
@@ -634,6 +670,7 @@ class InputElement extends React.Component {
         changedProps.onChange = this.onChange;
         changedProps.onPaste = this.onPaste;
         changedProps.onMouseDown = this.onMouseDown;
+        changedProps.onKeyDown = this.onKeyDown;
       }
 
       if (restProps.value != null) {
