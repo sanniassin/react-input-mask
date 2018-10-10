@@ -251,3 +251,53 @@ export function getRightEditablePosition(maskOptions, pos) {
 export function getStringValue(value) {
   return !value && value !== 0 ? '' : value + '';
 }
+
+function getMaskablePositions(maskOptions) {
+  const positions = [];
+  const { mask } = maskOptions;
+  const formatChars = Object.keys(maskOptions.formatChars);
+
+  for (let i = 0; i < mask.length; i++) {
+    for (let j = 0; j < formatChars.length; j++) {
+      if (mask[i] === formatChars[j]) {
+        positions.push(i);
+        break;
+      }
+    }
+  }
+
+  return positions;
+}
+
+export function collapseSpaceBetweenChars(value, currentSelection, maskOptions) {
+  const positions = getMaskablePositions(maskOptions);
+  const valueChars = value.split('');
+
+  const editableValue = positions
+    .map(index => valueChars[index])
+    .join('')
+
+  const collapsedValue = editableValue
+    .replace(new RegExp(maskOptions.maskChar, 'g'), '');
+
+  let newSelection
+
+  for (let i = 0; i < positions.length; i++) {
+    const index = positions[i];
+
+    if (collapsedValue[i]) {
+      valueChars[index] = collapsedValue[i];
+    } else {
+      valueChars[index] = maskOptions.maskChar;
+      newSelection = newSelection || { start: index, end: index };
+    }
+  }
+
+  const newValue = valueChars.join('');
+  const selectionNeedsChange = value !== newValue;
+
+  return {
+    value: valueChars.join(''),
+    selection: selectionNeedsChange ? newSelection : currentSelection
+  }
+}

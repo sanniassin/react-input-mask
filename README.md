@@ -55,6 +55,17 @@ Use `inputRef` instead of `ref` if you need input node to manage focus, selectio
 ## Experimental :fire:
 The following props are considered experimental because they are more prone to issues and are likely to be changed in the future. Use with caution.
 
+### `noSpaceBetweenChars`: `boolean`
+Enforce no spacing between chars. For example, if you have:
+
+```
+<Input mask="+1 (999) 999-9999" maskChar="_" noSpaceBetweenChars={true} />
+```
+
+and someone inputs `+1 (__1) ___-____`, the field will be forced to `+1 (1__) ___-____`.
+
+Defaults to `false`.
+
 ### `beforeMaskedValueChange` : `function`
 In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
 1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur or when function is called before input mount. Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`

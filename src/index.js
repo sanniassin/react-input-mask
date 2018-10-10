@@ -7,7 +7,9 @@ import { setInputSelection, getInputSelection } from './utils/selection';
 import parseMask from './parseMask';
 import processChange from './processChange';
 import { isWindowsPhoneBrowser } from './utils/environment';
+
 import {
+  collapseSpaceBetweenChars,
   formatValue,
   getFilledLength,
   isFilled,
@@ -15,6 +17,7 @@ import {
   getRightEditablePosition,
   getStringValue
 } from './utils/string';
+
 import { isFunction } from './utils/helpers';
 import { defer, cancelDefer } from './utils/defer';
 
@@ -24,6 +27,10 @@ class InputElement extends React.Component {
   previousSelection = null
   selectionDeferId = null
   saveSelectionLoopDeferId = null
+
+  static defaultProps = {
+    noSpaceBetweenChars: false
+  }
 
   constructor(props) {
     super(props);
@@ -306,6 +313,14 @@ class InputElement extends React.Component {
     return this.focused;
   }
 
+  isCursorPastLastChar = () => {
+    const filledLength = getFilledLength(this.maskOptions, this.value);
+    const maxPosition = getRightEditablePosition(this.maskOptions, filledLength);
+    const currentPos = this.getCursorPosition();
+
+    return currentPos > maxPosition
+  }
+
   getBeforeMaskedValueChangeConfig = () => {
     const { mask, maskChar, permanents, formatChars } = this.maskOptions;
     const { alwaysShowMask } = this.props;
@@ -378,6 +393,17 @@ class InputElement extends React.Component {
     const enteredString = changedState.enteredString;
     let newSelection = changedState.selection;
     let newValue = changedState.value;
+
+    if (this.props.noSpaceBetweenChars && this.maskOptions.maskChar) {
+      const collapsedState = collapseSpaceBetweenChars(
+        newValue,
+        newSelection,
+        this.maskOptions
+      );
+
+      newValue = collapsedState.value;
+      newSelection = collapsedState.selection;
+    }
 
     if (isFunction(beforeMaskedValueChange)) {
       const modifiedValue = beforeMaskedValueChange(
@@ -489,7 +515,33 @@ class InputElement extends React.Component {
     }
   }
 
+  snapCursorToLastChar = () => {
+    if (this.isCursorPastLastChar()) {
+      this.setCursorToEnd();
+    }
+  }
+
+  ensureCursorSnapsToLastChar = (eventType) => {
+    if (!document.addEventListener || !this.props.noSpaceBetweenChars) {
+      return
+    }
+
+    const cursorHandler = (mouseUpEvent) => {
+      document.removeEventListener(eventType, cursorHandler);
+
+      this.snapCursorToLastChar();
+    }
+
+    document.addEventListener(eventType, cursorHandler);
+  }
+
+  onKeyDown = (event) => {
+    this.ensureCursorSnapsToLastChar('keyup');
+  }
+
   onMouseDown = (event) => {
+    console.log('mousedown')
+
     // tiny unintentional mouse movements can break cursor
     // position on focus, so we have to restore it in that case
     //
@@ -519,6 +571,8 @@ class InputElement extends React.Component {
       document.addEventListener('mouseup', mouseUpHandler);
     }
 
+    this.ensureCursorSnapsToLastChar('mouseup');
+
     if (isFunction(this.props.onMouseDown)) {
       this.props.onMouseDown(event);
     }
@@ -547,7 +601,18 @@ class InputElement extends React.Component {
   }
 
   render() {
-    const { mask, alwaysShowMask, maskChar, formatChars, inputRef, beforeMaskedValueChange, children, ...restProps } = this.props;
+    const {
+      alwaysShowMask,
+      beforeMaskedValueChange,
+      children,
+      formatChars,
+      inputRef,
+      mask,
+      maskChar,
+      noSpaceBetweenChars,
+      ...restProps
+    } = this.props;
+
     let inputElement;
 
     warning(
@@ -563,7 +628,17 @@ class InputElement extends React.Component {
         'react-input-mask: children must be a function'
       );
 
-      const controlledProps = ['onChange', 'onPaste', 'onMouseDown', 'onFocus', 'onBlur', 'value', 'disabled', 'readOnly'];
+      const controlledProps = [
+        'disabled',
+        'onBlur',
+        'onChange',
+        'onFocus',
+        'onMouseDown',
+        'onPaste',
+        'readOnly',
+        'value'
+      ];
+
       const childrenProps = { ...restProps };
       controlledProps.forEach((propId) => delete childrenProps[propId]);
 
@@ -595,6 +670,7 @@ class InputElement extends React.Component {
         changedProps.onChange = this.onChange;
         changedProps.onPaste = this.onPaste;
         changedProps.onMouseDown = this.onMouseDown;
+        changedProps.onKeyDown = this.onKeyDown;
       }
 
       if (restProps.value != null) {

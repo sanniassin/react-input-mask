@@ -141,6 +141,19 @@ const TestFunctionalInputComponent = (props) => {
 };
 
 describe('react-input-mask', () => {
+  describe('with noSpaceBetweenChars', () => {
+    it('should collapse space between chars if the cursor is ahead', createInput(
+      <Input maskChar="_" noSpaceBetweenChars={true} mask="+1 (999) 999-9999" />, (input, inputNode) => {
+        inputNode.focus();
+        TestUtils.Simulate.focus(inputNode);
+
+        setInputSelection(inputNode, 6, 0);
+        simulateInputKeyPress(input, '5');
+
+        expect(inputNode.value).to.equal('+1 (5__) ___-____');
+      }));
+  });
+
   it('should format value on mount', createInput(
     <Input mask="+7 (999) 999 99 99" defaultValue="74953156454" />, (input, inputNode) => {
       expect(inputNode.value).to.equal('+7 (495) 315 64 54');
