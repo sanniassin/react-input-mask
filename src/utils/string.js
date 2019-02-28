@@ -4,7 +4,7 @@ export function isPermanentCharacter(maskOptions, pos) {
   return maskOptions.permanents.indexOf(pos) !== -1;
 }
 
-export function isAllowedCharacter(maskOptions, pos, character) {
+function getAllowedCharacter(maskOptions, pos, character) {
   const { mask, formatChars } = maskOptions;
 
   if (!character) {
@@ -12,13 +12,35 @@ export function isAllowedCharacter(maskOptions, pos, character) {
   }
 
   if (isPermanentCharacter(maskOptions, pos)) {
-    return mask[pos] === character;
+    if (mask[pos] === character) {
+      return character;
+    }
+    let val = character.toUpperCase();
+    if (mask[pos] === val) {
+      return val;
+    }
+    val = character.toUpperCase();
+    if (mask[pos] === val) {
+      return val;
+    }
+    return false;
   }
 
   const ruleChar = mask[pos];
   const charRule = formatChars[ruleChar];
-
-  return (new RegExp(charRule)).test(character);
+  const regexp = new RegExp(charRule);
+  if (regexp.test(character)) {
+    return character;
+  }
+  let val = character.toUpperCase();
+  if (val !== character && regexp.test(val)) {
+    return val;
+  }
+  val = character.toLowerCase();
+  if (val !== character && regexp.test(val)) {
+    return val;
+  }
+  return false;
 }
 
 export function isEmpty(maskOptions, value) {
@@ -27,7 +49,7 @@ export function isEmpty(maskOptions, value) {
     .every((character, i) => {
       return isPermanentCharacter(maskOptions, i)
              ||
-             !isAllowedCharacter(maskOptions, i, character);
+             !getAllowedCharacter(maskOptions, i, character);
     });
 }
 
@@ -46,7 +68,7 @@ export function getFilledLength(maskOptions, value) {
     const character = value[i];
     const isEnteredCharacter = !isPermanentCharacter(maskOptions, i)
                                &&
-                               isAllowedCharacter(maskOptions, i, character);
+                               getAllowedCharacter(maskOptions, i, character);
     if (isEnteredCharacter) {
       filledLength = i + 1;
       break;
@@ -166,12 +188,18 @@ export function insertString(maskOptions, value, insertStr, insertPosition) {
       }
     }
 
-    const isAllowed = isAllowedCharacter(maskOptions, insertPosition, insertCharacter)
-                      ||
-                      insertCharacter === maskChar;
-    if (!isAllowed) {
+    let allowedChar = getAllowedCharacter(maskOptions, insertPosition, insertCharacter);
+    if (!allowedChar) {
+      if (insertCharacter === maskChar
+          || insertCharacter.toUpperCase() === maskChar
+          || insertCharacter.toLowerCase() === maskChar) {
+        allowedChar = maskChar;
+      }
+    }
+    if (!allowedChar) {
       return true;
     }
+    insertCharacter = allowedChar;
 
     if (insertPosition < value.length) {
       if (maskChar || isInputFilled || insertPosition < prefix.length) {
@@ -214,9 +242,13 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPosit
       }
     }
 
-    const isAllowed = isAllowedCharacter(maskOptions, insertPosition, insertCharacter)
+    const isAllowed = getAllowedCharacter(maskOptions, insertPosition, insertCharacter)
                       ||
-                      insertCharacter === maskChar;
+                      insertCharacter === maskChar
+                      ||
+                      insertCharacter.toUpperCase() === maskChar
+                      ||
+                      insertCharacter.toLowerCase() === maskChar;
 
     if (isAllowed) {
       insertPosition++;
