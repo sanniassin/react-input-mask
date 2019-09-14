@@ -5,19 +5,31 @@ import {
   insertString,
   getLeftEditablePosition,
   getRightEditablePosition
-} from './utils/string';
+} from "./utils/string";
 
-export default function processChange(maskOptions, value, selection, previousValue, previousSelection) {
+export default function processChange(
+  maskOptions,
+  currentState,
+  previousState
+) {
   const { mask, prefix, lastEditablePosition } = maskOptions;
+  const { value, selection } = currentState;
+  const previousValue = previousState.value;
+  const previousSelection = previousState.selection;
   let newValue = value;
-  let enteredString = '';
+  let enteredString = "";
   let formattedEnteredStringLength = 0;
   let removedLength = 0;
   let cursorPosition = Math.min(previousSelection.start, selection.start);
 
   if (selection.end > previousSelection.start) {
     enteredString = newValue.slice(previousSelection.start, selection.end);
-    formattedEnteredStringLength = getInsertStringLength(maskOptions, previousValue, enteredString, cursorPosition);
+    formattedEnteredStringLength = getInsertStringLength(
+      maskOptions,
+      previousValue,
+      enteredString,
+      cursorPosition
+    );
     if (!formattedEnteredStringLength) {
       removedLength = 0;
     } else {
@@ -41,20 +53,20 @@ export default function processChange(maskOptions, value, selection, previousVal
 
   newValue = insertString(maskOptions, newValue, enteredString, cursorPosition);
 
-  cursorPosition = cursorPosition + formattedEnteredStringLength;
+  cursorPosition += formattedEnteredStringLength;
   if (cursorPosition >= mask.length) {
     cursorPosition = mask.length;
   } else if (cursorPosition < prefix.length && !formattedEnteredStringLength) {
     cursorPosition = prefix.length;
-  } else if (cursorPosition >= prefix.length && cursorPosition < lastEditablePosition && formattedEnteredStringLength) {
+  } else if (
+    cursorPosition >= prefix.length &&
+    cursorPosition < lastEditablePosition &&
+    formattedEnteredStringLength
+  ) {
     cursorPosition = getRightEditablePosition(maskOptions, cursorPosition);
   }
 
   newValue = formatValue(maskOptions, newValue);
-
-  if (!enteredString) {
-    enteredString = null;
-  }
 
   return {
     value: newValue,
