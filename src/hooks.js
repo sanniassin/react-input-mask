@@ -7,7 +7,6 @@ import {
   isInputFocused,
   isInputAutofilled
 } from "./utils/input";
-import { formatValue } from "./utils/string";
 
 export function useInputElement(inputRef) {
   return useCallback(() => {
@@ -36,17 +35,17 @@ export function useInputElement(inputRef) {
 }
 
 export function useSelection(inputRef, isMasked) {
-  const selectionRef = useRef(null);
-  const saveSelectionLoopDeferIdRef = useRef(null);
+  const selectionRef = useRef({ start: null, end: null });
   const getInputElement = useInputElement(inputRef);
-  const previousInput = usePrevious(getInputElement());
 
   const getSelection = useCallback(() => {
     const input = getInputElement();
     return getInputSelection(input);
   }, [getInputElement]);
 
-  const getLastSelection = useCallback(() => selectionRef.current, []);
+  const getLastSelection = useCallback(() => {
+    return selectionRef.current;
+  }, []);
 
   const setSelection = useCallback(
     selection => {
@@ -65,23 +64,6 @@ export function useSelection(inputRef, isMasked) {
     [getInputElement, getSelection]
   );
 
-  const runSaveSelectionLoop = useCallback(() => {
-    function saveSelectionLoop() {
-      selectionRef.current = getSelection();
-      saveSelectionLoopDeferIdRef.current = defer(saveSelectionLoop);
-    }
-
-    saveSelectionLoop();
-  }, [getSelection]);
-
-  const stopSaveSelectionLoop = useCallback(() => {
-    if (selectionRef.current !== null) {
-      cancelDefer(saveSelectionLoopDeferIdRef.current);
-      saveSelectionLoopDeferIdRef.current = null;
-      selectionRef.current = null;
-    }
-  }, []);
-
   // We need to track whether the actual DOM node has changed,
   // therefore we should run this effect after each render
   useLayoutEffect(() => {
@@ -89,12 +71,35 @@ export function useSelection(inputRef, isMasked) {
       return;
     }
 
-    const input = getInputElement();
+    let deferId = null;
+    function runSaveSelectionLoop() {
+      // If there are simulated focus events, runSaveSelectionLoop,
+      // could be called multiple times without blur or re-render
+      if (deferId !== null) {
+        return;
+      }
 
+      function saveSelectionLoop() {
+        selectionRef.current = getSelection();
+        deferId = defer(saveSelectionLoop);
+      }
+
+      saveSelectionLoop();
+    }
+
+    function stopSaveSelectionLoop() {
+      if (selectionRef.current.start !== null) {
+        selectionRef.current = { start: null, end: null };
+        cancelDefer(deferId);
+        deferId = null;
+      }
+    }
+
+    const input = getInputElement();
     input.addEventListener("focus", runSaveSelectionLoop);
     input.addEventListener("blur", stopSaveSelectionLoop);
 
-    if (input !== previousInput && isInputFocused(input)) {
+    if (isInputFocused(input)) {
       runSaveSelectionLoop();
     }
 
@@ -109,25 +114,9 @@ export function useSelection(inputRef, isMasked) {
   return { getSelection, getLastSelection, setSelection };
 }
 
-export function useValue(
-  inputRef,
-  maskOptions,
-  alwaysShowMask,
-  value,
-  defaultValue
-) {
+function useValue(inputRef, initialValue) {
   const getInputElement = useInputElement(inputRef);
-  const isControlled = value !== null && value !== undefined;
-  const isMasked = !!maskOptions.mask;
-  const valueRef = useRef(isControlled ? value : defaultValue || "");
-
-  if (isControlled) {
-    valueRef.current = value;
-  }
-
-  if (isMasked && isControlled && (value !== "" || alwaysShowMask)) {
-    valueRef.current = formatValue(maskOptions, value);
-  }
+  const valueRef = useRef(initialValue);
 
   const getValue = useCallback(() => {
     const input = getInputElement();
@@ -157,52 +146,38 @@ export function useValue(
   };
 }
 
-export function useInputState(
-  inputRef,
-  maskOptions,
-  alwaysShowMask,
-  value,
-  defaultValue
-) {
-  const isMasked = !!maskOptions.mask;
-  const isControlledInput = value !== null && value !== undefined;
+export function useInputState(initialValue, isMasked) {
+  const inputRef = useRef();
   const getInputElement = useInputElement(inputRef);
-  const { getValue, getLastValue, setValue } = useValue(
-    inputRef,
-    maskOptions,
-    alwaysShowMask,
-    value,
-    defaultValue
-  );
   const { getSelection, getLastSelection, setSelection } = useSelection(
     inputRef,
-    isMasked,
-    isControlledInput
+    isMasked
   );
+  const { getValue, getLastValue, setValue } = useValue(inputRef, initialValue);
 
-  function getLastState() {
+  function getLastInputState() {
     return {
       value: getLastValue(),
       selection: getLastSelection()
     };
   }
 
-  function getState() {
+  function getInputState() {
     return {
       value: getValue(),
       selection: getSelection()
     };
   }
 
-  function setState({ value, selection }) {
+  function setInputState({ value, selection }) {
     setValue(value);
     setSelection(selection);
   }
 
-  function getChangeState() {
+  function getInputStateChange() {
     const input = getInputElement();
-    const currentState = getState();
-    const previousState = getLastState();
+    const currentState = getInputState();
+    const previousState = getLastInputState();
     const currentValue = currentState.value;
     const currentSelection = currentState.selection;
     let previousValue = previousState.value;
@@ -213,8 +188,8 @@ export function useInputState(
     // Autofill replaces entire value, ignore previous one
     // https://github.com/sanniassin/react-input-mask/issues/113
     if (isInputAutofilled(input, currentState, previousState)) {
-      previousValue = formatValue(maskOptions, "");
-      previousSelection = { start: 0, end: 0, length: 0 };
+      previousValue = "";
+      previousSelection = { start: 0, end: 0 };
     }
 
     const hasEnteredString = currentSelection.end > previousSelection.start;
@@ -233,12 +208,10 @@ export function useInputState(
       const removedLength =
         previousSelection.end - previousSelection.start ||
         previousValue.length - currentValue.length;
-      removedString = hasRemovedString
-        ? previousValue.slice(previousSelection.start, previousSelection.end)
-        : previousValue.slice(
-            currentSelection.start,
-            currentSelection.start + removedLength
-          );
+      removedString = previousValue.slice(
+        previousSelection.end - removedLength,
+        previousSelection.start
+      );
     }
 
     return {
@@ -256,16 +229,11 @@ export function useInputState(
   }
 
   return {
-    getChangeState,
-    getLastValue,
-    getLastSelection,
-    getSelection,
-    getValue,
-    setValue,
-    setSelection,
-    getInputState: getState,
-    setInputState: setState,
-    getLastInputState: getLastState
+    inputRef,
+    getInputState,
+    getLastInputState,
+    setInputState,
+    getInputStateChange
   };
 }
 

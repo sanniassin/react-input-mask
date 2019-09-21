@@ -14,7 +14,13 @@ const isExternal = id =>
   !id.startsWith("\0") && !id.startsWith(".") && !id.startsWith("/");
 
 const external = ["react", "react-dom"];
-const plugins = [babel(), resolve(), commonjs(), protoToAssign()];
+const plugins = [
+  babel(),
+  resolve(),
+  commonjs(),
+  protoToAssign(),
+  sizeSnapshot()
+];
 const minifiedPlugins = [
   ...plugins,
   replace({
@@ -22,7 +28,10 @@ const minifiedPlugins = [
   }),
   babel({
     babelrc: false,
-    plugins: ["babel-plugin-minify-dead-code-elimination"]
+    plugins: [
+      "babel-plugin-minify-dead-code-elimination",
+      "babel-plugin-transform-react-remove-prop-types"
+    ]
   }),
   terser({
     compress: { warnings: false }
@@ -43,8 +52,7 @@ export default [
       ...plugins,
       replace({
         "process.env.NODE_ENV": '"development"'
-      }),
-      sizeSnapshot()
+      })
     ]
   },
 
@@ -64,13 +72,13 @@ export default [
     input,
     output: { file: "lib/react-input-mask.development.js", format: "cjs" },
     external: isExternal,
-    plugins: [...plugins, sizeSnapshot()]
+    plugins
   },
 
   {
     input,
     output: { file: "lib/react-input-mask.production.min.js", format: "cjs" },
-    external,
+    external: isExternal,
     plugins: minifiedPlugins
   }
 ];

@@ -3,11 +3,9 @@ import warning from "warning";
 
 import { CONTROLLED_PROPS } from "./constants";
 
-export function validateMaxLength(props, maskOptions) {
+export function validateMaxLength(props) {
   warning(
-    // parse mask to test against actual mask prop as this.maskOptions
-    // will be updated later in componentDidUpdate
-    !props.maxLength || !maskOptions.mask,
+    !props.maxLength || !props.mask,
     "react-input-mask: maxLength property shouldn't be passed to the masked input. It breaks masking and unnecessary because length is limited by the mask length."
   );
 }

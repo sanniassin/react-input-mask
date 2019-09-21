@@ -9,7 +9,7 @@ export const CONTROLLED_PROPS = [
 ];
 
 export const defaultFormatChars = {
-  "9": "[0-9]",
-  a: "[A-Za-z]",
-  "*": "[A-Za-z0-9]"
+  "9": /[0-9]/,
+  a: /[A-Za-z]/,
+  "*": /[A-Za-z0-9]/
 };

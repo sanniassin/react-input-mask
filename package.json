@@ -30,6 +30,7 @@
     "babel-loader": "^8.0.6",
     "babel-plugin-dev-expression": "^0.2.2",
     "babel-plugin-minify-dead-code-elimination": "^0.5.1",
+    "babel-plugin-transform-react-remove-prop-types": "^0.4.24",
     "chai": "^4.2.0",
     "console-polyfill": "^0.3.0",
     "cross-env": "^5.2.1",
