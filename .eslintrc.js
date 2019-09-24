@@ -25,6 +25,9 @@ module.exports = {
     "no-plusplus": OFF,
     "global-require": OFF,
     "consistent-return": OFF,
-    "prettier/prettier": ERROR
+    "prefer-const": [ERROR, {
+        "destructuring": "all"
+    }],
+    "prettier/prettier": ERROR,
   }
 };
