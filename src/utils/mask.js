@@ -51,7 +51,9 @@ export default class MaskUtils {
   };
 
   isValueFilled = value => {
-    return this.getFilledLength(value) === this.maskOptions.mask.length;
+    return (
+      this.getFilledLength(value) === this.maskOptions.lastEditablePosition + 1
+    );
   };
 
   getDefaultSelectionForValue = value => {
@@ -185,8 +187,7 @@ export default class MaskUtils {
 
     const characters = string.split("");
     const isFixedLength = this.isValueFilled(value) || !!maskPlaceholder;
-    const nextEditablePosition = this.getRightEditablePosition(position);
-    const valueAfter = value.slice(position, mask.length);
+    const valueAfter = value.slice(position);
 
     value = characters.reduce((value, character) => {
       return this.insertCharacterAtPosition(value, character, value.length);
@@ -194,12 +195,28 @@ export default class MaskUtils {
 
     if (isFixedLength) {
       value += valueAfter.slice(value.length - position);
-    } else if (nextEditablePosition !== null) {
-      value = this.insertStringAtPosition(
-        value,
-        valueAfter.slice(nextEditablePosition - position),
-        value.length
-      );
+    } else if (this.isValueFilled(value)) {
+      value += mask.slice(value.length).join("");
+    } else {
+      const editableCharactersAfter = valueAfter
+        .split("")
+        .filter((character, i) => {
+          return this.isPositionEditable(position + i);
+        });
+      value = editableCharactersAfter.reduce((value, character) => {
+        const nextEditablePosition = this.getRightEditablePosition(
+          value.length
+        );
+        if (nextEditablePosition === null) {
+          return value;
+        }
+
+        if (!this.isPositionEditable(value.length)) {
+          value += mask.slice(value.length, nextEditablePosition).join("");
+        }
+
+        return this.insertCharacterAtPosition(value, character, value.length);
+      }, value);
     }
 
     return value;

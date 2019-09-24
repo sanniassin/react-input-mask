@@ -34,7 +34,55 @@ export function useInputElement(inputRef) {
   }, [inputRef]);
 }
 
-export function useSelection(inputRef, isMasked) {
+function useTrackFocusedState(inputRef, callback) {
+  const getInputElement = useInputElement(inputRef);
+
+  useLayoutEffect(() => {
+    let deferId = null;
+    let cleanupCallback;
+
+    function runLoop() {
+      // If there are simulated focus events, runLoop could be
+      // called multiple times without blur or re-render
+      if (deferId !== null) {
+        return;
+      }
+
+      function deferCallback() {
+        cleanupCallback = callback();
+        deferId = defer(deferCallback);
+      }
+
+      deferCallback();
+    }
+
+    function stopLoop() {
+      cancelDefer(deferId);
+      deferId = null;
+
+      if (cleanupCallback) {
+        cleanupCallback();
+      }
+    }
+
+    const input = getInputElement();
+    input.addEventListener("focus", runLoop);
+    input.addEventListener("blur", stopLoop);
+
+    if (isInputFocused(input)) {
+      runLoop();
+    }
+
+    return () => {
+      input.removeEventListener("focus", runLoop);
+      input.removeEventListener("blur", stopLoop);
+
+      stopLoop();
+    };
+  });
+}
+
+function useSelection(inputRef, isMasked) {
   const selectionRef = useRef({ start: null, end: null });
   const getInputElement = useInputElement(inputRef);
 
@@ -50,6 +98,7 @@ export function useSelection(inputRef, isMasked) {
   const setSelection = useCallback(
     selection => {
       const input = getInputElement();
+
       // Don't change selection on unfocused input
       // because Safari sets focus on selection change (#154)
       if (!input || !isInputFocused(input)) {
@@ -64,50 +113,15 @@ export function useSelection(inputRef, isMasked) {
     [getInputElement, getSelection]
   );
 
-  // We need to track whether the actual DOM node has changed,
-  // therefore we should run this effect after each render
-  useLayoutEffect(() => {
+  useTrackFocusedState(inputRef, () => {
     if (!isMasked) {
       return;
     }
 
-    let deferId = null;
-    function runSaveSelectionLoop() {
-      // If there are simulated focus events, runSaveSelectionLoop,
-      // could be called multiple times without blur or re-render
-      if (deferId !== null) {
-        return;
-      }
-
-      function saveSelectionLoop() {
-        selectionRef.current = getSelection();
-        deferId = defer(saveSelectionLoop);
-      }
-
-      saveSelectionLoop();
-    }
-
-    function stopSaveSelectionLoop() {
-      if (selectionRef.current.start !== null) {
-        selectionRef.current = { start: null, end: null };
-        cancelDefer(deferId);
-        deferId = null;
-      }
-    }
-
-    const input = getInputElement();
-    input.addEventListener("focus", runSaveSelectionLoop);
-    input.addEventListener("blur", stopSaveSelectionLoop);
-
-    if (isInputFocused(input)) {
-      runSaveSelectionLoop();
-    }
+    selectionRef.current = getSelection();
 
     return () => {
-      input.removeEventListener("focus", runSaveSelectionLoop);
-      input.removeEventListener("blur", stopSaveSelectionLoop);
-
-      stopSaveSelectionLoop();
+      selectionRef.current = { start: null, end: null };
     };
   });
 
@@ -174,7 +188,7 @@ export function useInputState(initialValue, isMasked) {
     setSelection(selection);
   }
 
-  function getInputStateChange() {
+  function getInputChangeState() {
     const input = getInputElement();
     const currentState = getInputState();
     const previousState = getLastInputState();
@@ -233,7 +247,7 @@ export function useInputState(initialValue, isMasked) {
     getInputState,
     getLastInputState,
     setInputState,
-    getInputStateChange
+    getInputChangeState
   };
 }
 
