@@ -9,8 +9,8 @@ import { validateMaxLength, validateChildren } from "./validate-props";
 
 import { defer, cancelDefer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
-import MaskUtils from "./utils/mask";
 import { isFunction } from "./utils/helpers";
+import MaskUtils from "./utils/mask";
 
 class InputMaskChildrenWrapper extends React.Component {
   render() {
@@ -213,13 +213,14 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
 
     const input = getInputElement();
     const isFocused = isInputFocused(input);
-    const newInputState = getInputState();
     const previousSelection = lastSelection;
+    const currentState = getInputState();
+    let newInputState = { ...currentState };
 
     // Update value for uncontrolled inputs to make sure
     // it's always in sync with mask props
     if (!isControlled) {
-      const currentValue = getInputState().value;
+      const currentValue = currentState.value;
       const formattedValue = maskUtils.formatValue(currentValue);
       const isValueEmpty = maskUtils.isValueEmpty(formattedValue);
       const shouldFormatValue = !isValueEmpty || isFocused || alwaysShowMask;
@@ -242,7 +243,14 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
       }
     }
 
-    // TODO: Call beforeMaskedStateChange before
+    if (beforeMaskedStateChange) {
+      newInputState = beforeMaskedStateChange({
+        currentState,
+        previousState: lastState,
+        nextState: newInputState
+      });
+    }
+
     setInputState(newInputState);
 
     return () => {
