@@ -108,11 +108,9 @@ async function simulateInput(input, string) {
   TestUtils.Simulate.change(input);
 }
 
-// TODO: CHeck whether pasting needs to be tested
-function simulateInputPaste(input, string) {
+async function simulateInputPaste(input, string) {
   TestUtils.Simulate.paste(input);
-
-  simulateInput(input, string);
+  await simulateInput(input, string);
 }
 
 async function simulateBackspacePress(input) {
@@ -183,6 +181,51 @@ describe("react-input-mask", () => {
       <Input mask="+7 (9a9) 999 99 99" defaultValue="749531b6454" />
     );
     expect(input.value).to.equal("+7 (4b6) 454 __ __");
+  });
+
+  it("should handle array mask", async () => {
+    const letter = /[АВЕКМНОРСТУХ]/i;
+    const digit = /[0-9]/;
+    const mask = [letter, digit, digit, digit, letter, letter];
+    const { input } = createInput(
+      <Input mask={mask} defaultValue="А 784 КТ 77" />
+    );
+    expect(input.value).to.equal("А784КТ");
+
+    await simulateFocus(input);
+    await simulateBackspacePress(input);
+    expect(input.value).to.equal("А784К_");
+
+    await simulateInput(input, "Б");
+    expect(getInputSelection(input).start).to.equal(5);
+    expect(getInputSelection(input).end).to.equal(5);
+
+    await simulateInput(input, "Х");
+    expect(getInputSelection(input).start).to.equal(6);
+    expect(getInputSelection(input).end).to.equal(6);
+  });
+
+  it("should handle full length maskPlaceholder", async () => {
+    const { input } = createInput(
+      <Input mask="99/99/9999" maskPlaceholder="dd/mm/yyyy" defaultValue="12" />
+    );
+    expect(input.value).to.equal("12/mm/yyyy");
+
+    await simulateFocus(input);
+    expect(getInputSelection(input).start).to.equal(3);
+    expect(getInputSelection(input).end).to.equal(3);
+
+    await simulateBackspacePress(input);
+    expect(input.value).to.equal("1d/mm/yyyy");
+
+    await simulateInput(input, "234");
+    expect(input.value).to.equal("12/34/yyyy");
+    expect(getInputSelection(input).start).to.equal(6);
+    expect(getInputSelection(input).end).to.equal(6);
+
+    await setCursorPosition(input, 8);
+    await simulateInput(input, "7");
+    expect(input.value).to.equal("12/34/yy7y");
   });
 
   it("should show placeholder on focus", async () => {
@@ -989,26 +1032,12 @@ describe("react-input-mask", () => {
     expect(input.value).to.equal("1111-1111-1111");
   });
 
-  it("should handle formatChars property", async () => {
-    const { input } = createInput(
-      <Input mask="11-11" defaultValue="1234" formatChars={{ "1": "[1-3]" }} />
-    );
-    expect(input.value).to.equal("12-3_");
-  });
-
   it("should keep placeholder on rerender on empty input with alwaysShowMask", async () => {
     const { input, setProps } = createInput(
       <Input mask="99-99" value="" alwaysShowMask />
     );
     setProps({ value: "" });
 
-    expect(input.value).to.equal("__-__");
-  });
-
-  it("should ignore null formatChars", async () => {
-    const { input } = createInput(
-      <Input mask="99-99" formatChars={null} alwaysShowMask />
-    );
     expect(input.value).to.equal("__-__");
   });
 
