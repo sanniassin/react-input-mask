@@ -11,14 +11,7 @@ import { defer, cancelDefer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
-
-class InputMaskChildrenWrapper extends React.Component {
-  render() {
-    // eslint-disable-next-line react/prop-types
-    const { children, ...props } = this.props;
-    return React.cloneElement(children, props);
-  }
-}
+import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
@@ -97,7 +90,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
       if (beforeMaskedStateChange) {
         newInputState = beforeMaskedStateChange({
           currentState: getInputState(),
-          previousState: getLastInputState(),
           nextState: newInputState
         });
       }
@@ -136,7 +128,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
       if (beforeMaskedStateChange) {
         newInputState = beforeMaskedStateChange({
           currentState: getInputState(),
-          previousState: getLastInputState(),
           nextState: newInputState
         });
       }
@@ -246,7 +237,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     if (beforeMaskedStateChange) {
       newInputState = beforeMaskedStateChange({
         currentState,
-        previousState: lastState,
         nextState: newInputState
       });
     }
@@ -261,9 +251,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   });
 
   let value = isMasked && isControlled ? lastValue : props.value;
-  if (isMasked && beforeMaskedStateChange) {
+  if (isControlled && isMasked && beforeMaskedStateChange) {
     value = beforeMaskedStateChange({
-      nextState: { value }
+      nextState: { value, selection: { start: null, end: null } }
     }).value;
 
     setInputState({ value, selection: lastSelection });
@@ -293,10 +283,10 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     const childrenComponent = children(childrenProps);
     validateChildren(props, childrenComponent);
 
+    // We wrap children into a class component to be able to find
+    // their input element using findDOMNode
     return (
-      <InputMaskChildrenWrapper {...inputProps}>
-        {childrenComponent}
-      </InputMaskChildrenWrapper>
+      <ChildrenWrapper {...inputProps}>{childrenComponent}</ChildrenWrapper>
     );
   }
 

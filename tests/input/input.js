@@ -1140,6 +1140,9 @@ describe("react-input-mask", () => {
 
     await simulateInput(input, "6");
     expect(input.value).to.equal("12/34/56YY");
+
+    setProps({ value: null });
+    expect(input.value).to.equal("12/34/56YY");
   });
 
   it("shouldn't modify value on entering non-allowed character", async () => {

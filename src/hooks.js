@@ -4,8 +4,7 @@ import { defer, cancelDefer } from "./utils/defer";
 import {
   setInputSelection,
   getInputSelection,
-  isInputFocused,
-  isInputAutofilled
+  isInputFocused
 } from "./utils/input";
 
 export function useInputElement(inputRef) {
@@ -34,52 +33,39 @@ export function useInputElement(inputRef) {
   }, [inputRef]);
 }
 
-function useTrackFocusedState(inputRef, callback) {
-  const getInputElement = useInputElement(inputRef);
+function useDeferLoop(callback) {
+  const deferIdRef = useRef(null);
 
-  useLayoutEffect(() => {
-    let deferId = null;
-    let cleanupCallback;
-
-    function runLoop() {
-      // If there are simulated focus events, runLoop could be
-      // called multiple times without blur or re-render
-      if (deferId !== null) {
-        return;
-      }
-
-      function deferCallback() {
-        cleanupCallback = callback();
-        deferId = defer(deferCallback);
-      }
-
-      deferCallback();
+  const runDeferLoop = useCallback(() => {
+    // If there are simulated focus events, runDeferLoop could be
+    // called multiple times without blur or re-render
+    if (deferIdRef.current !== null) {
+      return;
     }
 
-    function stopLoop() {
-      cancelDefer(deferId);
-      deferId = null;
-
-      if (cleanupCallback) {
-        cleanupCallback();
-      }
+    function loop() {
+      callback();
+      deferIdRef.current = defer(loop);
     }
 
-    const input = getInputElement();
-    input.addEventListener("focus", runLoop);
-    input.addEventListener("blur", stopLoop);
+    loop();
+  }, [callback]);
 
-    if (isInputFocused(input)) {
-      runLoop();
+  const stopDeferLoop = useCallback(() => {
+    cancelDefer(deferIdRef.current);
+    deferIdRef.current = null;
+  }, []);
+
+  useEffect(() => {
+    if (deferIdRef.current) {
+      stopDeferLoop();
+      runDeferLoop();
     }
+  }, [runDeferLoop, stopDeferLoop]);
 
-    return () => {
-      input.removeEventListener("focus", runLoop);
-      input.removeEventListener("blur", stopLoop);
+  useEffect(cancelDefer, []);
 
-      stopLoop();
-    };
-  });
+  return [runDeferLoop, stopDeferLoop];
 }
 
 function useSelection(inputRef, isMasked) {
@@ -113,15 +99,29 @@ function useSelection(inputRef, isMasked) {
     [getInputElement, getSelection]
   );
 
-  useTrackFocusedState(inputRef, () => {
+  const selectionLoop = useCallback(() => {
+    selectionRef.current = getSelection();
+  }, [getSelection]);
+  const [runSelectionLoop, stopSelectionLoop] = useDeferLoop(selectionLoop);
+
+  useLayoutEffect(() => {
     if (!isMasked) {
       return;
     }
 
-    selectionRef.current = getSelection();
+    const input = getInputElement();
+    input.addEventListener("focus", runSelectionLoop);
+    input.addEventListener("blur", stopSelectionLoop);
+
+    if (isInputFocused(input)) {
+      runSelectionLoop();
+    }
 
     return () => {
-      selectionRef.current = { start: null, end: null };
+      input.removeEventListener("focus", runSelectionLoop);
+      input.removeEventListener("blur", stopSelectionLoop);
+
+      stopSelectionLoop();
     };
   });
 
@@ -162,7 +162,6 @@ function useValue(inputRef, initialValue) {
 
 export function useInputState(initialValue, isMasked) {
   const inputRef = useRef();
-  const getInputElement = useInputElement(inputRef);
   const { getSelection, getLastSelection, setSelection } = useSelection(
     inputRef,
     isMasked
@@ -188,66 +187,11 @@ export function useInputState(initialValue, isMasked) {
     setSelection(selection);
   }
 
-  function getInputChangeState() {
-    const input = getInputElement();
-    const currentState = getInputState();
-    const previousState = getLastInputState();
-    const currentValue = currentState.value;
-    const currentSelection = currentState.selection;
-    let previousValue = previousState.value;
-    let previousSelection = previousState.selection;
-    let enteredString = "";
-    let removedString = "";
-
-    // Autofill replaces entire value, ignore previous one
-    // https://github.com/sanniassin/react-input-mask/issues/113
-    if (isInputAutofilled(input, currentState, previousState)) {
-      previousValue = "";
-      previousSelection = { start: 0, end: 0 };
-    }
-
-    const hasEnteredString = currentSelection.end > previousSelection.start;
-    const hasRemovedString =
-      previousSelection.start < previousSelection.end ||
-      currentValue.length < previousValue.length;
-
-    if (hasEnteredString) {
-      enteredString = currentValue.slice(
-        previousSelection.start,
-        currentSelection.end
-      );
-    }
-
-    if (hasRemovedString) {
-      const removedLength =
-        previousSelection.end - previousSelection.start ||
-        previousValue.length - currentValue.length;
-      removedString = previousValue.slice(
-        previousSelection.end - removedLength,
-        previousSelection.start
-      );
-    }
-
-    return {
-      currentState: {
-        value: currentValue,
-        selection: currentSelection
-      },
-      previousState: {
-        value: previousValue,
-        selection: previousSelection
-      },
-      enteredString,
-      removedString
-    };
-  }
-
   return {
     inputRef,
     getInputState,
     getLastInputState,
-    setInputState,
-    getInputChangeState
+    setInputState
   };
 }
 
