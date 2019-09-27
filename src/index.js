@@ -5,11 +5,15 @@ import PropTypes from "prop-types";
 import { CONTROLLED_PROPS } from "./constants";
 
 import { useInputState, useInputElement, usePrevious } from "./hooks";
-import { validateMaxLength, validateChildren } from "./validate-props";
+import {
+  validateMaxLength,
+  validateChildren,
+  validateMaskPlaceholder
+} from "./validate-props";
 
 import { defer, cancelDefer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
-import { isFunction } from "./utils/helpers";
+import { isFunction, toString } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
 import ChildrenWrapper from "./children-wrapper";
 
@@ -22,38 +26,27 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     beforeMaskedStateChange,
     ...restProps
   } = props;
-  const maskUtils = new MaskUtils({ mask, maskPlaceholder });
 
   validateMaxLength(props);
+  validateMaskPlaceholder(props);
+
+  const maskUtils = new MaskUtils({ mask, maskPlaceholder });
 
   const isMasked = !!mask;
   const isEditable = !restProps.disabled && !restProps.readOnly;
   const isControlled = props.value !== null && props.value !== undefined;
   const previousIsMasked = usePrevious(isMasked);
+  const initialValue = toString(
+    (isControlled ? props.value : props.defaultValue) || ""
+  );
 
   const {
     inputRef,
     getInputState,
     setInputState,
     getLastInputState
-  } = useInputState(
-    (isControlled ? props.value : props.defaultValue) || "",
-    isMasked
-  );
+  } = useInputState(initialValue, isMasked);
   const getInputElement = useInputElement(inputRef);
-
-  if (isMasked && isControlled) {
-    const input = getInputElement();
-    const isFocused = input && isInputFocused(input);
-    const newValue =
-      isFocused || alwaysShowMask || props.value
-        ? maskUtils.formatValue(props.value)
-        : props.value;
-    setInputState({
-      ...getLastInputState(),
-      value: newValue
-    });
-  }
 
   function onChange(event) {
     const currentState = getInputState();
@@ -80,31 +73,38 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     // If autoFocus property is set, focus event fires before the ref handler gets called
     inputRef.current = event.target;
 
-    const { value } = getInputState();
+    const currentValue = getInputState().value;
 
-    if (isMasked && !maskUtils.isValueFilled(value)) {
-      const newValue = maskUtils.formatValue(value);
-      const newSelection = maskUtils.getDefaultSelectionForValue(newValue);
-      let newInputState = { value: newValue, selection: newSelection };
+    if (isMasked && !maskUtils.isValueFilled(currentValue)) {
+      let newValue = maskUtils.formatValue(currentValue);
+      let newSelection = maskUtils.getDefaultSelectionForValue(newValue);
+      let newInputState = {
+        value: newValue,
+        selection: newSelection
+      };
 
       if (beforeMaskedStateChange) {
         newInputState = beforeMaskedStateChange({
           currentState: getInputState(),
           nextState: newInputState
         });
+        newValue = newInputState.value;
+        newSelection = newInputState.selection;
       }
 
       setInputState(newInputState);
 
-      if (value !== newValue && props.onChange) {
+      if (newValue !== currentValue && props.onChange) {
         props.onChange(event);
       }
 
+      // Chrome resets selection after focus event,
+      // so we want to restore it later
       focusDeferId = defer(() => {
         focusDeferId = null;
         setInputState({
           ...getLastInputState(),
-          selection: newInputState.selection
+          selection: newSelection
         });
       });
     }
@@ -117,9 +117,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   function onBlur(event) {
     const currentValue = getInputState().value;
     const lastValue = getLastInputState().value;
+
     if (isMasked && !alwaysShowMask && maskUtils.isValueEmpty(lastValue)) {
-      const newValue = "";
-      const isInputValueChanged = newValue !== currentValue;
+      let newValue = "";
       let newInputState = {
         value: newValue,
         selection: { start: null, end: null }
@@ -130,11 +130,12 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
           currentState: getInputState(),
           nextState: newInputState
         });
+        newValue = newInputState.value;
       }
 
       setInputState(newInputState);
 
-      if (isInputValueChanged && props.onChange) {
+      if (newValue !== currentValue && props.onChange) {
         props.onChange(event);
       }
     }
@@ -191,6 +192,28 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     if (props.onMouseDown) {
       props.onMouseDown(event);
     }
+  }
+
+  // For controlled inputs we want to provide properly formatted
+  // value prop
+  if (isMasked && isControlled) {
+    const input = getInputElement();
+    const isFocused = input && isInputFocused(input);
+    let newValue =
+      isFocused || alwaysShowMask || props.value
+        ? maskUtils.formatValue(props.value)
+        : props.value;
+
+    if (beforeMaskedStateChange) {
+      newValue = beforeMaskedStateChange({
+        nextState: { value: newValue, selection: { start: null, end: null } }
+      }).value;
+    }
+
+    setInputState({
+      ...getLastInputState(),
+      value: newValue
+    });
   }
 
   const lastState = getLastInputState();
@@ -250,15 +273,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     };
   });
 
-  let value = isMasked && isControlled ? lastValue : props.value;
-  if (isControlled && isMasked && beforeMaskedStateChange) {
-    value = beforeMaskedStateChange({
-      nextState: { value, selection: { start: null, end: null } }
-    }).value;
-
-    setInputState({ value, selection: lastSelection });
-  }
-
   const inputProps = {
     ...restProps,
     onFocus,
@@ -274,7 +288,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
         forwardedRef.current = ref;
       }
     },
-    value
+    value: isMasked && isControlled ? lastValue : props.value
   };
 
   if (children) {

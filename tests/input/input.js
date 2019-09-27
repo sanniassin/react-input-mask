@@ -49,18 +49,13 @@ function getInputDOMNode(input) {
   return input;
 }
 
-// TODO: Rewrite createInput
 function createInput(component) {
   const originalRef = component.ref;
   let { props } = component;
-
   let input;
   component = React.cloneElement(component, {
     ref: ref => {
       input = ref;
-      if (input) {
-        input.REACT_INPUT_MASK_TEST_PROPS = component.props;
-      }
 
       if (typeof originalRef === "function") {
         originalRef(ref);

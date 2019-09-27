@@ -10,6 +10,20 @@ export function validateMaxLength(props) {
   );
 }
 
+export function validateMaskPlaceholder(props) {
+  const { mask, maskPlaceholder } = props;
+
+  invariant(
+    !mask ||
+      !maskPlaceholder ||
+      maskPlaceholder.length === 1 ||
+      maskPlaceholder.length === mask.length,
+    "react-input-mask: maskPlaceholder should either be a single character or have the same length as the mask:\n" +
+      `mask: ${mask}\n` +
+      `maskPlaceholder: ${maskPlaceholder}`
+  );
+}
+
 export function validateChildren(props, inputElement) {
   const conflictProps = CONTROLLED_PROPS.filter(
     propId =>

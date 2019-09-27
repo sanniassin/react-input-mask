@@ -36,8 +36,8 @@ export function useInputElement(inputRef) {
 function useDeferLoop(callback) {
   const deferIdRef = useRef(null);
 
-  const runDeferLoop = useCallback(() => {
-    // If there are simulated focus events, runDeferLoop could be
+  const runLoop = useCallback(() => {
+    // If there are simulated focus events, runLoop could be
     // called multiple times without blur or re-render
     if (deferIdRef.current !== null) {
       return;
@@ -51,21 +51,21 @@ function useDeferLoop(callback) {
     loop();
   }, [callback]);
 
-  const stopDeferLoop = useCallback(() => {
+  const stopLoop = useCallback(() => {
     cancelDefer(deferIdRef.current);
     deferIdRef.current = null;
   }, []);
 
   useEffect(() => {
     if (deferIdRef.current) {
-      stopDeferLoop();
-      runDeferLoop();
+      stopLoop();
+      runLoop();
     }
-  }, [runDeferLoop, stopDeferLoop]);
+  }, [runLoop, stopLoop]);
 
   useEffect(cancelDefer, []);
 
-  return [runDeferLoop, stopDeferLoop];
+  return [runLoop, stopLoop];
 }
 
 function useSelection(inputRef, isMasked) {

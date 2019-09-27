@@ -23,3 +23,7 @@ export function repeat(string, n = 1) {
   }
   return result;
 }
+
+export function toString(value) {
+  return `${value}`;
+}
