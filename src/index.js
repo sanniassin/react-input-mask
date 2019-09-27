@@ -2,8 +2,6 @@ import React, { useLayoutEffect, forwardRef } from "react";
 import { findDOMNode } from "react-dom";
 import PropTypes from "prop-types";
 
-import { CONTROLLED_PROPS } from "./constants";
-
 import { useInputState, useInputElement, usePrevious } from "./hooks";
 import {
   validateMaxLength,
@@ -11,7 +9,7 @@ import {
   validateMaskPlaceholder
 } from "./validate-props";
 
-import { defer, cancelDefer } from "./utils/defer";
+import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction, toString } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
@@ -68,7 +66,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     }
   }
 
-  let focusDeferId;
   function onFocus(event) {
     // If autoFocus property is set, focus event fires before the ref handler gets called
     inputRef.current = event.target;
@@ -100,12 +97,8 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
 
       // Chrome resets selection after focus event,
       // so we want to restore it later
-      focusDeferId = defer(() => {
-        focusDeferId = null;
-        setInputState({
-          ...getLastInputState(),
-          selection: newSelection
-        });
+      defer(() => {
+        setInputState(getLastInputState());
       });
     }
 
@@ -265,12 +258,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     }
 
     setInputState(newInputState);
-
-    return () => {
-      if (focusDeferId) {
-        cancelDefer(focusDeferId);
-      }
-    };
   });
 
   const inputProps = {
@@ -292,16 +279,11 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   };
 
   if (children) {
-    const childrenProps = { ...restProps };
-    CONTROLLED_PROPS.forEach(propId => delete childrenProps[propId]);
-    const childrenComponent = children(childrenProps);
-    validateChildren(props, childrenComponent);
+    validateChildren(props, children);
 
     // We wrap children into a class component to be able to find
     // their input element using findDOMNode
-    return (
-      <ChildrenWrapper {...inputProps}>{childrenComponent}</ChildrenWrapper>
-    );
+    return <ChildrenWrapper {...inputProps}>{children}</ChildrenWrapper>;
   }
 
   return <input {...inputProps} />;
@@ -317,6 +299,7 @@ InputMask.defaultProps = {
 InputMask.propTypes = {
   alwaysShowMask: PropTypes.bool,
   beforeMaskedStateChange: PropTypes.func,
+  children: PropTypes.element,
   mask: PropTypes.oneOfType([
     PropTypes.string,
     PropTypes.arrayOf(
@@ -327,8 +310,7 @@ InputMask.propTypes = {
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
   onChange: PropTypes.func,
-  onMouseDown: PropTypes.func,
-  children: PropTypes.func
+  onMouseDown: PropTypes.func
 };
 
 export default InputMask;

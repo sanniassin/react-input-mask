@@ -1216,7 +1216,7 @@ describe("react-input-mask", () => {
   it("should handle regular component as children", async () => {
     let { input } = createInput(
       <Input mask="+7 (999) 999 99 99">
-        {props => <ClassInputComponent {...props} />}
+        <ClassInputComponent />
       </Input>
     );
     input = getInputDOMNode(input);
@@ -1235,7 +1235,7 @@ describe("react-input-mask", () => {
   it("should handle functional component as children", async () => {
     let { input } = createInput(
       <Input mask="+7 (999) 999 99 99">
-        {props => <FunctionalInputComponent {...props} />}
+        <FunctionalInputComponent />
       </Input>
     );
     input = getInputDOMNode(input);
@@ -1265,7 +1265,7 @@ describe("react-input-mask", () => {
           value: event.target.value
         });
       },
-      children: props => <ClassInputComponent {...props} ref={handleRef} />
+      children: <ClassInputComponent ref={handleRef} />
     });
 
     input = getInputDOMNode(input);
@@ -1288,7 +1288,7 @@ describe("react-input-mask", () => {
           value: event.target.value
         });
       },
-      children: props => <FunctionalInputComponent {...props} ref={handleRef} />
+      children: <FunctionalInputComponent ref={handleRef} />
     });
     input = getInputDOMNode(input);
 
