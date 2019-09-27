@@ -33,8 +33,8 @@ export function validateChildren(props, inputElement) {
 
   invariant(
     !conflictProps.length,
-    `react-input-mask: the following props should be passed to the react-input-mask's component and should not be altered in children's function: ${conflictProps.join(
-      ", "
+    `react-input-mask: the following props should be passed to the InputMask component, not to children: ${conflictProps.join(
+      ","
     )}`
   );
 }
