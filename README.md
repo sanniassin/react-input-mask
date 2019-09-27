@@ -2,171 +2,192 @@
 
 [![Build Status](https://img.shields.io/travis/sanniassin/react-input-mask/master.svg?style=flat)](https://travis-ci.org/sanniassin/react-input-mask) [![npm version](https://img.shields.io/npm/v/react-input-mask.svg?style=flat)](https://www.npmjs.com/package/react-input-mask) [![npm downloads](https://img.shields.io/npm/dm/react-input-mask.svg?style=flat)](https://www.npmjs.com/package/react-input-mask)
 
-Input masking component for React. Made with attention to UX. Compatible with IE8+.
+Input masking component for React. Made with attention to UX.
+
+**This is a development branch for version 3.0. For the latest stable version [see v2 branch](https://github.com/sanniassin/react-input-mask/tree/v2).**
 
 #### [Demo](http://sanniassin.github.io/react-input-mask/demo.html)
 
 # Table of Contents
-* [Install](#install)
+* [Installation](#installation)
+* [Usage](#usage)
 * [Properties](#properties)
 * [Examples](#examples)
 * [Known Issues](#known-issues)
 
-# Install
-```npm install react-input-mask --save```
+# Installation
+```npm install react-input-mask@next --save```
 
-Also you can use it without a module bundler
-```html
-<!-- Load React first -->
-<script src="https://unpkg.com/react/dist/react.min.js"></script>
-<script src="https://unpkg.com/react-dom/dist/react-dom.min.js"></script>
-<!-- Will be exported to window.ReactInputMask -->
-<script src="https://unpkg.com/react-input-mask/dist/react-input-mask.min.js"></script>
+react-input-mask requires **React 16.8.0 or later.** If you need support for older versions, use [version 2](https://github.com/sanniassin/react-input-mask/tree/v2).
+
+# Usage
+```jsx
+import React from "react"
+import InputMask from "react-input-mask";
+
+function DateInput(props) {
+  return <InputMask mask="99/99/9999" onChange={props.onChange} value={props.value} />;
+}
 ```
 
 # Properties
-### `mask` : `string`
-Mask string. Default format characters are:<br/>
-`9`: `0-9`<br/>
-`a`: `A-Z, a-z`<br/>
-`*`: `A-Z, a-z, 0-9`
+|                           Name                            |               Type                | Default | Description |
+|        :-----------------------------------------:        |    :-------------------------:    | :-----: | :--------------------------------------------------------------------- |
+|                    **[`mask`](#mask)**                    | `{String\|Array<String, RegExp>}` |         | Mask format |
+|         **[`maskPlaceholder`](#maskplaceholder)**         |            `{String}`             |   `_`   | Placeholder to cover unfilled parts of the mask |
+|          **[`alwaysShowMask`](#alwaysshowmask)**          |            `{Boolean}`            | `false` | Whether mask prefix and placeholder should be displayed when input is empty and has no focus |
+| **[`beforeMaskedStateChange`](#beforemaskedstatechange)** |            `{Function}`           |         | Function to modify value and selection before applying mask |
+|                **[`children`](#children)**                |          `{ReactElement}`         |         | Custom render function for integration with other input components |
 
-Any character can be escaped with a backslash. It will appear as a double backslash in JS strings. For example, a German phone mask with unremoveable prefix +49 will look like <code>mask="+4\\9 99 999 99"</code> or <code>mask={'+4\\\\9 99 999 99'}</code>
 
-### `maskChar` : `string`
-Character to cover unfilled parts of the mask. Default character is "\_". If set to null or empty string, unfilled parts will be empty as in ordinary input.
+### `mask`
 
-### `formatChars` : `object`
-Defines format characters with characters as a keys and corresponding RegExp strings as a values. Default ones:
-```js
-{
-  '9': '[0-9]',
-  'a': '[A-Za-z]',
-  '*': '[A-Za-z0-9]'
-}
+Mask format. Can be either a string or array of characters and regular expressions.<br /><br />
+
+
+```jsx
+<InputMask mask="99/99/99" />
+```
+Simple masks can be defined as strings. The following characters will define mask format:
+
+| Character | Allowed input |
+| :-------: | :-----------: |
+|     9     |      0-9      |
+|     a     |    a-z, A-Z   |
+|     *     | 0-9, a-z, A-Z |
+
+Any format character can be escaped with a backslash.<br /><br />
+
+
+More complex masks can be defined as an array of regular expressions and constant characters.
+```jsx
+// Canadian postal code mask
+const firstLetter = /(?!.*[DFIOQU])[A-VXY]/i;
+const letter = /(?!.*[DFIOQU])[A-Z]/i;
+const digit = /[0-9]/;
+const mask = [firstLetter, digit, letter, " ", digit, letter, digit];
+return <InputMask mask={mask} />;
 ```
 
-### `alwaysShowMask` : `boolean`
-Show mask when input is empty and has no focus.
 
-### `inputRef` : `function`
-Use `inputRef` instead of `ref` if you need input node to manage focus, selection, etc.
+### `maskPlaceholder`
+```jsx
+// Will be rendered as 12/--/--
+<InputMask mask="99/99/99" maskPlaceholder="-" value="12" />
 
-## Experimental :fire:
-The following props are considered experimental because they are more prone to issues and are likely to be changed in the future. Use with caution.
+// Will be rendered as 12/mm/yy
+<InputMask mask="99/99/99" maskPlaceholder="dd/mm/yy" value="12" />
 
-### `beforeMaskedValueChange` : `function`
-In case you need to implement more complex masking behavior, you can provide `beforeMaskedValueChange` function to change masked value and cursor position before it will be applied to the input. `beforeMaskedValueChange` receives following arguments:
-1. **newState** (object): New input state. Contains `value` and `selection` fields. `selection` is null on input blur or when function is called before input mount. Example: `{ value: '12/1_/____', selection: { start: 4, end: 4 } }`
-2. **oldState** (object): Input state before change. Contains `value` and `selection` fields. `selection` is null on input focus or when function is called before input mount.
-3. **userInput** (string): Raw entered or pasted string. `null` if user didn't enter anything (e.g. triggered by deletion or rerender due to props change).
-4. **maskOptions** (object): Mask options. Example:
-```js
-{
-  mask: '99/99/9999',
-  maskChar: '_',
-  alwaysShowMask: false,
-  formatChars: {
-    '9': '[0-9]',
-    'a': '[A-Za-z]',
-    '*': '[A-Za-z0-9]'
-  },
-  permanents: [2, 5] // permanents is an array of indexes of the non-editable characters in the mask
+// Will be rendered as 12/
+<InputMask mask="99/99/99" maskPlaceholder={null} value="12" />
+```
+Character or string to cover unfilled parts of the mask. Default character is "\_". If set to `null` or empty string, unfilled parts will be empty as in a regular input.
+
+
+### `alwaysShowMask`
+
+If enabled, mask prefix and placeholder will be displayed even when input is empty and has no focus.
+
+
+### `beforeMaskedStateChange`
+In case you need to customize masking behavior, you can provide `beforeMaskedStateChange` function to change masked value and cursor position before it's applied to the input.
+
+It receieves an object with `previousState`, `currentState` and `nextState` properties. Each state is an object with `value` and `selection` properites where `value` is a string and selection is an object containing `start` and `end` positions of the selection.
+1. **previousState:** Input state before change. Only defined on `change` event.
+2. **currentState:** Current raw input state. Not defined during component render.
+3. **nextState:** Input state with applied mask. Contains `value` and `selection` fields.
+
+Selection positions will be `null` if input isn't focused and during rendering.
+
+`beforeMaskedStateChange` must return a new state with `value` and `selection`.
+
+```jsx
+// Trim trailing slashes
+function beforeMaskedStateChange({ nextState }) {
+  let { value } = nextState;
+  if (value.endsWith("/")) {
+    value = value.slice(0, -1);
+  }
+
+  return {
+    ...nextState,
+    value
+  };
 }
+
+return <InputMask mask="99/99/99" maskPlaceholder={null} beforeMaskedStateChange={beforeMaskedStateChange} />;
 ```
 
-`beforeMaskedValueChange` must return an object with following fields:
-1. **value** (string): New value.
-2. **selection** (object): New selection. If `selection` in `newState` argument is null, it must be null too.
+Please note that `beforeMaskedStateChange` executes more often than `onChange` and must be pure.
 
-Please note that `beforeMaskedValueChange` executes more often than `onChange` and must be pure.
 
-### `children` : `function`
-**NOTE: To make this feature more reliable, please tell about your use case in [this issue](https://github.com/sanniassin/react-input-mask/issues/139)**
-
-To use another component instead of regular `<input />` pass render function as a children. Function receives `props` argument which contains props that aren't used by react-input-mask's internals. I.e. it passes down every prop except the following ones: `onChange`, `onPaste`, `onMouseDown`, `onFocus`, `onBlur`, `value`, `disabled`, `readOnly`. These properties, if used, should always be passed directly to react-input-mask instead of children and shouldn't be altered in chldren's function.
+### `children`
+To use another component instead of regular `<input />` provide it as children. The following properties, if used, should always be defined on the `InputMask` component itself: `onChange`, `onMouseDown`, `onFocus`, `onBlur`, `value`, `disabled`, `readOnly`.
 ```jsx
 import React from 'react';
 import InputMask from 'react-input-mask';
 import MaterialInput from '@material-ui/core/Input';
 
 // Will work fine
-const Input = (props) => (
-  <InputMask mask="99/99/9999" value={props.value} onChange={props.onChange}>
-    {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline />}
-  </InputMask>
-);
-
-// Will throw an error because InputMask's and children's onChange aren't the same
-const InvalidInput = (props) => (
-  <InputMask mask="99/99/9999" value={props.value}>
-    {(inputProps) => <MaterialInput {...inputProps} type="tel" disableUnderline onChange={props.onChange} />}
-  </InputMask>
-);
-```
-
-# Examples
-```jsx
-import React from 'react';
-import InputMask from 'react-input-mask';
-
-class PhoneInput extends React.Component {
-  render() {
-    return <InputMask {...this.props} mask="+4\9 99 999 99" maskChar=" " />;
-  }
+function Input(props) {
+  return (
+    <InputMask mask="99/99/9999" value={props.value} onChange={props.onChange}>
+      <MaterialInput type="tel" disableUnderline />
+    </InputMask>
+  );
 }
-```
 
-Mask for ZIP Code. Uses beforeMaskedValueChange to omit trailing minus if it wasn't entered by user:
-```jsx
-import React from 'react';
-import InputMask from 'react-input-mask';
-
-class Input extends React.Component {
-  state = {
-    value: ''
-  }
-
-  onChange = (event) => {
-    this.setState({
-      value: event.target.value
-    });
-  }
-
-  beforeMaskedValueChange = (newState, oldState, userInput) => {
-    var { value } = newState;
-    var selection = newState.selection;
-    var cursorPosition = selection ? selection.start : null;
-
-    // keep minus if entered by user
-    if (value.endsWith('-') && userInput !== '-' && !this.state.value.endsWith('-')) {
-      if (cursorPosition === value.length) {
-        cursorPosition--;
-        selection = { start: cursorPosition, end: cursorPosition };
-      }
-      value = value.slice(0, -1);
-    }
-
-    return {
-      value,
-      selection
-    };
-  }
-
-  render() {
-    return <InputMask mask="99999-9999" maskChar={null} value={this.state.value} onChange={this.onChange} beforeMaskedValueChange={this.beforeMaskedValueChange} />;
-  }
+// Will throw an error because InputMask's and children's onChange props aren't the same
+function InvalidInput(props) {
+  return (
+    <InputMask mask="99/99/9999" value={props.value}>
+      <MaterialInput type="tel" disableUnderline onChange={props.onChange} />
+    </InputMask>
+  );
 }
 ```
 
 # Known Issues
 ### Autofill
 Browser's autofill requires either empty value in input or value which exactly matches beginning of the autofilled value. I.e. autofilled value "+1 (555) 123-4567" will work with "+1" or "+1 (5", but won't work with "+1 (\_\_\_) \_\_\_-\_\_\_\_" or "1 (555)". There are several possible solutions:
-1. Set `maskChar` to null and trim space after "+1" with `beforeMaskedValueChange` if no more digits are entered.
+1. Set `maskChar` to null and trim space after "+1" with `beforeMaskedStateChange` if no more digits are entered.
 2. Apply mask only if value is not empty. In general, this is the most reliable solution because we can't be sure about formatting in autofilled value.
 3. Use less formatting in the mask.
 
 Please note that it might lead to worse user experience (should I enter +1 if input is empty?). You should choose what's more important to your users — smooth typing experience or autofill. Phone and ZIP code inputs are very likely to be autofilled and it's a good idea to care about it, while security confirmation code in two-factor authorization shouldn't care about autofill at all.
+
+### Cypress tests
+The following sequence could fail
+```js
+cy.get("input")
+  .focus()
+  .type("12345")
+  .should("have.value", "12/34/5___"); // expected <input> to have value 12/34/5___, but the value was 23/45/____
+````
+
+Since [focus is not an action command](https://docs.cypress.io/api/commands/focus.html#Focus-is-not-an-action-command), it behaves differently than the real user interaction and, therefore, less reliable.
+
+There is a few possible workarounds
+```js
+// Start typing without calling focus() explicitly.
+// type() is an action command and focuses input anyway
+cy.get("input")
+  .type("12345")
+  .should("have.value", "12/34/5___");
+
+// Use click() instead of focus()
+cy.get("input")
+  .click()
+  .type("12345")
+  .should("have.value", "12/34/5___");
+
+// Or wait a little after focus()
+cy.get("input")
+  .focus()
+  .wait(50)
+  .type("12345")
+  .should("have.value", "12/34/5___");
+````
 
 # Thanks
 Thanks to [BrowserStack](https://www.browserstack.com/) for the help with testing on real devices
