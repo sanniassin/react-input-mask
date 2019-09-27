@@ -1,7 +1,7 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-const srcDir = path.resolve(__dirname, "./dev-example");
+const srcDir = path.resolve(__dirname, "./dev");
 
 module.exports = {
   devtool: "cheap-module-source-map",
