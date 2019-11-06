@@ -12,7 +12,6 @@ Input masking component for React. Made with attention to UX.
 * [Installation](#installation)
 * [Usage](#usage)
 * [Properties](#properties)
-* [Examples](#examples)
 * [Known Issues](#known-issues)
 
 # Installation
