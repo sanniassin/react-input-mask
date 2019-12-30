@@ -6,12 +6,12 @@ import {
   getInputSelection,
   isInputFocused
 } from "./utils/input";
+import { isDOMElement } from "./utils/helpers";
 
 export function useInputElement(inputRef) {
   return useCallback(() => {
     let input = inputRef.current;
-    const isDOMNode =
-      typeof window !== "undefined" && input instanceof window.HTMLElement;
+    const isDOMNode = typeof window !== "undefined" && isDOMElement(input);
 
     // workaround for react-test-renderer
     // https://github.com/sanniassin/react-input-mask/issues/147

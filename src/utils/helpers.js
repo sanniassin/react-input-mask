@@ -1,5 +1,8 @@
+function isObjectLike(value) {
+  return typeof value === "object" && value !== null;
+}
 export function isDOMElement(element) {
-  return element instanceof HTMLElement;
+  return isObjectLike(element) && element.nodeType === 1;
 }
 
 export function isFunction(value) {
