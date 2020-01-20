@@ -11,7 +11,7 @@ import {
 
 import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
-import { isFunction, toString } from "./utils/helpers";
+import { isFunction, toString, getElementDocument } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
 import ChildrenWrapper from "./children-wrapper";
 
@@ -145,6 +145,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   function onMouseDown(event) {
     const input = getInputElement();
     const { value } = getInputState();
+    const inputDocument = getElementDocument(input);
 
     if (!isInputFocused(input) && !maskUtils.isValueFilled(value)) {
       const mouseDownX = event.clientX;
@@ -152,7 +153,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
       const mouseDownTime = new Date().getTime();
 
       const mouseUpHandler = mouseUpEvent => {
-        document.removeEventListener("mouseup", mouseUpHandler);
+        inputDocument.removeEventListener("mouseup", mouseUpHandler);
 
         if (!isInputFocused(input)) {
           return;
@@ -179,7 +180,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
         }
       };
 
-      document.addEventListener("mouseup", mouseUpHandler);
+      inputDocument.addEventListener("mouseup", mouseUpHandler);
     }
 
     if (props.onMouseDown) {

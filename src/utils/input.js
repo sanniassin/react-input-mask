@@ -17,5 +17,6 @@ export function getInputSelection(input) {
 }
 
 export function isInputFocused(input) {
-  return document.hasFocus() && document.activeElement === input;
+  const inputDocument = input.ownerDocument;
+  return inputDocument.hasFocus() && inputDocument.activeElement === input;
 }

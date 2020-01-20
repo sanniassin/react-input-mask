@@ -1,5 +1,17 @@
+// Element's window may differ from the one within React instance
+// if element rendered within iframe.
+// See https://github.com/sanniassin/react-input-mask/issues/182
+export function getElementDocument(element) {
+  return element?.ownerDocument;
+}
+
+export function getElementWindow(element) {
+  return getElementDocument(element)?.defaultView;
+}
+
 export function isDOMElement(element) {
-  return element instanceof HTMLElement;
+  const elementWindow = getElementWindow(element);
+  return !!elementWindow && element instanceof elementWindow.HTMLElement;
 }
 
 export function isFunction(value) {
