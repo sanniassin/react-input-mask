@@ -74,7 +74,7 @@ function useSelection(inputRef, isMasked) {
 
   const getSelection = useCallback(() => {
     const input = getInputElement();
-    return getInputSelection(input);
+    return input && getInputSelection(input);
   }, [getInputElement]);
 
   const getLastSelection = useCallback(() => {
@@ -110,6 +110,11 @@ function useSelection(inputRef, isMasked) {
     }
 
     const input = getInputElement();
+
+    if (!input) {
+      return;
+    }
+
     input.addEventListener("focus", runSelectionLoop);
     input.addEventListener("blur", stopSelectionLoop);
 
@@ -134,7 +139,7 @@ function useValue(inputRef, initialValue) {
 
   const getValue = useCallback(() => {
     const input = getInputElement();
-    return input.value;
+    return input && input.value;
   }, [getInputElement]);
 
   const getLastValue = useCallback(() => {
