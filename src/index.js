@@ -220,7 +220,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     }
 
     const input = getInputElement();
-    const isFocused = isInputFocused(input);
+    const isFocused = input && isInputFocused(input);
     const previousSelection = lastSelection;
     const currentState = getInputState();
     let newInputState = { ...currentState };

@@ -181,7 +181,7 @@ export default class MaskUtils {
 
   insertStringAtPosition = (value, string, position) => {
     const { mask, maskPlaceholder } = this.maskOptions;
-    if (!string || position >= mask.length) {
+    if (!string || typeof string !== "string" || position >= mask.length) {
       return value;
     }
 
