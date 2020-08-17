@@ -26,8 +26,7 @@ export function isEmpty(maskOptions, value) {
     .split('')
     .every((character, i) => {
       return isPermanentCharacter(maskOptions, i)
-             ||
-             !isAllowedCharacter(maskOptions, i, character);
+             || !isAllowedCharacter(maskOptions, i, character);
     });
 }
 
@@ -45,8 +44,7 @@ export function getFilledLength(maskOptions, value) {
   for (let i = value.length; i >= prefix.length; i--) {
     const character = value[i];
     const isEnteredCharacter = !isPermanentCharacter(maskOptions, i)
-                               &&
-                               isAllowedCharacter(maskOptions, i, character);
+                               && isAllowedCharacter(maskOptions, i, character);
     if (isEnteredCharacter) {
       filledLength = i + 1;
       break;
@@ -133,15 +131,15 @@ export function insertString(maskOptions, value, insertStr, insertPosition) {
 
   const isUsablePosition = (pos, character) => {
     return !isPermanentCharacter(maskOptions, pos)
-           ||
-           character === mask[pos];
+           || character === mask[pos];
   };
   const isUsableCharacter = (character, pos) => {
-    return !maskChar
-           ||
-           !isPermanentCharacter(maskOptions, pos)
-           ||
-           character !== maskChar;
+    return (
+      !maskChar
+      || maskChar != 0
+      || !isPermanentCharacter(maskOptions, pos)
+      || character !== maskChar
+    );
   };
 
   if (!maskChar && insertPosition > value.length) {
@@ -167,8 +165,7 @@ export function insertString(maskOptions, value, insertStr, insertPosition) {
     }
 
     const isAllowed = isAllowedCharacter(maskOptions, insertPosition, insertCharacter)
-                      ||
-                      insertCharacter === maskChar;
+                      || insertCharacter === maskChar;
     if (!isAllowed) {
       return true;
     }
@@ -200,8 +197,7 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPosit
 
   const isUsablePosition = (pos, character) => {
     return !isPermanentCharacter(maskOptions, pos)
-           ||
-           character === mask[pos];
+           || character === mask[pos];
   };
 
   arrayInsertStr.every((insertCharacter) => {
@@ -215,8 +211,7 @@ export function getInsertStringLength(maskOptions, value, insertStr, insertPosit
     }
 
     const isAllowed = isAllowedCharacter(maskOptions, insertPosition, insertCharacter)
-                      ||
-                      insertCharacter === maskChar;
+                      || insertCharacter === maskChar;
 
     if (isAllowed) {
       insertPosition++;
