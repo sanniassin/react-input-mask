@@ -33,7 +33,7 @@ function DateInput(props) {
 |                           Name                            |               Type                | Default | Description |
 |        :-----------------------------------------:        |    :-------------------------:    | :-----: | :--------------------------------------------------------------------- |
 |                    **[`mask`](#mask)**                    | `{String\|Array<String, RegExp>}` |         | Mask format |
-|         **[`maskPlaceholder`](#maskplaceholder)**         |            `{String}`             |   `_`   | Placeholder to cover unfilled parts of the mask |
+|         **[`maskChar`](#maskphar)**         |            `{String}`             |   `_`   | Placeholder to cover unfilled parts of the mask |
 |          **[`alwaysShowMask`](#alwaysshowmask)**          |            `{Boolean}`            | `false` | Whether mask prefix and placeholder should be displayed when input is empty and has no focus |
 | **[`beforeMaskedStateChange`](#beforemaskedstatechange)** |            `{Function}`           |         | Function to modify value and selection before applying mask |
 |                **[`children`](#children)**                |          `{ReactElement}`         |         | Custom render function for integration with other input components |
@@ -69,16 +69,16 @@ return <InputMask mask={mask} />;
 ```
 
 
-### `maskPlaceholder`
+### `maskChar`
 ```jsx
 // Will be rendered as 12/--/--
-<InputMask mask="99/99/99" maskPlaceholder="-" value="12" />
+<InputMask mask="99/99/99" maskChar="-" value="12" />
 
 // Will be rendered as 12/mm/yy
-<InputMask mask="99/99/99" maskPlaceholder="dd/mm/yy" value="12" />
+<InputMask mask="99/99/99" maskChar="dd/mm/yy" value="12" />
 
 // Will be rendered as 12/
-<InputMask mask="99/99/99" maskPlaceholder={null} value="12" />
+<InputMask mask="99/99/99" maskChar={null} value="12" />
 ```
 Character or string to cover unfilled parts of the mask. Default character is "\_". If set to `null` or empty string, unfilled parts will be empty as in a regular input.
 
@@ -114,7 +114,7 @@ function beforeMaskedStateChange({ nextState }) {
   };
 }
 
-return <InputMask mask="99/99/99" maskPlaceholder={null} beforeMaskedStateChange={beforeMaskedStateChange} />;
+return <InputMask mask="99/99/99" maskChar={null} beforeMaskedStateChange={beforeMaskedStateChange} />;
 ```
 
 Please note that `beforeMaskedStateChange` executes more often than `onChange` and must be pure.
