@@ -1,5 +1,4 @@
 import React from 'react';
-import { findDOMNode } from 'react-dom';
 import invariant from 'invariant';
 import warning from 'warning';
 
@@ -27,6 +26,8 @@ class InputElement extends React.Component {
 
   constructor(props) {
     super(props);
+
+    this.handleRef = React.createRef()
 
     const { mask, maskChar, formatChars, alwaysShowMask, beforeMaskedValueChange } = props;
     let { defaultValue, value } = props;
@@ -206,7 +207,7 @@ class InputElement extends React.Component {
       return null;
     }
 
-    let input = findDOMNode(this);
+    let input = this.handleRef && this.handleRef.current;
     const isDOMNode = typeof window !== 'undefined'
                       &&
                       input instanceof window.Element;
@@ -537,12 +538,6 @@ class InputElement extends React.Component {
         selection: this.getSelection()
       };
       this.setInputValue('');
-    }
-  }
-
-  handleRef = (ref) => {
-    if (this.props.children == null && isFunction(this.props.inputRef)) {
-      this.props.inputRef(ref);
     }
   }
 
