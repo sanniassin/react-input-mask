@@ -222,16 +222,73 @@ export default class MaskUtils {
     return value;
   };
 
+  isAutoFilled = (
+    { value, selection },
+    { value: previousValue, selection: previousSelection }
+  ) => {
+    const { maskPlaceholder } = this.maskOptions;
+    if (
+      // Autocomplete will set the previous selection to the length of the autocompleted value
+      previousSelection.end < previousValue.length &&
+      selection.end === value.length
+    ) {
+      return true;
+    }
+
+    if (
+      selection.length === 0 &&
+      previousSelection.length === 0 &&
+      selection.start < previousSelection.start &&
+      selection.start === value.length
+    ) {
+      // When both previous and current state have no selection length, the cursor index is less than it was before
+      // and the cursor is at the end of the new value
+      // Check each character to see if there are any changes which is only possible if the value was autocompleted.
+      return value.split("").some((char, index) => {
+        return char !== previousValue[index];
+      });
+    }
+
+    if (
+      !maskPlaceholder &&
+      previousSelection.length === 0 &&
+      previousValue.length < value.length
+    ) {
+      // If there is no mask placeholder, the selection is 0 and the new value is longer than the previous value
+      // (characters have been added)
+      return value.split("").some((char, index) => {
+        // Check each character before the selection to see if they have changed
+        if (index < previousSelection.start) {
+          // Any character before the previous selection that changes will be changed because of autofill
+          return char !== previousValue[index];
+        }
+        return false;
+      });
+    }
+
+    return false;
+  };
+
   processChange = (currentState, previousState) => {
     const { mask, prefix, lastEditablePosition } = this.maskOptions;
     const { value, selection } = currentState;
-    const previousValue = previousState.value;
-    const previousSelection = previousState.selection;
+    let previousValue = previousState.value;
+    let previousSelection = previousState.selection;
     let newValue = value;
     let enteredString = "";
     let formattedEnteredStringLength = 0;
     let removedLength = 0;
     let cursorPosition = Math.min(previousSelection.start, selection.start);
+
+    if (this.isAutoFilled(currentState, previousState)) {
+      // If the value is autocompleted treat it as if the input started empty.
+      previousValue = prefix;
+      previousSelection = {
+        start: 0,
+        end: 0,
+        length: 0
+      };
+    }
 
     if (selection.end > previousSelection.start) {
       enteredString = newValue.slice(previousSelection.start, selection.end);
@@ -248,7 +305,14 @@ export default class MaskUtils {
       removedLength = previousValue.length - newValue.length;
     }
 
-    newValue = previousValue;
+    if (
+      !(
+        newValue.length === previousValue.length &&
+        selection.end === previousSelection.start
+      )
+    ) {
+      newValue = previousValue;
+    }
 
     if (removedLength) {
       if (removedLength === 1 && !previousSelection.length) {
