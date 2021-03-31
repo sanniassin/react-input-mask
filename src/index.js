@@ -268,11 +268,11 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     onChange: isMasked && isEditable ? onChange : props.onChange,
     onMouseDown: isMasked && isEditable ? onMouseDown : props.onMouseDown,
     ref: ref => {
-      inputRef.current = findDOMNode(ref);
+      if (ref) inputRef.current = findDOMNode(ref);
 
-      if (isFunction(forwardedRef)) {
+      if (ref && isFunction(forwardedRef)) {
         forwardedRef(ref);
-      } else if (forwardedRef !== null && typeof forwardedRef === "object") {
+      } else if (ref && forwardedRef !== null && typeof forwardedRef === "object") {
         forwardedRef.current = ref;
       }
     },
