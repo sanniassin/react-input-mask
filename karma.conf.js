@@ -21,8 +21,6 @@ module.exports = config => {
 
     // list of files / patterns to load in the browser
     files: [
-      "node_modules/@babel/polyfill/dist/polyfill.min.js",
-      "node_modules/console-polyfill/index.js",
       "tests/input/*.js"
     ],
 
