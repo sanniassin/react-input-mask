@@ -36,12 +36,12 @@ export default class MaskUtils {
     return new RegExp(charRule).test(character);
   };
 
-  isPositionEditable = position => {
+  isPositionEditable = (position) => {
     const { mask, permanents } = this.maskOptions;
     return position < mask.length && permanents.indexOf(position) === -1;
   };
 
-  isValueEmpty = value => {
+  isValueEmpty = (value) => {
     return value.split("").every((character, position) => {
       return (
         !this.isPositionEditable(position) ||
@@ -50,19 +50,19 @@ export default class MaskUtils {
     });
   };
 
-  isValueFilled = value => {
+  isValueFilled = (value) => {
     return (
       this.getFilledLength(value) === this.maskOptions.lastEditablePosition + 1
     );
   };
 
-  getDefaultSelectionForValue = value => {
+  getDefaultSelectionForValue = (value) => {
     const filledLength = this.getFilledLength(value);
     const cursorPosition = this.getRightEditablePosition(filledLength);
     return { start: cursorPosition, end: cursorPosition };
   };
 
-  getFilledLength = value => {
+  getFilledLength = (value) => {
     const characters = value.split("");
     const lastFilledIndex = findLastIndex(characters, (character, position) => {
       return (
@@ -82,7 +82,7 @@ export default class MaskUtils {
     return insertedValue.length - position;
   };
 
-  getLeftEditablePosition = position => {
+  getLeftEditablePosition = (position) => {
     for (let i = position; i >= 0; i--) {
       if (this.isPositionEditable(i)) {
         return i;
@@ -91,7 +91,7 @@ export default class MaskUtils {
     return null;
   };
 
-  getRightEditablePosition = position => {
+  getRightEditablePosition = (position) => {
     const { mask } = this.maskOptions;
     for (let i = position; i < mask.length; i++) {
       if (this.isPositionEditable(i)) {
@@ -101,7 +101,7 @@ export default class MaskUtils {
     return null;
   };
 
-  formatValue = value => {
+  formatValue = (value) => {
     const { maskPlaceholder, mask } = this.maskOptions;
 
     if (!maskPlaceholder) {
@@ -287,7 +287,7 @@ export default class MaskUtils {
     return {
       value: newValue,
       enteredString,
-      selection: { start: cursorPosition, end: cursorPosition }
+      selection: { start: cursorPosition, end: cursorPosition },
     };
   };
 }

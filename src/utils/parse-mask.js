@@ -1,6 +1,6 @@
 import { defaultFormatChars } from "../constants";
 
-export default function({ mask, maskPlaceholder }) {
+export default function ({ mask, maskPlaceholder }) {
   const permanents = [];
 
   if (!mask) {
@@ -9,14 +9,14 @@ export default function({ mask, maskPlaceholder }) {
       mask: null,
       prefix: null,
       lastEditablePosition: null,
-      permanents: []
+      permanents: [],
     };
   }
 
   if (typeof mask === "string") {
     let isPermanent = false;
     let parsedMaskString = "";
-    mask.split("").forEach(character => {
+    mask.split("").forEach((character) => {
       if (!isPermanent && character === "\\") {
         isPermanent = true;
       } else {
@@ -54,7 +54,7 @@ export default function({ mask, maskPlaceholder }) {
       maskPlaceholder = maskPlaceholder.split("");
     }
 
-    permanents.forEach(position => {
+    permanents.forEach((position) => {
       maskPlaceholder[position] = mask[position];
     });
 
@@ -63,7 +63,7 @@ export default function({ mask, maskPlaceholder }) {
 
   const prefix = permanents
     .filter((position, index) => position === index)
-    .map(position => mask[position])
+    .map((position) => mask[position])
     .join("");
 
   let lastEditablePosition = mask.length - 1;
@@ -76,6 +76,6 @@ export default function({ mask, maskPlaceholder }) {
     prefix,
     mask,
     lastEditablePosition,
-    permanents
+    permanents,
   };
 }

@@ -12,7 +12,7 @@ export function getInputSelection(input) {
   return {
     start,
     end,
-    length: end - start
+    length: end - start,
   };
 }
 

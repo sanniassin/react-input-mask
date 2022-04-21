@@ -1,4 +1,4 @@
-import { babel } from "@rollup/plugin-babel"
+import { babel } from "@rollup/plugin-babel";
 import { terser } from "rollup-plugin-terser";
 import resolve from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
@@ -9,7 +9,7 @@ const input = "./src/index.js";
 
 // Treat as externals all not relative and not absolute paths
 // e.g. 'react' to prevent duplications in user bundle.
-const isExternal = id =>
+const isExternal = (id) =>
   !id.startsWith("\0") && !id.startsWith(".") && !id.startsWith("/");
 
 const external = ["react", "react-dom"];
@@ -22,19 +22,19 @@ const plugins = [
 const minifiedPlugins = [
   ...plugins,
   replace({
-    "process.env.NODE_ENV": '"production"'
+    "process.env.NODE_ENV": '"production"',
   }),
   babel({
     babelHelpers: "bundled",
     babelrc: false,
     plugins: [
       "babel-plugin-minify-dead-code-elimination",
-      "babel-plugin-transform-react-remove-prop-types"
-    ]
+      "babel-plugin-transform-react-remove-prop-types",
+    ],
   }),
   terser({
-    compress: { warnings: false }
-  })
+    compress: { warnings: false },
+  }),
 ];
 
 export default [
@@ -44,15 +44,15 @@ export default [
       file: "dist/react-input-mask.js",
       format: "umd",
       name: "ReactInputMask",
-      globals: { react: "React", "react-dom": "ReactDOM" }
+      globals: { react: "React", "react-dom": "ReactDOM" },
     },
     external,
     plugins: [
       ...plugins,
       replace({
-        "process.env.NODE_ENV": '"development"'
-      })
-    ]
+        "process.env.NODE_ENV": '"development"',
+      }),
+    ],
   },
 
   {
@@ -61,23 +61,23 @@ export default [
       file: "dist/react-input-mask.min.js",
       format: "umd",
       name: "ReactInputMask",
-      globals: { react: "React", "react-dom": "ReactDOM" }
+      globals: { react: "React", "react-dom": "ReactDOM" },
     },
     external,
-    plugins: minifiedPlugins
+    plugins: minifiedPlugins,
   },
 
   {
     input,
     output: { file: "lib/react-input-mask.development.js", format: "cjs" },
     external: isExternal,
-    plugins
+    plugins,
   },
 
   {
     input,
     output: { file: "lib/react-input-mask.production.min.js", format: "cjs" },
     external: isExternal,
-    plugins: minifiedPlugins
-  }
+    plugins: minifiedPlugins,
+  },
 ];

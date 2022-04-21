@@ -7,14 +7,14 @@ module.exports = {
   devtool: "cheap-module-source-map",
   context: srcDir,
   performance: {
-    hints: false
+    hints: false,
   },
   entry: "./index.js",
   output: {
-    filename: "[name].js"
+    filename: "[name].js",
   },
   resolve: {
-    modules: ["node_modules", "."]
+    modules: ["node_modules", "."],
   },
   module: {
     rules: [
@@ -23,15 +23,12 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: [
-              "@babel/preset-env",
-              "@babel/preset-react"
-            ]
-          }
+            presets: ["@babel/preset-env", "@babel/preset-react"],
+          },
         },
-        exclude: /node_modules/
-      }
-    ]
+        exclude: /node_modules/,
+      },
+    ],
   },
   devServer: {
     host: "0.0.0.0",
@@ -39,7 +36,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: "index.html"
-    })
-  ]
+      template: "index.html",
+    }),
+  ],
 };
