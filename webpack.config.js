@@ -24,7 +24,7 @@ module.exports = {
           loader: "babel-loader",
           options: {
             presets: [
-              ["@babel/preset-env", { targets: "Chrome > 70" }],
+              "@babel/preset-env",
               "@babel/preset-react"
             ]
           }
@@ -36,7 +36,6 @@ module.exports = {
   devServer: {
     host: "0.0.0.0",
     port: 9000,
-    disableHostCheck: true
   },
   plugins: [
     new HtmlWebpackPlugin({
