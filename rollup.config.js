@@ -1,4 +1,4 @@
-import babel from "rollup-plugin-babel";
+import { babel } from "@rollup/plugin-babel"
 import { terser } from "rollup-plugin-terser";
 import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
@@ -14,7 +14,7 @@ const isExternal = id =>
 
 const external = ["react", "react-dom"];
 const plugins = [
-  babel(),
+  babel({ babelHelpers: "bundled" }),
   resolve(),
   commonjs(),
   protoToAssign(),
@@ -25,6 +25,7 @@ const minifiedPlugins = [
     "process.env.NODE_ENV": '"production"'
   }),
   babel({
+    babelHelpers: "bundled",
     babelrc: false,
     plugins: [
       "babel-plugin-minify-dead-code-elimination",
