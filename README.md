@@ -188,5 +188,11 @@ cy.get("input")
   .should("have.value", "12/34/5___");
 ````
 
+# Building
+
+Running `npm install` runs `lint`, `test`, `clean` and `build` scripts too.
+
+Set the `CHROME_BIN` environment variable which is the path to the Chrome binary to prevent karma errors in `npm run test`.
+
 # Thanks
 Thanks to [BrowserStack](https://www.browserstack.com/) for the help with testing on real devices
