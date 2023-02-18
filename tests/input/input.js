@@ -53,16 +53,18 @@ function createInput(component) {
   const originalRef = component.ref;
   let { props } = component;
   let input;
-  component = React.cloneElement(component, {
-    ref: ref => {
-      input = ref;
+  const refCallback = node => {
+    input = node;
 
-      if (typeof originalRef === "function") {
-        originalRef(ref);
-      } else if (originalRef !== null && typeof originalRef === "object") {
-        originalRef.current = ref;
-      }
+    if (typeof originalRef === "function") {
+      originalRef(node);
+    } else if (originalRef !== null && typeof originalRef === "object") {
+      originalRef.current = node;
     }
+  };
+
+  component = React.cloneElement(component, {
+    ref: refCallback
   });
 
   function setProps(newProps) {
@@ -1253,8 +1255,8 @@ describe("react-input-mask", () => {
 
   it("should handle children change", async () => {
     let { input, setProps } = createInput(<Input mask="+7 (999) 999 99 99" />);
-    function handleRef(ref) {
-      input = ref;
+    function handleRef(node) {
+      input = node;
     }
 
     setProps({

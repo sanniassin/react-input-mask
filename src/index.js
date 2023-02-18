@@ -261,21 +261,23 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     setInputState(newInputState);
   });
 
+  const refCallback = node => {
+    inputRef.current = findDOMNode(node);
+
+    // if a ref callback is passed to InputMask
+    if (isFunction(forwardedRef)) {
+      forwardedRef(node);
+    } else if (forwardedRef !== null && typeof forwardedRef === "object") {
+      forwardedRef.current = node;
+    }
+  };
+
   const inputProps = {
     ...restProps,
     onFocus,
     onBlur,
     onChange: isMasked && isEditable ? onChange : props.onChange,
     onMouseDown: isMasked && isEditable ? onMouseDown : props.onMouseDown,
-    ref: ref => {
-      inputRef.current = findDOMNode(ref);
-
-      if (isFunction(forwardedRef)) {
-        forwardedRef(ref);
-      } else if (forwardedRef !== null && typeof forwardedRef === "object") {
-        forwardedRef.current = ref;
-      }
-    },
     value: isMasked && isControlled ? lastValue : props.value
   };
 
@@ -284,10 +286,16 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
 
     // We wrap children into a class component to be able to find
     // their input element using findDOMNode
-    return <ChildrenWrapper {...inputProps}>{children}</ChildrenWrapper>;
+    // {@link https://github.com/facebook/react/issues/4213#issuecomment-115019321}
+    // > you don't want to accidentally transfer a ref by using the property spread
+    return (
+      <ChildrenWrapper ref={refCallback} {...inputProps}>
+        {children}
+      </ChildrenWrapper>
+    );
   }
 
-  return <input {...inputProps} />;
+  return <input ref={refCallback} {...inputProps} />;
 });
 
 InputMask.displayName = "InputMask";
