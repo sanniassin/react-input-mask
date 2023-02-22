@@ -1090,7 +1090,7 @@ describe("react-input-mask", () => {
   });
 
   it("should allow to modify value with beforeMaskedStateChange", async () => {
-    function beforeMaskedStateChange({ nextState }) {
+    const beforeMaskedStateChange = ({ nextState }) => {
       const placeholder = "DD/MM/YYYY";
       const maskPlaceholder = "_";
       const value = nextState.value
@@ -1107,13 +1107,13 @@ describe("react-input-mask", () => {
         ...nextState,
         value
       };
-    }
+    };
 
     const { input, setProps } = createInput(
       <Input
         mask="99/99/9999"
         value=""
-        beforeMaskedStateChange={beforeMaskedStateChange} // eslint-disable-line react/jsx-no-bind
+        beforeMaskedStateChange={beforeMaskedStateChange}
       />
     );
     expect(input.value).to.equal("");

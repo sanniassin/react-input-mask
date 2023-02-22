@@ -6,9 +6,9 @@ import InputMask from "../src";
 function Input() {
   const [value, setValue] = useState("");
 
-  function onChange(event) {
+  const onChange = event => {
     setValue(event.target.value);
-  }
+  };
 
   return <InputMask mask="99/99/9999" value={value} onChange={onChange} />;
 }
