@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, forwardRef } from "react";
-import { findDOMNode } from "react-dom";
 import PropTypes from "prop-types";
 
 import { useInputState, useInputElement, usePrevious } from "./hooks";
@@ -13,7 +12,6 @@ import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction, toString, getElementDocument } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
-import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
@@ -262,7 +260,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   });
 
   const refCallback = node => {
-    inputRef.current = findDOMNode(node);
+    inputRef.current = node;
 
     // if a ref callback is passed to InputMask
     if (isFunction(forwardedRef)) {
@@ -284,14 +282,12 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   if (children) {
     validateChildren(props, children);
 
-    // We wrap children into a class component to be able to find
-    // their input element using findDOMNode
     // {@link https://github.com/facebook/react/issues/4213#issuecomment-115019321}
     // > you don't want to accidentally transfer a ref by using the property spread
     return (
-      <ChildrenWrapper ref={refCallback} {...inputProps}>
+      <div ref={refCallback} {...inputProps}>
         {children}
-      </ChildrenWrapper>
+      </div>
     );
   }
 
