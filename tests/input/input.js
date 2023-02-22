@@ -1113,7 +1113,7 @@ describe("react-input-mask", () => {
       <Input
         mask="99/99/9999"
         value=""
-        beforeMaskedStateChange={beforeMaskedStateChange}
+        beforeMaskedStateChange={beforeMaskedStateChange} // eslint-disable-line react/jsx-no-bind
       />
     );
     expect(input.value).to.equal("");
