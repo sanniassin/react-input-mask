@@ -292,8 +292,8 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     // {@link https://github.com/facebook/react/issues/4213#issuecomment-115019321}
     // > you don't want to accidentally transfer a ref by using the property spread
     return (
-      <ChildrenWrapper ref={refCallback} {...inputProps}>
-        {children}
+      <ChildrenWrapper {...inputProps}>
+        <div ref={refCallback}>{children}</div>
       </ChildrenWrapper>
     );
   }
