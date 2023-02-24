@@ -12,6 +12,7 @@ import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction, toString, getElementDocument } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
+import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
@@ -142,6 +143,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   // https://github.com/sanniassin/react-input-mask/issues/108
   function onMouseDown(event) {
     const input = getInputElement();
+    if (!input) {
+      return;
+    }
     const { value } = getInputState();
     const inputDocument = getElementDocument(input);
 
@@ -218,6 +222,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     }
 
     const input = getInputElement();
+    if (!input) {
+      return;
+    }
     const isFocused = isInputFocused(input);
     const previousSelection = lastSelection;
     const currentState = getInputState();
@@ -285,9 +292,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     // {@link https://github.com/facebook/react/issues/4213#issuecomment-115019321}
     // > you don't want to accidentally transfer a ref by using the property spread
     return (
-      <div ref={refCallback} {...inputProps}>
+      <ChildrenWrapper ref={refCallback} {...inputProps}>
         {children}
-      </div>
+      </ChildrenWrapper>
     );
   }
 
