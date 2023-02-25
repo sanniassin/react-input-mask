@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, forwardRef } from "react";
-import { findDOMNode } from "react-dom";
 import PropTypes from "prop-types";
 
 import { useInputState, useInputElement, usePrevious } from "./hooks";
@@ -13,7 +12,6 @@ import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction, toString, getElementDocument } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
-import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
@@ -144,6 +142,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   // https://github.com/sanniassin/react-input-mask/issues/108
   function onMouseDown(event) {
     const input = getInputElement();
+    if (!input) {
+      return;
+    }
     const { value } = getInputState();
     const inputDocument = getElementDocument(input);
 
@@ -220,6 +221,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     }
 
     const input = getInputElement();
+    if (!input) {
+      return;
+    }
     const isFocused = isInputFocused(input);
     const previousSelection = lastSelection;
     const currentState = getInputState();
@@ -261,33 +265,35 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     setInputState(newInputState);
   });
 
+  const refCallback = node => {
+    inputRef.current = node;
+
+    // if a ref callback is passed to InputMask
+    if (isFunction(forwardedRef)) {
+      forwardedRef(node);
+    } else if (forwardedRef !== null && typeof forwardedRef === "object") {
+      forwardedRef.current = node;
+    }
+  };
+
   const inputProps = {
     ...restProps,
     onFocus,
     onBlur,
     onChange: isMasked && isEditable ? onChange : props.onChange,
     onMouseDown: isMasked && isEditable ? onMouseDown : props.onMouseDown,
-    ref: ref => {
-      inputRef.current = findDOMNode(ref);
-
-      if (isFunction(forwardedRef)) {
-        forwardedRef(ref);
-      } else if (forwardedRef !== null && typeof forwardedRef === "object") {
-        forwardedRef.current = ref;
-      }
-    },
     value: isMasked && isControlled ? lastValue : props.value
   };
 
   if (children) {
     validateChildren(props, children);
 
-    // We wrap children into a class component to be able to find
-    // their input element using findDOMNode
-    return <ChildrenWrapper {...inputProps}>{children}</ChildrenWrapper>;
+    // {@link https://stackoverflow.com/q/63149840/327074}
+    const onlyChild = React.Children.only(children);
+    return React.cloneElement(onlyChild, { ...inputProps, ref: refCallback });
   }
 
-  return <input {...inputProps} />;
+  return <input ref={refCallback} {...inputProps} />;
 });
 
 InputMask.displayName = "InputMask";
