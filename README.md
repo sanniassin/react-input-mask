@@ -146,7 +146,7 @@ function InvalidInput(props) {
 }
 ```
 
-**Caveat**: `React.StrictMode` gives a warning for that previous method used for finding the input DOM node within the React component children. To remove this the children component is now either:
+**Caveat**: To support both class and function component children InputMask used to use `ReactDOM.findDOMNode`, which is now [deprecated](https://reactjs.org/docs/strict-mode.html#warning-about-deprecated-finddomnode-usage). To handle removing this, direct child class components are **no longer supported**. The `children` component is now either:
 
 1. a function component that implments `React.forwardRef`
 
@@ -176,14 +176,12 @@ function InvalidInput(props) {
     });
     ```
 
-Direct child class components are no longer supported.
-
 For more information see the [Material UI Composition guide - caveat with Refs](https://mui.com/material-ui/guides/composition/#caveat-with-refs).
 
 # Known Issues
 ### Autofill
 Browser's autofill requires either empty value in input or value which exactly matches beginning of the autofilled value. I.e. autofilled value "+1 (555) 123-4567" will work with "+1" or "+1 (5", but won't work with "+1 (\_\_\_) \_\_\_-\_\_\_\_" or "1 (555)". There are several possible solutions:
-1. Set `maskChar` to null and trim space after "+1" with `beforeMaskedStateChange` if no more digits are entered.
+1. Set `maskPlaceholder` to null and trim space after "+1" with `beforeMaskedStateChange` if no more digits are entered.
 2. Apply mask only if value is not empty. In general, this is the most reliable solution because we can't be sure about formatting in autofilled value.
 3. Use less formatting in the mask.
 
