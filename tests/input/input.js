@@ -7,7 +7,6 @@ import { expect } from "chai"; // eslint-disable-line import/no-extraneous-depen
 import * as deferUtils from "../../src/utils/defer";
 import Input from "../../src";
 import { getInputSelection } from "../../src/utils/input";
-import { isDOMElement } from "../../src/utils/helpers";
 
 document.body.innerHTML = '<div id="container"></div>';
 const container = document.getElementById("container");
@@ -34,10 +33,6 @@ async function waitForPendingSelection() {
 }
 
 function getInputDOMNode(input) {
-  if (!isDOMElement(input)) {
-    input = ReactDOM.findDOMNode(input);
-  }
-
   if (input.nodeName !== "INPUT") {
     input = input.querySelector("input");
   }
@@ -141,15 +136,23 @@ async function simulateDeletePress(input) {
 }
 
 // eslint-disable-next-line react/prefer-stateless-function
-class ClassInputComponent extends React.Component {
+class InnerClassInputComponent extends React.Component {
   render() {
+    // eslint-disable-next-line react/prop-types
+    const { innerRef, ...restProps } = this.props;
     return (
       <div>
-        <input {...this.props} />
+        <input ref={innerRef} {...restProps} />
       </div>
     );
   }
 }
+
+const ClassInputComponent = React.forwardRef((props, ref) => {
+  // simulate if a ref is defined on an upper div
+  // instead of directly on the input
+  return <InnerClassInputComponent innerRef={ref} {...props} />;
+});
 
 const FunctionalInputComponent = React.forwardRef((props, ref) => {
   return (
@@ -1253,9 +1256,8 @@ describe("react-input-mask", () => {
     expect(getInputSelection(input).end).to.equal(5);
   });
 
-  /*
-  // ignoring this test as I don't fully understand why it fails
-  it("should handle children change", async () => {
+  // ignoring this test as I don't understand why it fails
+  it.skip("should handle children change", async () => {
     let { input, setProps } = createInput(<Input mask="+7 (999) 999 99 99" />);
     function handleRef(node) {
       input = node;
@@ -1313,7 +1315,6 @@ describe("react-input-mask", () => {
 
     expect(input.value).to.equal("+7 (22_) ___ __ __");
   });
-  */
 
   it("should handle change event without focus", async () => {
     const { input } = createInput(

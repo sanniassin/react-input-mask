@@ -12,7 +12,6 @@ import { defer } from "./utils/defer";
 import { isInputFocused } from "./utils/input";
 import { isFunction, toString, getElementDocument } from "./utils/helpers";
 import MaskUtils from "./utils/mask";
-import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
@@ -289,13 +288,9 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   if (children) {
     validateChildren(props, children);
 
-    // {@link https://github.com/facebook/react/issues/4213#issuecomment-115019321}
-    // > you don't want to accidentally transfer a ref by using the property spread
-    return (
-      <ChildrenWrapper {...inputProps}>
-        <div ref={refCallback}>{children}</div>
-      </ChildrenWrapper>
-    );
+    // {@link https://stackoverflow.com/q/63149840/327074}
+    const onlyChild = React.Children.only(children);
+    return React.cloneElement(onlyChild, { ...inputProps, ref: refCallback });
   }
 
   return <input ref={refCallback} {...inputProps} />;
