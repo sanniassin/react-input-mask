@@ -146,6 +146,40 @@ function InvalidInput(props) {
 }
 ```
 
+**Caveat**: `React.StrictMode` gives a warning for that previous method used for finding the input DOM node within the React component children. To remove this the children component is now either:
+
+1. a function component that implments `React.forwardRef`
+
+    ```jsx
+    const FunctionalInputComponent = React.forwardRef((props, ref) => {
+      return (
+        <input ref={ref} {...props} />
+      );
+    });
+    ```
+2. a class component that is wrapped in a function component that implements `React.forwardRef` (`innerRef` can be called anything as long as it's not `ref`)
+
+    ```jsx
+    class InnerClassInputComponent extends React.Component {
+      render() {
+        const { innerRef, ...restProps } = this.props;
+        return (
+          <div>
+            <input ref={innerRef} {...restProps} />
+          </div>
+        );
+      }
+    }
+
+    const ClassInputComponent = React.forwardRef((props, ref) => {
+      return <InnerClassInputComponent innerRef={ref} {...props} />;
+    });
+    ```
+
+Direct child class components are no longer supported.
+
+For more information see the [Material UI Composition guide - caveat with Refs](https://mui.com/material-ui/guides/composition/#caveat-with-refs).
+
 # Known Issues
 ### Autofill
 Browser's autofill requires either empty value in input or value which exactly matches beginning of the autofilled value. I.e. autofilled value "+1 (555) 123-4567" will work with "+1" or "+1 (5", but won't work with "+1 (\_\_\_) \_\_\_-\_\_\_\_" or "1 (555)". There are several possible solutions:
@@ -162,11 +196,12 @@ cy.get("input")
   .focus()
   .type("12345")
   .should("have.value", "12/34/5___"); // expected <input> to have value 12/34/5___, but the value was 23/45/____
-````
+```
 
 Since [focus is not an action command](https://docs.cypress.io/api/commands/focus.html#Focus-is-not-an-action-command), it behaves differently than the real user interaction and, therefore, less reliable.
 
 There is a few possible workarounds
+
 ```js
 // Start typing without calling focus() explicitly.
 // type() is an action command and focuses input anyway
@@ -186,7 +221,7 @@ cy.get("input")
   .wait(50)
   .type("12345")
   .should("have.value", "12/34/5___");
-````
+```
 
 # Building
 
