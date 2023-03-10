@@ -148,8 +148,8 @@ class InputElement extends React.Component {
       newSelection = modifiedValue.selection;
     }
 
+    const isValueChanged = newValue !== this.value
     this.value = newValue;
-    const isValueChanged = this.getInputValue() !== this.value;
 
     // render depends on this.maskOptions and this.value,
     // call forceUpdate to keep it in sync
@@ -487,6 +487,8 @@ class InputElement extends React.Component {
     if (isFunction(this.props.onBlur)) {
       this.props.onBlur(event);
     }
+
+    this.forceUpdate();
   }
 
   onMouseDown = (event) => {
