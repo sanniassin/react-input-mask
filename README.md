@@ -63,7 +63,7 @@ More complex masks can be defined as an array of regular expressions and constan
 // Canadian postal code mask
 const firstLetter = /(?!.*[DFIOQU])[A-VXY]/i;
 const letter = /(?!.*[DFIOQU])[A-Z]/i;
-const digit = /[0-9]/;
+const digit = /[0-9۰-۹]/;
 const mask = [firstLetter, digit, letter, " ", digit, letter, digit];
 return <InputMask mask={mask} />;
 ```
