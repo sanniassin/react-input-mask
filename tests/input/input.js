@@ -180,7 +180,7 @@ describe("react-input-mask", () => {
 
   it("should handle array mask", async () => {
     const letter = /[АВЕКМНОРСТУХ]/i;
-    const digit = /[0-9]/;
+    const digit = /[0-9۰-۹]/;
     const mask = [letter, digit, digit, digit, letter, letter];
     const { input } = createInput(
       <Input mask={mask} defaultValue="А 784 КТ 77" />
