@@ -1,0 +1,8 @@
+name: Check merge queue commit message
+on:
+  merge_group:
+  workflow_dispatch:
+jobs:
+  check-commit:
+    uses: Altus-Power/github-workflows/.github/workflows/merge_queue_check.yml@main
+    secrets: inherit

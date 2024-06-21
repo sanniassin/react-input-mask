@@ -1,0 +1,14 @@
+name: Release package UI
+
+on:
+  workflow_dispatch:
+    branches: main
+    inputs:
+      version:
+        required: false
+        description: Version in format like 'v1.0.1' or leave empty for latest
+  
+jobs:
+  new-release:
+    uses: Altus-Power/github-workflows/.github/workflows/release_npm_package.yml@main
+    secrets: inherit

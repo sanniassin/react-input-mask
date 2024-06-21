@@ -1,0 +1,9 @@
+name: Build package UI
+
+on:
+  workflow_dispatch:
+
+jobs:
+  auto-deploy:
+    uses: Altus-Power/github-workflows/.github/workflows/build_npm_package.yml@main
+    secrets: inherit

@@ -1,0 +1,8 @@
+name: Check PR commit message
+on:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  check-commit:
+    uses: Altus-Power/github-workflows/.github/workflows/pull_request_check.yml@main
+    secrets: inherit
