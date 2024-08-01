@@ -4,9 +4,12 @@ import resolve from "rollup-plugin-node-resolve";
 import commonjs from "rollup-plugin-commonjs";
 import replace from "rollup-plugin-replace";
 import { sizeSnapshot } from "rollup-plugin-size-snapshot";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import copy from "rollup-plugin-copy";
 import protoToAssign from "./rollup.proto-to-assign.plugin";
 
 const input = "./src/index.js";
+const inputTs = "./src/react-input-mask.d.ts";
 
 // Treat as externals all not relative and not absolute paths
 // e.g. 'react' to prevent duplications in user bundle.
@@ -19,7 +22,10 @@ const plugins = [
   resolve(),
   commonjs(),
   protoToAssign(),
-  sizeSnapshot()
+  sizeSnapshot(),
+  copy({
+    targets: [{ src: inputTs, dest: "dist" }]
+  })
 ];
 const minifiedPlugins = [
   ...plugins,

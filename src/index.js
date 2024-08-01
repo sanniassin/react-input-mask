@@ -17,10 +17,10 @@ import ChildrenWrapper from "./children-wrapper";
 
 const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   const {
-    alwaysShowMask,
+    alwaysShowMask = false,
+    maskPlaceholder = "_",
     children,
     mask,
-    maskPlaceholder,
     beforeMaskedStateChange,
     ...restProps
   } = props;
@@ -291,11 +291,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
 });
 
 InputMask.displayName = "InputMask";
-
-InputMask.defaultProps = {
-  alwaysShowMask: false,
-  maskPlaceholder: "_"
-};
 
 InputMask.propTypes = {
   alwaysShowMask: PropTypes.bool,
