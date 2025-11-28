@@ -1,5 +1,4 @@
 import React, { useLayoutEffect, forwardRef } from "react";
-import { findDOMNode } from "react-dom";
 import PropTypes from "prop-types";
 
 import { useInputState, useInputElement, usePrevious } from "./hooks";
@@ -22,6 +21,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     mask,
     maskPlaceholder,
     beforeMaskedStateChange,
+    customInputRef,
     ...restProps
   } = props;
 
@@ -268,7 +268,7 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
     onChange: isMasked && isEditable ? onChange : props.onChange,
     onMouseDown: isMasked && isEditable ? onMouseDown : props.onMouseDown,
     ref: ref => {
-      inputRef.current = findDOMNode(ref);
+      inputRef.current = customInputRef.current;
 
       if (isFunction(forwardedRef)) {
         forwardedRef(ref);
@@ -282,8 +282,6 @@ const InputMask = forwardRef(function InputMask(props, forwardedRef) {
   if (children) {
     validateChildren(props, children);
 
-    // We wrap children into a class component to be able to find
-    // their input element using findDOMNode
     return <ChildrenWrapper {...inputProps}>{children}</ChildrenWrapper>;
   }
 
